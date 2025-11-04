@@ -48,7 +48,7 @@ const MyProfileScreen = ({ navigation }) => (
           <Text style={styles.name}>{user.name}</Text>
           <Text style={styles.email}>{user.email}</Text>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('ProfileSettingScreen')}>
           <Feather name="settings" size={26} color="#222" />
         </TouchableOpacity>
       </View>
@@ -63,8 +63,13 @@ const MyProfileScreen = ({ navigation }) => (
               item.label === 'My Wishlist'
                 ? () => navigation && navigation.navigate('Wishlist')
                 : item.label === 'Address'
-                ? () => navigation && navigation.navigate('SavedAddress')
-                : undefined
+                  ? () => navigation && navigation.navigate('SavedAddress')
+                  : item.label === 'Payment method'
+                    ? () => navigation && navigation.navigate('PaymentMethod')
+                    :
+                    item.label === 'Rate this app'
+                      ? () => navigation && navigation.navigate('FeedbackScreen')
+                      : undefined
             }
           >
             <View style={styles.menuIcon}>{item.icon}</View>

@@ -9,8 +9,14 @@ import AddressDtlsScreen from '../screens/AddressDtlsScreen';
 import LandingScreen from '../screens/LandingScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
 import WishlistScreen from '../screens/WishlistScreen';
-
 import SavedAddressScreen from '../screens/SavedAddressScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+
+import PaymentMethodScreen from '../screens/PaymentMethodScreen';
+import ProfileSettingScreen from '../screens/ProfileSettingScreen';
+import FeedbackScreen from '../screens/FeedbackScreen';
+import OrderConfirmedScreen from '../screens/OrderConfirmedScreen';
+import OrderTrackingScreen from '../screens/OrderTrackingScreen';
 
 export const AppScreens = {
   SplashScreen,
@@ -23,5 +29,11 @@ export const AppScreens = {
   LandingScreen,
   MyProfileScreen,
   WishlistScreen,
-  SavedAddressScreen
+  SavedAddressScreen,
+  ProfileScreen,
+  PaymentMethodScreen,
+  ProfileSettingScreen,
+  FeedbackScreen,
+  OrderConfirmedScreen,
+  OrderTrackingScreen
 };

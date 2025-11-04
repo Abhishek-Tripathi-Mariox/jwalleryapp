@@ -52,6 +52,11 @@ const Navigator = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="Profile"
+          component={AppScreens.ProfileScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="Wishlist"
           component={AppScreens.WishlistScreen}
           options={{ headerShown: false }}
@@ -59,6 +64,31 @@ const Navigator = () => {
         <Stack.Screen
           name="SavedAddress"
           component={AppScreens.SavedAddressScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="PaymentMethod"
+          component={AppScreens.PaymentMethodScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ProfileSettingScreen"
+          component={AppScreens.ProfileSettingScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="FeedbackScreen"
+          component={AppScreens.FeedbackScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="OrderConfirmedScreen"
+          component={AppScreens.OrderConfirmedScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="OrderTrackingScreen"
+          component={AppScreens.OrderTrackingScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

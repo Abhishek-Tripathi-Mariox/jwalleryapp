@@ -11,12 +11,13 @@ import Alert from '../components/Modal/Alert';
 import SearchScreen from '../screens/SearchScreen';
 import OrderScreen from '../screens/OrderScreen';
 import CartScreen from '../screens/CartScreen';
+import MyProfileScreen from '../screens/MyProfileScreen';
 
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get('window');
 
 const TAB_BG_COLOR = '#FF6F61';
-const ICON_SIZE = 26;
+const ICON_SIZE = 25;
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   return (
@@ -34,59 +35,65 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
         const isFocused = state.index === index;
 
         let icon;
+        let LargeIcon = null;
         if (route.name === 'Home') {
           icon = <AntDesign name="home" size={ICON_SIZE} color="#fff" />;
+          LargeIcon = <AntDesign name="home" size={28} color="#fff" />;
         } else if (route.name === 'Search') {
           icon = <Feather name="search" size={ICON_SIZE} color="#fff" />;
+          LargeIcon = <Feather name="search" size={28} color="#fff" />;
         } else if (route.name === 'Order') {
           icon = <MaterialIcons name="receipt-long" size={ICON_SIZE} color="#fff" />;
+          LargeIcon = <MaterialIcons name="receipt-long" size={28} color="#fff" />;
         } else if (route.name === 'Cart') {
           icon = <Feather name="shopping-cart" size={ICON_SIZE} color="#fff" />;
+          LargeIcon = <Feather name="shopping-cart" size={28} color="#fff" />;
         } else if (route.name === 'Profile') {
           icon = <Ionicons name="person-outline" size={ICON_SIZE} color="#fff" />;
+          LargeIcon = <Ionicons name="person-outline" size={28} color="#fff" />;
         }
 
-        // Central Home button
-        if (route.name === 'Home') {
+        if (isFocused) {
+          // Floating circular active tab
           return (
             <View key={route.key} style={styles.homeTabWrapper}>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityState={{ selected: true }}
                 accessibilityLabel={options.tabBarAccessibilityLabel}
                 testID={options.tabBarTestID}
                 onPress={() => navigation.navigate(route.name)}
                 style={[
                   styles.homeButton,
-                  isFocused && { backgroundColor: TAB_BG_COLOR, borderColor: '#fff', borderWidth: 5 },
+                  { backgroundColor: TAB_BG_COLOR, borderColor: '#fff', borderWidth: 5 },
                 ]}
                 activeOpacity={0.8}
               >
                 <View style={styles.homeIconCircle}>
-                  <AntDesign name="home" size={32} color={'#fff'} />
+                  {LargeIcon}
                 </View>
               </TouchableOpacity>
-              <Text style={[styles.tabLabel, { color: '#fff', fontWeight: 'bold', marginTop: 2 }]}>Home</Text>
+              <Text style={[styles.tabLabel, { color: '#fff', fontWeight: 'bold', marginTop: 2 }]}>{label}</Text>
             </View>
           );
+        } else {
+          // Flat inactive tab
+          return (
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={{}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarTestID}
+              onPress={() => navigation.navigate(route.name)}
+              style={styles.tabButton}
+              activeOpacity={0.8}
+            >
+              {icon}
+              <Text style={styles.tabLabel}>{label}</Text>
+            </TouchableOpacity>
+          );
         }
-
-        // Other tabs
-        return (
-          <TouchableOpacity
-            key={route.key}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            testID={options.tabBarTestID}
-            onPress={() => navigation.navigate(route.name)}
-            style={styles.tabButton}
-            activeOpacity={0.8}
-          >
-            {icon}
-            <Text style={styles.tabLabel}>{label}</Text>
-          </TouchableOpacity>
-        );
       })}
     </View>
   );
@@ -103,11 +110,11 @@ const MyBottomTabs = () => {
           headerShown: false,
         }}
       >
-        <Tab.Screen name="Search" component={SearchScreen} />
-        <Tab.Screen name="Order" component={OrderScreen} />
         <Tab.Screen name="Home" component={Dashboard} />
+        <Tab.Screen name="Order" component={Dashboard} />
+        <Tab.Screen name="Search" component={SearchScreen} />
         <Tab.Screen name="Cart" component={CartScreen} />
-        <Tab.Screen name="Profile" component={ProfileScreen} />
+        <Tab.Screen name="Profile" component={MyProfileScreen} />
       </Tab.Navigator>
       <Alert modalAlert={modalAlert} setModalAlert={setModalAlert} />
     </>
@@ -146,7 +153,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 12,
     marginTop: 2,
     fontWeight: '400',
   },
@@ -159,8 +166,8 @@ const styles = StyleSheet.create({
   homeButton: {
     backgroundColor: TAB_BG_COLOR,
     borderRadius: 40,
-    width: 68,
-    height: 68,
+    width: 64,
+    height: 64,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,

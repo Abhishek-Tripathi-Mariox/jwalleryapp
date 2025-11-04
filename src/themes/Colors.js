@@ -65,6 +65,7 @@ export const Colors = {
     GRAY5:'rgba(184, 184, 184, 1)',
     GRAY6:'rgba(160, 160, 160, 1)',
     GRAY7:'rgba(178, 185, 193, 1)',
+    GRAY8: 'rgba(51, 74, 76, 1)',
     theme1: "rgba(255, 96, 81, 1)",
     WHITE1:'rgba(255, 255, 255, 1)',
     PINK: 'rgba(228, 58, 129, 1)',

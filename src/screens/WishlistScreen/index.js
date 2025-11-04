@@ -89,7 +89,7 @@ const WishlistScreen = ({ navigation }) => (
             <Image source={item.image} style={styles.productImage} />
             <TouchableOpacity style={styles.heartIcon}>
               <View style={styles.heartCircle}>
-                <AntDesign name="heart" size={22} color={THEME_COLOR} />
+                <AntDesign name="heart" size={20} color={THEME_COLOR} />
               </View>
             </TouchableOpacity>
           </View>
@@ -102,7 +102,7 @@ const WishlistScreen = ({ navigation }) => (
               for (let i = 1; i <= 5; i++) {
                 if (rating >= 1) {
                   stars.push(
-                    <Svg key={i} width={18} height={18} viewBox="0 0 24 24" style={{marginRight: 1, marginTop: 1}}>
+                    <Svg key={i} width={17} height={17} viewBox="0 0 24 24" style={{ marginRight: 1, marginTop: 1 }}>
                       <Path
                         d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
                         fill="#4CB050"
@@ -113,7 +113,7 @@ const WishlistScreen = ({ navigation }) => (
                   );
                 } else if (rating >= 0.5) {
                   stars.push(
-                    <Svg key={i} width={18} height={18} viewBox="0 0 24 24" style={{marginRight: 1, marginTop: 1}}>
+                    <Svg key={i} width={17} height={17} viewBox="0 0 24 24" style={{ marginRight: 1, marginTop: 1 }}>
                       <Defs>
                         <ClipPath id={`halfStar${i}`}>
                           <Rect x="0" y="0" width="12" height="24" />
@@ -138,7 +138,7 @@ const WishlistScreen = ({ navigation }) => (
                   );
                 } else {
                   stars.push(
-                    <Svg key={i} width={18} height={18} viewBox="0 0 24 24" style={{marginRight: 1, marginTop: 1}}>
+                    <Svg key={i} width={18} height={18} viewBox="0 0 24 24" style={{ marginRight: 1, marginTop: 1 }}>
                       <Path
                         d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
                         fill="none"
@@ -159,37 +159,6 @@ const WishlistScreen = ({ navigation }) => (
       )}
       showsVerticalScrollIndicator={false}
     />
-    {/* Bottom Navigation Bar */}
-    <View style={styles.bottomBarWrapper}>
-      <View style={styles.bottomBarBg} />
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.bottomBarItem}>
-          <AntDesign name="home" size={26} color="#fff" />
-          <Text style={styles.bottomBarLabel}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomBarItem}>
-          <AntDesign name="search1" size={26} color="#fff" />
-          <Text style={styles.bottomBarLabel}>Search</Text>
-        </TouchableOpacity>
-        <View style={{ width: 72 }} /> {/* Space for floating Profile */}
-        <TouchableOpacity style={styles.bottomBarItem}>
-          <AntDesign name="profile" size={26} color="#fff" />
-          <Text style={styles.bottomBarLabel}>Order</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomBarItem}>
-          <AntDesign name="shoppingcart" size={26} color="#fff" />
-          <Text style={styles.bottomBarLabel}>Cart</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.fabProfileWrapper}>
-        <View style={styles.fabProfileOuter}>
-          <TouchableOpacity style={styles.fabProfile}>
-            <AntDesign name="user" size={32} color="#fff" />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.fabProfileLabel}>Profile</Text>
-      </View>
-    </View>
   </View>
 );
 
@@ -218,8 +187,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 40,
-    paddingBottom: 18,
+    paddingTop: 25,
+    paddingBottom: 40,
     zIndex: 2,
   },
   headerWave: {
@@ -242,9 +211,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   grid: {
-    paddingHorizontal: 12,
-    paddingTop: 18,
-    paddingBottom: 90,
+    paddingHorizontal: 10,
   },
   card: {
     backgroundColor: '#F6F6F6',

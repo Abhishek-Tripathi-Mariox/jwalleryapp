@@ -7,7 +7,8 @@ import {
   Dimensions,
   TouchableOpacity,
   Modal,
-  ImageBackground
+  ImageBackground,
+  StatusBar
 } from 'react-native';
 import MainHeader from '../../components/Header/MainHeader';
 import HeadingDiv from '../../components/OptHeading/Heading';
@@ -92,6 +93,7 @@ const Dashboard = (props) => {
 
   return (
     <SafeAreaView style={styles.sectionContainer}>
+      <StatusBar backgroundColor={'#fff'} />
       <ScrollView>
 
         <View>

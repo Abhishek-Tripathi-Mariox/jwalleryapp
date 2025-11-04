@@ -196,32 +196,62 @@ const SearchScreen = () => {
           </ScrollView>
         </View>
         {/* Main Content Area */}
-        <View style={{ flex: 1, padding: 10 }}>
+        <View style={{ flex: 1, padding: 7 }}>
           {/* Shop Card */}
-          <View style={styles.shopCard}>
-            <Image source={AppImages.shop} style={styles.shopImage} />
-            <View style={styles.shopInfo}>
-              <Text style={styles.shopName}>Trendy Apparel</Text>
-              <View style={styles.shopRow}>
-                <Text style={styles.shopMeta}>12–15mins</Text>
-                <Text style={styles.dot}>•</Text>
-                <Text style={styles.shopMeta}>1.2 km</Text>
-                <Text style={styles.dot}>•</Text>
-                <MaterialIcons name="local-shipping" size={16} color="#B0B0B0" />
-                <Text style={styles.shopMeta}>FREE</Text>
-              </View>
-              <View style={styles.offerRow}>
-                <Text style={styles.offerText}>Flat ₹ 150 off above ₹ 150</Text>
-              </View>
-              <View style={styles.shopRow}>
-                <AntDesign name="star" size={16} color="#FFD700" />
-                <Text style={styles.ratingText}>4.5 (By 200+)</Text>
+          <ScrollView style={{ marginBottom: 10, height: 270 }} horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.shopCard}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, width: '100%' }}>
+                <Image source={AppImages.shop} style={styles.shopImage} />
+                <View style={styles.shopInfo}>
+                  <Text style={styles.shopName}>Trendy Apparel</Text>
+                  <View style={styles.shopRow}>
+                    <Text style={styles.shopMeta}>12–15mins</Text>
+                    <Text style={styles.dot}>•</Text>
+                    <Text style={styles.shopMeta}>1.2 km</Text>
+                    <Text style={styles.dot}>•</Text>
+                    <MaterialIcons name="local-shipping" size={16} color="#B0B0B0" />
+                    <Text style={styles.shopMeta}>FREE</Text>
+                  </View>
+                  <View style={styles.offerRow}>
+                    <Text style={styles.offerText}>Flat ₹ 150 off above ₹ 150</Text>
+                  </View>
+                  <View style={styles.shopRow}>
+                    <AntDesign name="star" size={16} color="#FFD700" />
+                    <Text style={styles.ratingText}>4.5 (By 200+)</Text>
+                  </View>
+                </View>
               </View>
               <View style={styles.statusRow}>
                 <Text style={styles.statusText}>Last 100 Order without Complaints</Text>
               </View>
             </View>
-          </View>
+            <View style={styles.shopCard}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, width: '100%' }}>
+                <Image source={AppImages.shop} style={styles.shopImage} />
+                <View style={styles.shopInfo}>
+                  <Text style={styles.shopName}>Trendy Apparel</Text>
+                  <View style={styles.shopRow}>
+                    <Text style={styles.shopMeta}>12–15mins</Text>
+                    <Text style={styles.dot}>•</Text>
+                    <Text style={styles.shopMeta}>1.2 km</Text>
+                    <Text style={styles.dot}>•</Text>
+                    <MaterialIcons name="local-shipping" size={16} color="#B0B0B0" />
+                    <Text style={styles.shopMeta}>FREE</Text>
+                  </View>
+                  <View style={styles.offerRow}>
+                    <Text style={styles.offerText}>Flat ₹ 150 off above ₹ 150</Text>
+                  </View>
+                  <View style={styles.shopRow}>
+                    <AntDesign name="star" size={16} color="#FFD700" />
+                    <Text style={styles.ratingText}>4.5 (By 200+)</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.statusRow}>
+                <Text style={styles.statusText}>Last 100 Order without Complaints</Text>
+              </View>
+            </View>
+          </ScrollView>
           {/* Product Grid */}
           <FlatList
             data={products}
@@ -326,7 +356,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   shopCard: {
-    flexDirection: 'row',
     backgroundColor: '#fff',
     borderRadius: 14,
     elevation: 3,
@@ -334,21 +363,24 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
-    padding: 12,
+    padding: 8,
     marginBottom: 16,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderWidth: 2,
+    borderColor: '#rgba(227, 60, 132, 1)',
+    flex: 1,
+    width: '95%',
   },
   shopImage: {
     width: 80,
-    height: 80,
+    height: 110,
     borderRadius: 10,
-    marginRight: 14,
+    marginRight: 10,
     resizeMode: 'cover',
   },
   shopInfo: {
     flex: 1,
+    width: '100%',
   },
   shopName: {
     fontSize: 17,
@@ -360,6 +392,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 2,
+    flexWrap: 'wrap',
+    width: '70%',
   },
   shopMeta: {
     fontSize: 13,
@@ -377,11 +411,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     alignSelf: 'flex-start',
-    marginBottom: 2,
+    marginVertical: 4,
+    width: '80%',
   },
   offerText: {
     color: '#1DBF73',
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   ratingText: {
@@ -391,17 +426,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   statusRow: {
-    marginTop: 2,
-    borderWidth: 1,
-    borderColor: '#B0E0E6',
+    marginTop: 12,
+    backgroundColor: 'rgba(227, 248, 255, 1)',
     borderRadius: 6,
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    alignSelf: 'flex-start',
+    paddingVertical: 5,
+    width: '100%',
   },
   statusText: {
-    color: '#3A7CA5',
+    color: '#000',
     fontSize: 12,
+    fontWeight: '500'
   },
   productCard: {
     backgroundColor: '#fff',

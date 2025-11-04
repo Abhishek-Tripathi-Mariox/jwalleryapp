@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image, FlatList, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, TextInput } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { AppImages } from '../../constants/app.image';
 import PromoModal from './PromoModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const THEME_COLOR = '#F45C5C';
 
@@ -67,7 +68,7 @@ const CartItem = ({ item, onQtyChange }) => (
   </View>
 );
 
-const CartScreen = () => {
+const CartScreen = ({ navigation }) => {
   const [items, setItems] = useState(cartItems);
   const [promoVisible, setPromoVisible] = useState(false);
 
@@ -154,7 +155,8 @@ const CartScreen = () => {
         </View>
       </View>
       {/* Checkout Button */}
-      <TouchableOpacity style={styles.checkoutBtn}>
+      <TouchableOpacity style={styles.checkoutBtn}
+        onPress={() => navigation.navigate('SavedAddress')}>
         <Text style={styles.checkoutBtnText}>Confirm & Checkout</Text>
       </TouchableOpacity>
       {/* Promo Modal */}
@@ -169,7 +171,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: THEME_COLOR,
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 14,
     paddingBottom: 16,
     borderBottomLeftRadius: 18,
     borderBottomRightRadius: 18,
@@ -342,7 +344,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 16,
     marginTop: 8,
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -73,7 +73,7 @@ const AmountDtlsScreen = (props) => {
             <BottomDetails
                 btnLabel={"NEXT"}
                 amount={'219'}
-                onNext={() => navigation.navigate("AddressDtlsScreen")}
+                onNext={() => navigation.navigate("PaymentMethod")}
             />
 
         </SafeAreaView>

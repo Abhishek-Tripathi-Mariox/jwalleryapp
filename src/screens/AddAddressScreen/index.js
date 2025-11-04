@@ -13,7 +13,7 @@ const cities = ['Noida', 'Delhi', 'Gurgaon'];
 
 const tags = ['Home', 'Work', 'Hotel', 'Others'];
 
-const AddAddressScreen = ({ visible, onClose }) => {
+const AddAddressScreen = ({ visible, onClose, navigation }) => {
     const [selectedSector, setSelectedSector] = useState('');
     const [selectedCity, setSelectedCity] = useState('Noida');
     const [selectedTag, setSelectedTag] = useState('Work');
@@ -69,7 +69,7 @@ const AddAddressScreen = ({ visible, onClose }) => {
                             </Text>
                             <Text style={styles.infoSoon}>We will reach you soon!</Text>
                         </View>
-                        <TouchableOpacity style={styles.saveBtn} onPress={onClose}>
+                        <TouchableOpacity style={styles.saveBtn} onPress={()=> {onClose(); navigation()}}>
                             <Text style={styles.saveBtnText}>Save & Continue</Text>
                         </TouchableOpacity>
                     </ScrollView>
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     saveBtn: {
         backgroundColor: Colors.theme1,
         borderRadius: 12,
-        paddingVertical: 15,
+        paddingVertical: 14,
         alignItems: 'center',
         marginTop: 2,
         marginBottom: 8,

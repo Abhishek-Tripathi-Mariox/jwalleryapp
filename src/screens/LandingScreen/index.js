@@ -8,7 +8,7 @@ const LandingScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.topSection}>
         <Image source={AppImages.landing} style={styles.topImage} resizeMode="cover" />
-        <TouchableOpacity style={styles.skipButton} onPress={() => navigation.navigate('Login')}>
+        <TouchableOpacity style={styles.skipButton} onPress={() => navigation.navigate('Home')}>
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
       </View>

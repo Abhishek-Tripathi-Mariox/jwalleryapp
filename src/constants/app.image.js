@@ -36,5 +36,7 @@ export const AppImages = {
   setting: require('../assets/images/setting.png'),
 avatar: require('../assets/images/avatar.jpg'),
 wishlist: require('../assets/images/wishlist.png'),
-remove: require('../assets/images/remove.png')
+remove: require('../assets/images/remove.png'),
+cod: require('../assets/images/cod.png'),
+edit: require('../assets/images/edit.png')
 };

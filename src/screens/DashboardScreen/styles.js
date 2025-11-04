@@ -4,7 +4,7 @@ import { Colors } from '../../themes/Colors';
 
 export const styles = StyleSheet.create({
     sectionContainer: {
-        backgroundColor: Colors.WHITE,
+        // backgroundColor: Colors.WHITE,
         height: '100%'
     },
     SplCard: {

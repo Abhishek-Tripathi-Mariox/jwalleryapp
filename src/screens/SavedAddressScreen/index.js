@@ -110,7 +110,7 @@ const SavedAddressScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.addBtn} onPress={() => setShowAddAddress(true)}>
         <Text style={styles.addBtnText}>Add New Address</Text>
       </TouchableOpacity>
-      <AddAddressScreen visible={showAddAddress} onClose={() => setShowAddAddress(false)} />
+      <AddAddressScreen visible={showAddAddress} onClose={() => setShowAddAddress(false)} navigation={()=> navigation.navigate('PaymentMethod')}/>
     </View>
   );
 };
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     bottom: 24,
     backgroundColor: THEME_COLOR,
     borderRadius: 12,
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
     elevation: 4,
   },
