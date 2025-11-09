@@ -19,3 +19,12 @@ export const getTokenStorage = async () => {
     return null;
   }
 };
+
+export const clearStorage = async () => {
+  try {
+    await AsyncStorage.clear();
+    return true;
+  } catch (e) {
+    return false;
+  }
+};

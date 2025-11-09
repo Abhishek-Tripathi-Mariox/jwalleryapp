@@ -4,6 +4,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { Colors } from '../../themes/Colors';
+import { clearStorage } from '../../utils/tokenStorage';
 
 const { width } = Dimensions.get('window');
 
@@ -24,64 +25,75 @@ const menu = [
 
 const THEME_COLOR = Colors.theme1;
 
-const MyProfileScreen = ({ navigation }) => (
-  <View style={styles.container}>
-    {/* Header */}
-    <View style={styles.header}>
-      <TouchableOpacity>
-        <AntDesign name="arrowleft" size={24} color="#fff" />
-      </TouchableOpacity>
-      <Text style={styles.headerTitle}>Profile</Text>
-      <View style={styles.headerIcons}>
-        <TouchableOpacity style={styles.iconButton}>
-          <AntDesign name="hearto" size={22} color="#fff" />
+const MyProfileScreen = ({ navigation }) => {
+  // Logout handler
+  const handleLogout = async () => {
+    await clearStorage();
+    if (navigation && navigation.replace) {
+      navigation.replace('Login'); // Change to your login/landing screen route name
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity>
+          <AntDesign name="arrowleft" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
-          <Feather name="search" size={22} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    </View>
-    <ScrollView contentContainerStyle={styles.scrollContent}>
-      {/* Profile Card */}
-      <View style={styles.profileCard}>
-        <Image source={user.avatar} style={styles.avatar} />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.name}>{user.name}</Text>
-          <Text style={styles.email}>{user.email}</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('ProfileSettingScreen')}>
-          <Feather name="settings" size={26} color="#222" />
-        </TouchableOpacity>
-      </View>
-      {/* Menu List */}
-      <View style={styles.menuList}>
-        {menu.map((item, idx) => (
-          <TouchableOpacity
-            key={item.key}
-            style={styles.menuItem}
-            activeOpacity={0.7}
-            onPress={
-              item.label === 'My Wishlist'
-                ? () => navigation && navigation.navigate('Wishlist')
-                : item.label === 'Address'
-                  ? () => navigation && navigation.navigate('SavedAddress')
-                  : item.label === 'Payment method'
-                    ? () => navigation && navigation.navigate('PaymentMethod')
-                    :
-                    item.label === 'Rate this app'
-                      ? () => navigation && navigation.navigate('FeedbackScreen')
-                      : undefined
-            }
-          >
-            <View style={styles.menuIcon}>{item.icon}</View>
-            <Text style={styles.menuLabel}>{item.label}</Text>
-            <AntDesign name="right" size={18} color="#b0b0b0" style={{ marginLeft: 'auto' }} />
+        <Text style={styles.headerTitle}>Profile</Text>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity style={styles.iconButton}>
+            <AntDesign name="hearto" size={22} color="#fff" />
           </TouchableOpacity>
-        ))}
+          <TouchableOpacity style={styles.iconButton}>
+            <Feather name="search" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </ScrollView>
-  </View>
-);
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Profile Card */}
+        <View style={styles.profileCard}>
+          <Image source={user.avatar} style={styles.avatar} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{user.name}</Text>
+            <Text style={styles.email}>{user.email}</Text>
+          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('ProfileSettingScreen')}>
+            <Feather name="settings" size={26} color="#222" />
+          </TouchableOpacity>
+        </View>
+        {/* Menu List */}
+        <View style={styles.menuList}>
+          {menu.map((item, idx) => (
+            <TouchableOpacity
+              key={item.key}
+              style={styles.menuItem}
+              activeOpacity={0.7}
+              onPress={
+                item.label === 'My Wishlist'
+                  ? () => navigation && navigation.navigate('Wishlist')
+                  : item.label === 'Address'
+                    ? () => navigation && navigation.navigate('SavedAddress')
+                    : item.label === 'Payment method'
+                      ? () => navigation && navigation.navigate('PaymentMethod')
+                      : item.label === 'Rate this app'
+                        ? () => navigation && navigation.navigate('FeedbackScreen')
+                        : item.label === 'Log out'
+                          ? handleLogout
+                          : undefined
+              }
+            >
+              <View style={styles.menuIcon}>{item.icon}</View>
+              <Text style={styles.menuLabel}>{item.label}</Text>
+              <AntDesign name="right" size={18} color="#b0b0b0" style={{ marginLeft: 'auto' }} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
