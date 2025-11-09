@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, TextInput, ScrollView } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import { updateUserProfile } from '../../utils/userProfile';
@@ -28,6 +28,7 @@ const ProfileSettingScreen = ({ navigation }) => {
         setLoading(false);
         if (result.success) {
             showToast(result.message, 'success');
+            navigation.navigate('Home');
         } else {
             showToast(result.message, 'error');
         }
@@ -43,56 +44,58 @@ const ProfileSettingScreen = ({ navigation }) => {
                 <Text style={styles.headerTitle}>Profile Setting</Text>
                 <View style={{ width: 24 }} />
             </View>
-            <View style={styles.content}>
-                {/* Avatar */}
-                <View style={styles.avatarContainer}>
-                    <Image source={require('../../assets/images/profile.jpeg')} style={styles.avatar} />
-                    <TouchableOpacity style={styles.cameraIcon}>
-                        <Feather name="camera" size={24} color="#fff" />
-                    </TouchableOpacity>
+            <ScrollView>
+                <View style={styles.content}>
+                    {/* Avatar */}
+                    <View style={styles.avatarContainer}>
+                        <Image source={require('../../assets/images/profile.jpeg')} style={styles.avatar} />
+                        <TouchableOpacity style={styles.cameraIcon}>
+                            <Feather name="camera" size={24} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                    {/* Form */}
+                    <View style={styles.formRow}>
+                        <View style={styles.formField}>
+                            <Text style={styles.label}>Full Name</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={fullName}
+                                onChangeText={setFullName}
+                                placeholder="Enter your name"
+                            />
+                        </View>
+                        <View style={styles.formField}>
+                            <Text style={styles.label}>Email</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={email}
+                                onChangeText={setEmail}
+                                placeholder="Enter your email"
+                                keyboardType="email-address"
+                            />
+                        </View>
+                        <View style={styles.formField}>
+                            <Text style={styles.label}>Gender</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={gender}
+                                onChangeText={setGender}
+                                placeholder="Enter your gender"
+                            />
+                        </View>
+                        <View style={styles.formField}>
+                            <Text style={styles.label}>Phone</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={phone}
+                                onChangeText={setPhone}
+                                placeholder="Phone (not editable)"
+                                keyboardType='phone-pad'
+                            />
+                        </View>
+                    </View>
                 </View>
-                {/* Form */}
-                <View style={styles.formRow}>
-                    <View style={styles.formField}>
-                        <Text style={styles.label}>Full Name</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={fullName}
-                            onChangeText={setFullName}
-                            placeholder="Enter your name"
-                        />
-                    </View>
-                    <View style={styles.formField}>
-                        <Text style={styles.label}>Email</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={email}
-                            onChangeText={setEmail}
-                            placeholder="Enter your email"
-                            keyboardType="email-address"
-                        />
-                    </View>
-                    <View style={styles.formField}>
-                        <Text style={styles.label}>Gender</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={gender}
-                            onChangeText={setGender}
-                            placeholder="Enter your gender"
-                        />
-                    </View>
-                    <View style={styles.formField}>
-                        <Text style={styles.label}>Phone</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={phone}
-                            onChangeText={setPhone}
-                            editable={false}
-                            placeholder="Phone (not editable)"
-                        />
-                    </View>
-                </View>
-            </View>
+            </ScrollView>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={loading}>
                 <Text style={styles.saveButtonText}>{loading ? 'Saving...' : 'Save change'}</Text>
             </TouchableOpacity>
@@ -151,7 +154,8 @@ const styles = StyleSheet.create({
         width: '88%',
     },
     formField: {
-        marginBottom: 25,},
+        marginBottom: 25,
+    },
     label: {
         fontSize: 14,
         color: '#b0b0b0',
