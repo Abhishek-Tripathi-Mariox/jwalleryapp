@@ -53,7 +53,7 @@ const MyProfileScreen = ({ navigation }) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <AntDesign name="arrowleft" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile</Text>
@@ -71,8 +71,8 @@ const MyProfileScreen = ({ navigation }) => {
         <View style={styles.profileCard}>
           <Image source={user.avatar} style={styles.avatar} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{userProfile?.fullName ?? 'Hey User'}</Text>
-            <Text style={styles.email}>{userProfile?.email ?? ''}</Text>
+            <Text style={styles.name}>{userProfile?.fullName || 'Hey User'}</Text>
+            <Text style={styles.email}>{userProfile?.email || ''}</Text>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('ProfileSettingScreen')}>
             <Feather name="settings" size={26} color="#222" />

@@ -49,8 +49,8 @@ const ProfileScreen = ({ navigation }) => {
         <View style={styles.userSection}>
           <Image source={user.avatar} style={styles.avatar} />
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.userName}>{userProfile?.fullName ?? 'Hey User'}</Text>
-            <Text style={styles.userEmail}>{userProfile?.email ?? ''}</Text>
+            <Text style={styles.userName}>{userProfile?.fullName || 'Hey User'}</Text>
+            <Text style={styles.userEmail}>{userProfile?.email || ''}</Text>
           </View>
         </View>
         {/* Menu */}
