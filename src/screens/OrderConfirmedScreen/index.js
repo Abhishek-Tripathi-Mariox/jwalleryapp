@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { Color } from 'react-native/types_generated/Libraries/Animated/AnimatedExports';
+import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
-const THEME_COLOR = '#FF6F61';
+const THEME_COLOR = Colors.theme1;
 
 const OrderConfirmedScreen = ({ navigation }) => {
   return (
@@ -23,7 +25,7 @@ const OrderConfirmedScreen = ({ navigation }) => {
             <AntDesign name="checkcircle" size={48} color="#4BB543" />
           </View>
           <Text style={styles.successText}>Your Order is Successful</Text>
-          <Text style={styles.orderId}>Order Id: <Text style={{ color: '#FF6F61' }}>#123654789</Text></Text>
+          <Text style={styles.orderId}>Order Id: <Text style={{ color: Colors.theme1 }}>#123654789</Text></Text>
         </View>
         {/* Order Information */}
         <View style={styles.infoBox}>

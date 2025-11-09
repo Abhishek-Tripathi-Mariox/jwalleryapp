@@ -2,9 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
+import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
-const THEME_COLOR = '#FF6F61';
+const THEME_COLOR = Colors.theme1;
 
 const OrderTrackingScreen = ({ navigation }) => {
   return (

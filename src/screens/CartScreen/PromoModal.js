@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput, FlatList } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import AppliedCouponModal from './AppliedCouponModal';
+import { Colors } from '../../themes/Colors';
 
-const THEME_COLOR = '#F45C5C';
+const THEME_COLOR = Colors.theme1;
 
 const offers = [
   {

@@ -38,5 +38,9 @@ avatar: require('../assets/images/avatar.jpg'),
 wishlist: require('../assets/images/wishlist.png'),
 remove: require('../assets/images/remove.png'),
 cod: require('../assets/images/cod.png'),
-edit: require('../assets/images/edit.png')
+edit: require('../assets/images/edit.png'),
+location: require('../assets/images/location.png'),
+promo1: require('../assets/images/promo1.png'),
+promo2: require('../assets/images/promo2.png'),
+sportswear: require('../assets/images/sportswear.png'),
 };

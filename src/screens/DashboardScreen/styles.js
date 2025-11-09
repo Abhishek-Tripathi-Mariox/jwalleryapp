@@ -165,4 +165,7 @@ export const styles = StyleSheet.create({
         width: 70,
         resizeMode: 'contain'
     }
+/* Promo Codes Section Styles */
+// Use this as a reference for inline styles in DashboardScreen/index.js
+// If you want to move these to StyleSheet, add them inside the StyleSheet.create({ ... }) block above.
 });

@@ -7,31 +7,34 @@ import { Vector } from '../../assets/vector/vector.icon';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'react-native';
 import { AppImages } from '../../constants/app.image';
+import { Colors } from '../../themes/Colors';
 
 
 const Search = (props) => {
     return (
         <SafeAreaView>
-            <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#fff',
-                borderRadius: 8,
-                elevation: 4,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                paddingHorizontal: 16,
-                paddingVertical: 9,
-                marginVertical: 10,
-                marginHorizontal: 15
-            }}>
-                <AntDesign name="search1" size={22} color="#B0B0B0" />
-                <Text style={{ flex: 1, marginLeft: 10, color: '#B0B0B0', fontSize: 16 }}>
-                    Search
-                </Text>
-                <AntDesign name="audio" size={22} color="#B0B0B0" />
+            <View style={{ marginVertical: 10, marginHorizontal: 15 }}>
+                <SearchBar
+                    placeholder="Search"
+                    onChangeText={props.onChangeText}
+                    onSearchPress={props.onSearchPress}
+                    value={props.value}
+                    style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 8,
+                        elevation: 4,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                        paddingHorizontal: 8,
+                        width: '100%',
+                    }}
+                    iconColor={Colors.theme1}
+                    clearIconColor={Colors.theme1}
+                    searchIconComponent={<AntDesign name="search1" size={20} color={Colors.theme1} />}
+                    clearIconComponent={<AntDesign name="close" size={20} color={Colors.theme1} />}
+                />
             </View>
         </SafeAreaView>
     );

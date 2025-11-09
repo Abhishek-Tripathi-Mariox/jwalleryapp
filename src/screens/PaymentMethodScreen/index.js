@@ -4,6 +4,7 @@ import styles from './styles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { AppImages } from '../../constants/app.image';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { Colors } from '../../themes/Colors';
 
 const wallets = [
   {
@@ -77,7 +78,7 @@ export default function PaymentMethodScreen({ navigation }) {
         <Text style={styles.sectionTitle}>Wallet</Text>
         {wallets.map((wallet, idx) => (
           <View key={wallet.name} style={styles.walletBox}>
-            <Ionicons name="wallet-outline" size={32} color="#FF6F61" style={styles.walletLogo} />
+            <Ionicons name="wallet-outline" size={32} color={Colors.theme1} style={styles.walletLogo} />
             <Text style={styles.walletName}>{wallet.name}</Text>
           </View>
         ))}
@@ -91,7 +92,7 @@ export default function PaymentMethodScreen({ navigation }) {
         </View>
         {cards.map(card => (
           <View key={card.id} style={styles.cardBox}>
-            <Ionicons name="card-outline" size={34} color="#FF6F61" style={styles.cardLogo} />
+            <Ionicons name="card-outline" size={34} color={Colors.theme1} style={styles.cardLogo} />
             <View style={{ flex: 1 }}>
               <Text style={styles.cardType}>{card.type}</Text>
               <Text style={styles.cardHolder}>{card.holder}</Text>

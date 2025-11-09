@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { Colors } from '../../themes/Colors';
 
 const AppliedCouponModal = ({ visible, onClose, code = 'CITINEW', amount = 100 }) => (
   <Modal
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   okBtnText: {
-    color: '#F45C5C',
+    color: Colors.theme1,
     fontWeight: 'bold',
     fontSize: 18,
     textAlign: 'center',

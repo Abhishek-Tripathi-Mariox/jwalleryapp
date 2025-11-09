@@ -27,6 +27,15 @@ const Dashboard = (props) => {
   const navigation = props.navigation
   const [modalVisible, setModalVisible] = useState(false);
 
+  // State for search bar
+  const [searchText, setSearchText] = useState('');
+
+  // Example search handler
+  const handleSearch = (text) => {
+    setSearchText(text);
+    // Add your search logic here (e.g., filter data, call API, etc.)
+  };
+
 
   const DailyServiceCard = (props) => {
     return (
@@ -138,14 +147,22 @@ const Dashboard = (props) => {
                   <Image source={AppIcons.WALLET || AppImages.gift} style={{ width: 23, height: 23, marginRight: 4 }} />
                   <Text style={{ color: Colors.THEMECOLOR, fontWeight: 'bold' }}>₹ 50</Text>
                 </View>
-                <TouchableOpacity>
-                  <View style={{ height: 40, width: 40, borderRadius: 50, backgroundColor: Colors.WHITE, justifyContent: 'center', alignItems: 'center' }}>
-                    <Image source={AppImages.Vector1} style={{ width: 40, height: 40, tintColor: Colors.PINK }} />
+                <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
+                  <View
+                    style={{ height: 40, width: 40, borderRadius: 50, backgroundColor: Colors.WHITE, justifyContent: 'center', alignItems: 'center' }}>
+                    <Image
+                      source={AppImages.Vector1} style={{ width: 40, height: 40, tintColor: Colors.PINK }} />
                   </View>
                 </TouchableOpacity>
               </View>
             </View>
-            <Search />
+            <Search
+              value={searchText}
+              onChangeText={setSearchText}
+              onSearchPress={() => {
+                console.log('Searching for:', searchText);
+              }}
+            />
             <View
               style={{
                 height: 150,
@@ -266,10 +283,10 @@ const Dashboard = (props) => {
             <TouchableOpacity
               style={{
                 flex: 1,
-                backgroundColor: '#F36B56', // red-orange background
+                backgroundColor: Colors.theme1, // red-orange background
                 borderRadius: 16,
                 borderWidth: 1,
-                borderColor: '#F36B56',
+                borderColor: Colors.themeborder,
                 height: 70,
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -283,7 +300,7 @@ const Dashboard = (props) => {
               />
               <Text
                 style={{
-                  color: '#FFFFFF',
+                  color: Colors.WHITE1,
                   fontWeight: 'bold',
                   fontSize: 15,
                 }}>
@@ -298,7 +315,7 @@ const Dashboard = (props) => {
                 backgroundColor: '#FFFFFF',
                 borderRadius: 16,
                 borderWidth: 1,
-                borderColor: '#E2E2E2',
+                borderColor: Colors.GRAY9,
                 height: 70,
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -309,6 +326,7 @@ const Dashboard = (props) => {
                 shadowRadius: 3,
                 shadowOffset: { width: 0, height: 1 },
                 elevation: 2, // for Android shadow
+
               }}>
               <Image
                 source={AppImages.grocery}
@@ -317,9 +335,9 @@ const Dashboard = (props) => {
               />
               <Text
                 style={{
-                  color: '#333333',
+                  color: Colors.BLACK3,
                   fontWeight: 'bold',
-                  fontSize: 15,
+                  fontSize: 16,
                 }}>
                 Grocery Shop
               </Text>
@@ -330,12 +348,12 @@ const Dashboard = (props) => {
           {/* Shops Near You Section */}
           <View style={{ marginTop: 18, marginBottom: 8 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2, paddingHorizontal: 2 }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 17 }}>Shops Near You</Text>
+              <Text style={{ color: Colors.BLACK2, fontWeight: '600', fontSize: 18 }}>Shops Near You</Text>
               <TouchableOpacity>
-                <Text style={{ color: '#FF6F00', fontWeight: 'bold', fontSize: 14 }}>View All</Text>
+                <Text style={{ color: Colors.BLACK2, fontWeight: 'bold', fontSize: 13 }}>View All</Text>
               </TouchableOpacity>
             </View>
-            <Text style={{ color: '#888', fontSize: 13, marginBottom: 8, paddingHorizontal: 2 }}>
+            <Text style={{ color: Colors.BLACK4, fontSize: 12, marginBottom: 8, paddingHorizontal: 2 }}>
               Verified local sellers delivering in under 30 mins
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -372,13 +390,14 @@ const Dashboard = (props) => {
                 <View style={{ flex: 1, width: '70%' }}>
                   {/* Shop name + verified */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 17, color: Colors.BLACK2 }}>Gupta Garments</Text>
-                    <Text style={{ color: '#2ecc71', fontSize: 16, marginLeft: 4 }}>✔</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 18, color: Colors.BLACK2 }}>Gupta Garments</Text>
+                    <Text style={{ color: '#2ecc71', fontSize: 18, marginLeft: 4 }}>✔</Text>
                   </View>
 
                   {/* Distance + Rating */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                    <Text style={{ color: '#6E6E6E', fontSize: 12 }}>📍 12 km</Text>
+                    <Image source={AppImages.location} style={{ height: 12, width: 12, marginTop: 2 }} />
+                    <Text style={{ color: '#6E6E6E', fontSize: 12 }}> 12 km</Text>
                     <Text style={{ color: '#6E6E6E', fontSize: 12, marginLeft: 8 }}>⭐ 4.5 (By 200+)</Text>
                   </View>
 
@@ -416,31 +435,31 @@ const Dashboard = (props) => {
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View
                       style={{
-                        // backgroundColor: '#FFF3F0',
+                        backgroundColor: '#fff',
                         paddingHorizontal: 0,
                         paddingVertical: 2,
                         borderRadius: 15,
                         marginRight: 4,
                         borderWidth: 1,
-                        borderColor: '#F36B56',
+                        borderColor: Colors.theme1,
                         width: '30%',
                         height: 32
                       }}>
                       <Text
                         style={{
-                          fontSize: 8,
+                          fontSize: 7,
                           color: Colors.BLACK,
                           fontWeight: 'bold',
-                          textAlign: 'center'
+                          textAlign: 'center',
                         }}>
                         Added New
                       </Text>
                       <Text
                         style={{
-                          fontSize: 12,
+                          fontSize: 11,
                           color: Colors.BLACK,
                           fontWeight: 'bold',
-                          textAlign: 'center'
+                          textAlign: 'center',
                         }}>
                         14 items
                       </Text>
@@ -449,8 +468,8 @@ const Dashboard = (props) => {
                     <TouchableOpacity
                       style={{
                         backgroundColor: '#fff',
-                        borderColor: '#FF6F00',
-                        borderWidth: 1.5,
+                        borderColor: Colors.theme1,
+                        borderWidth: 1,
                         borderRadius: 16,
                         paddingHorizontal: 10,
                         paddingVertical: 6,
@@ -501,13 +520,14 @@ const Dashboard = (props) => {
                 <View style={{ flex: 1, width: '70%' }}>
                   {/* Shop name + verified */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 17, color: Colors.BLACK2 }}>Gupta Garments</Text>
-                    <Text style={{ color: '#2ecc71', fontSize: 16, marginLeft: 4 }}>✔</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: 18, color: Colors.BLACK2 }}>Gupta Garments</Text>
+                    <Text style={{ color: '#2ecc71', fontSize: 18, marginLeft: 4 }}>✔</Text>
                   </View>
 
                   {/* Distance + Rating */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                    <Text style={{ color: '#6E6E6E', fontSize: 12 }}>📍 12 km</Text>
+                    <Image source={AppImages.location} style={{ height: 12, width: 12, marginTop: 2 }} />
+                    <Text style={{ color: '#6E6E6E', fontSize: 12 }}> 12 km</Text>
                     <Text style={{ color: '#6E6E6E', fontSize: 12, marginLeft: 8 }}>⭐ 4.5 (By 200+)</Text>
                   </View>
 
@@ -545,31 +565,31 @@ const Dashboard = (props) => {
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View
                       style={{
-                        // backgroundColor: '#FFF3F0',
+                        backgroundColor: '#fff',
                         paddingHorizontal: 0,
                         paddingVertical: 2,
                         borderRadius: 15,
                         marginRight: 4,
                         borderWidth: 1,
-                        borderColor: '#F36B56',
+                        borderColor: Colors.theme1,
                         width: '30%',
                         height: 32
                       }}>
                       <Text
                         style={{
-                          fontSize: 8,
+                          fontSize: 7,
                           color: Colors.BLACK,
                           fontWeight: 'bold',
-                          textAlign: 'center'
+                          textAlign: 'center',
                         }}>
                         Added New
                       </Text>
                       <Text
                         style={{
-                          fontSize: 12,
+                          fontSize: 11,
                           color: Colors.BLACK,
                           fontWeight: 'bold',
-                          textAlign: 'center'
+                          textAlign: 'center',
                         }}>
                         14 items
                       </Text>
@@ -578,8 +598,8 @@ const Dashboard = (props) => {
                     <TouchableOpacity
                       style={{
                         backgroundColor: '#fff',
-                        borderColor: '#FF6F00',
-                        borderWidth: 1.5,
+                        borderColor: Colors.theme1,
+                        borderWidth: 1,
                         borderRadius: 16,
                         paddingHorizontal: 10,
                         paddingVertical: 6,
@@ -602,7 +622,13 @@ const Dashboard = (props) => {
           </View>
           {/* End Shops Near You Section */}
           {/* Discount Section */}
-          <View style={{ marginTop: 18, marginBottom: 8 }}>
+          <View style={{
+            backgroundColor: '#fff',
+            padding: 4,
+            justifyContent: 'space-between',
+            gap: 0,
+            width: '100%', marginTop: 8, marginBottom: 10
+          }}>
             <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>Save up to 50% + Extra Discount</Text>
             <View
               style={{
@@ -784,8 +810,15 @@ const Dashboard = (props) => {
           {/* End Discount Section */}
 
           {/* hfgh */}
-          <View>
-            <Text style={{ fontWeight: 'bold', fontSize: 17 }}>Popular Brand</Text>
+          <View style={{
+            backgroundColor: '#fff',
+            padding: 4,
+            justifyContent: 'space-between',
+            gap: 0,
+            width: '100%',
+            marginLeft: 5
+          }}>
+            <Text style={{ fontWeight: 'bold', fontSize: 18, padding: 3 }}>Popular Brand</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
 
               <View style={styles.brandB}>
@@ -824,6 +857,35 @@ const Dashboard = (props) => {
 
 
 
+          {/* Promo Codes for More Savings Section */}
+          <View style={{ backgroundColor: '#fff', padding: 8, marginTop: 12,  marginBottom: 15 }}>
+            <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 10, color: '#222' }}>
+              Promo Codes for More Savings
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View>
+                <Image source={AppImages.promo1} style={{ height: 80, width: 177, resizeMode: 'contain' }} />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 9, color: '#000000', fontWeight: 'bold' }}>valid till 31 Oct 2025</Text>
+                  <Text style={{ fontSize: 9, color: '#6466FD', }}>Know more</Text>
+                </View>
+              </View>
+              <View>
+                <Image source={AppImages.promo2} style={{ height: 80, width: 177, resizeMode: 'contain' }} />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 9, color: '#000000', fontWeight: 'bold' }}>valid till 31 Oct 2025</Text>
+                  <Text style={{ fontSize: 9, color: '#6466FD', }}>Know more</Text>
+                </View>
+              </View>
+              <View>
+                <Image source={AppImages.promo1} style={{ height: 80, width: 177, resizeMode: 'contain' }} />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 9, color: '#000000', fontWeight: 'bold' }}>valid till 31 Oct 2025</Text>
+                  <Text style={{ fontSize: 9, color: '#6466FD', }}>Know more</Text>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
         </View>
 
       </ScrollView>

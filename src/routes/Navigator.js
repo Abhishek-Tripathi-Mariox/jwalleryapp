@@ -91,6 +91,11 @@ const Navigator = () => {
           component={AppScreens.OrderTrackingScreen}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="DressDetailScreen"
+          component={AppScreens.DressDetailScreen}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

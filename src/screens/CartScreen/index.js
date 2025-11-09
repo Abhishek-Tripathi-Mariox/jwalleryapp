@@ -6,8 +6,9 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { AppImages } from '../../constants/app.image';
 import PromoModal from './PromoModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors } from '../../themes/Colors';
 
-const THEME_COLOR = '#F45C5C';
+const THEME_COLOR = Colors.theme1;
 
 const cartItems = [
   {

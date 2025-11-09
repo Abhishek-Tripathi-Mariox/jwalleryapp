@@ -16,7 +16,7 @@ import MyProfileScreen from '../screens/MyProfileScreen';
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get('window');
 
-const TAB_BG_COLOR = '#FF6F61';
+const TAB_BG_COLOR = "rgba(255, 96, 81, 1)";
 const ICON_SIZE = 25;
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {

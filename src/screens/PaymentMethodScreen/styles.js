@@ -1,7 +1,7 @@
 import { StyleSheet, Platform } from 'react-native';
 import { Colors } from '../../themes/Colors';
 
-const TAB_BG_COLOR = '#FF6F61';
+const TAB_BG_COLOR = Colors.theme1;
 
 export default StyleSheet.create({
   container: {

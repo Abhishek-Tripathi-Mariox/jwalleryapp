@@ -6,7 +6,7 @@ import { Colors } from '../../themes/Colors';
 import { Image } from 'react-native/';
 import { AppImages } from '../../constants/app.image';
 
-const THEME_COLOR = '#FF6F61';
+const THEME_COLOR = Colors.theme1;
 
 const sectors = ['Sector 76', 'Sector 33', 'Sector 18', 'Sector 15'];
 const cities = ['Noida', 'Delhi', 'Gurgaon'];

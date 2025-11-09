@@ -4,9 +4,10 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AddAddressScreen from '../AddAddressScreen/index';
+import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
-const THEME_COLOR = '#FF6F61';
+const THEME_COLOR = Colors.theme1;
 
 const addresses = [
   {
@@ -55,10 +56,10 @@ const SavedAddressScreen = ({ navigation }) => {
         <Text style={styles.headerTitle}>Saved Address</Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.iconButton}>
-            <AntDesign name="hearto" size={22} color="#fff" />
+            <AntDesign name="hearto" size={20} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
-            <Feather name="search" size={22} color="#fff" />
+            <Feather name="search" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
@@ -76,7 +77,7 @@ const SavedAddressScreen = ({ navigation }) => {
               <View style={styles.radioCol}>
                 <AntDesign
                   name={item.selected ? 'checkcircle' : 'circledowno'}
-                  size={22}
+                  size={19}
                   color={item.selected ? THEME_COLOR : '#bbb'}
                 />
               </View>
@@ -134,9 +135,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     color: '#fff',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 16,
+    marginLeft: 10,
   },
   headerIcons: {
     flexDirection: 'row',
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   addressLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#222',
     marginBottom: 2,
@@ -185,14 +186,14 @@ const styles = StyleSheet.create({
     color: THEME_COLOR,
   },
   addressText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#444',
     marginBottom: 2,
   },
   changeText: {
     color: THEME_COLOR,
     fontWeight: 'bold',
-    fontSize: 15,
+    fontSize: 14,
     marginLeft: 12,
     marginTop: 2,
   },

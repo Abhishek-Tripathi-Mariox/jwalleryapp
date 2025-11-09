@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions }
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Svg, Path, G, Defs, Rect, ClipPath } from 'react-native-svg';
 import { AppImages } from '../../constants/app.image';
+import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -57,8 +58,7 @@ const products = [
   },
 ];
 
-const THEME_COLOR = '#FF6F61';
-
+const THEME_COLOR = Colors.theme1;
 const WishlistScreen = ({ navigation }) => (
   <View style={styles.container}>
     {/* Header */}
