@@ -1,9 +1,7 @@
 // app.screens.js (or app.screens.ts)
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginOTPScreen';  // Import the actual component
-import ServicesScreen from '../screens/ServicesScreen';
 import MyBottomTabs from '../routes/MyBottomTabs';
-import ServiceItemScreen from '../screens/ServiceItemScreen';
 import AmountDtlsScreen from '../screens/AmountDtlsScreen';
 import LandingScreen from '../screens/LandingScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
@@ -21,8 +19,6 @@ export const AppScreens = {
   SplashScreen,
   LoginScreen,
   MyBottomTabs,
-  ServicesScreen,
-  ServiceItemScreen,
   AmountDtlsScreen,
   LandingScreen,
   MyProfileScreen,

@@ -27,11 +27,6 @@ const Navigator = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="ServiceItemScreen"
-          component={AppScreens.ServiceItemScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
           name="AmountDtlsScreen"
           component={AppScreens.AmountDtlsScreen}
           options={{ headerShown: false }}

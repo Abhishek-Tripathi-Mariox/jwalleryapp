@@ -8,8 +8,8 @@ import { Colors } from '../../themes/Colors';
 const { height } = Dimensions.get('window');
 
 const user = {
-  name: 'Sunie Pham',
-  email: 'sunieux@gmail.com',
+  name: 'Hey User',
+  email: '',
   avatar: require('../../assets/images/profile.jpeg'), // Replace with your avatar asset
 };
 

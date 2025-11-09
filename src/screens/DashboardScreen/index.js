@@ -16,6 +16,8 @@ import Search from '../../components/Header/Search';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchUserProfile } from '../../utils/userProfile';
 
+import { getTokenStorage } from '../../utils/tokenStorage';
+
 const Dashboard = (props) => {
   const navigation = props.navigation
   const [userProfile, setUserProfile] = useState(null);
@@ -34,6 +36,15 @@ const Dashboard = (props) => {
     };
     getProfile();
   }, []);
+
+  const handleProfilePress = async () => {
+    const token = await getTokenStorage();
+    if (token) {
+      navigation.navigate('ProfileScreen');
+    } else {
+      navigation.navigate('Login');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.sectionContainer}>
@@ -88,7 +99,9 @@ const Dashboard = (props) => {
                   <Image source={AppIcons.WALLET || AppImages.gift} style={{ width: 23, height: 23, marginRight: 4 }} />
                   <Text style={{ color: Colors.THEMECOLOR, fontWeight: 'bold' }}>₹ 50</Text>
                 </View>
-                <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
+                <TouchableOpacity
+                  onPress={handleProfilePress}
+                >
                   <View
                     style={{ height: 40, width: 40, borderRadius: 50, backgroundColor: Colors.WHITE, justifyContent: 'center', alignItems: 'center' }}>
                     <Image
