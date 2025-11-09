@@ -1,60 +1,104 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, TextInput } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
+import { updateUserProfile } from '../../utils/userProfile';
+import { showToast } from '../../utils/toast';
 
 const { width } = Dimensions.get('window');
 const THEME_COLOR = '#FF6F61';
 
-const ProfileSettingScreen = ({ navigation }) => (
-    <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-                <AntDesign name="arrowleft" size={24} color="#fff" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Profile Setting</Text>
-            <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.content}>
-            {/* Avatar */}
-            <View style={styles.avatarContainer}>
-                <Image source={require('../../assets/images/profile.jpeg')} style={styles.avatar} />
-                <TouchableOpacity style={styles.cameraIcon}>
-                    <Feather name="camera" size={24} color="#fff" />
-                </TouchableOpacity>
-            </View>
-            {/* Form */}
-            <View style={styles.formRow}>
-                <View style={styles.formField}>
-                    <Text style={styles.label}>First Name</Text>
-                    <TextInput style={styles.input} value="Sunie" editable={false} />
-                </View>
-                <View style={styles.formField}>
-                    <Text style={styles.label}>Last Name</Text>
-                    <TextInput style={styles.input} value="Pham" editable={false} />
-                </View>
-                <View style={styles.formField}>
-                    <Text style={styles.label}>Email</Text>
-                    <TextInput style={styles.input} value="sunieux@gmail.com" editable={false} />
-                </View>
-                <View style={styles.formField}>
-                    <Text style={styles.label}>Gender</Text>
-                    <TextInput style={styles.input} value="Female" editable={false} />
-                </View>
-                <View style={styles.formField}>
-                    <Text style={styles.label}>Phone</Text>
-                    <TextInput style={styles.input} value="(+1) 23456789" editable={false} />
-                </View>
-            </View>
-    
-        </View>
-            <TouchableOpacity style={styles.saveButton}>
-                <Text style={styles.saveButtonText}>Save change</Text>
-            </TouchableOpacity>
-    </View>
-);
+const ProfileSettingScreen = ({ navigation }) => {
+    // Form state
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [gender, setGender] = useState('');
+    const [phone, setPhone] = useState('');
+    const [loading, setLoading] = useState(false);
 
+    const handleSave = async () => {
+        setLoading(true);
+        const profileData = {
+            fullName,
+            email,
+            gender,
+            phone,
+        };
+        const result = await updateUserProfile(profileData);
+        setLoading(false);
+        if (result.success) {
+            showToast(result.message, 'success');
+        } else {
+            showToast(result.message, 'error');
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            {/* Header */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <AntDesign name="arrowleft" size={24} color="#fff" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Profile Setting</Text>
+                <View style={{ width: 24 }} />
+            </View>
+            <View style={styles.content}>
+                {/* Avatar */}
+                <View style={styles.avatarContainer}>
+                    <Image source={require('../../assets/images/profile.jpeg')} style={styles.avatar} />
+                    <TouchableOpacity style={styles.cameraIcon}>
+                        <Feather name="camera" size={24} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+                {/* Form */}
+                <View style={styles.formRow}>
+                    <View style={styles.formField}>
+                        <Text style={styles.label}>Full Name</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={fullName}
+                            onChangeText={setFullName}
+                            placeholder="Enter your name"
+                        />
+                    </View>
+                    <View style={styles.formField}>
+                        <Text style={styles.label}>Email</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={email}
+                            onChangeText={setEmail}
+                            placeholder="Enter your email"
+                            keyboardType="email-address"
+                        />
+                    </View>
+                    <View style={styles.formField}>
+                        <Text style={styles.label}>Gender</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={gender}
+                            onChangeText={setGender}
+                            placeholder="Enter your gender"
+                        />
+                    </View>
+                    <View style={styles.formField}>
+                        <Text style={styles.label}>Phone</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={phone}
+                            onChangeText={setPhone}
+                            editable={false}
+                            placeholder="Phone (not editable)"
+                        />
+                    </View>
+                </View>
+            </View>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={loading}>
+                <Text style={styles.saveButtonText}>{loading ? 'Saving...' : 'Save change'}</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
 const styles = StyleSheet.create({
     container: {
         flex: 1,

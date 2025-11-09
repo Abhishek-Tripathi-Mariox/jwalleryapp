@@ -1,22 +1,43 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import { Color } from 'react-native/types_generated/Libraries/Animated/AnimatedExports';
 import { Colors } from '../../themes/Colors';
-import { Image } from 'react-native/';
-import { AppImages } from '../../constants/app.image';
 
 const THEME_COLOR = Colors.theme1;
 
-const sectors = ['Sector 76', 'Sector 33', 'Sector 18', 'Sector 15'];
-const cities = ['Noida', 'Delhi', 'Gurgaon'];
-
+import { addUserAddress } from '../../utils/userAddress';
+import { showToast } from '../../utils/toast';
 const tags = ['Home', 'Work', 'Hotel', 'Others'];
 
 const AddAddressScreen = ({ visible, onClose, navigation }) => {
     const [selectedSector, setSelectedSector] = useState('');
     const [selectedCity, setSelectedCity] = useState('Noida');
     const [selectedTag, setSelectedTag] = useState('Work');
+    const [fullName, setFullName] = useState('');
+    const [mobile, setMobile] = useState('');
+    const [address, setAddress] = useState('');
+    const [houseNo, setHouseNo] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSave = async () => {
+        setLoading(true);
+        const addressData = {
+            fullName,
+            city: selectedCity,
+            state: 'Uttar Pradesh', // You can make this dynamic if needed
+            mobile,
+            pinCode: 226010, // You can make this dynamic if needed
+            address: `${address}, ${houseNo}, ${selectedSector}`,
+            addressType: selectedTag,
+        };
+        const result = await addUserAddress(addressData);
+        setLoading(false);
+        showToast(result.message, result.success ? 'success' : 'error');
+        if (result.success) {
+            onClose();
+            if (navigation) navigation();
+        }
+    };
 
     return (
         <Modal visible={visible} animationType="slide" transparent>
@@ -29,19 +50,25 @@ const AddAddressScreen = ({ visible, onClose, navigation }) => {
                         </TouchableOpacity>
                     </View>
                     <ScrollView showsVerticalScrollIndicator={false}>
-                        <TextInput style={styles.input} placeholder="Full Name*" placeholderTextColor="#B0B0B0" />
-                        <TextInput style={styles.input} placeholder="Contect Number*" placeholderTextColor="#B0B0B0" keyboardType="phone-pad" />
-                        <TextInput style={styles.input} placeholder="Write your society & other address*" placeholderTextColor="#B0B0B0" />
-                        <TextInput style={styles.input} placeholder="House / Office No. / Floor*" placeholderTextColor="#B0B0B0" />
+                        <TextInput style={styles.input} placeholder="Full Name*" placeholderTextColor="#B0B0B0" value={fullName} onChangeText={setFullName} />
+                        <TextInput style={styles.input} placeholder="Contact Number*" placeholderTextColor="#B0B0B0" keyboardType="phone-pad" value={mobile} onChangeText={setMobile} />
+                        <TextInput style={styles.input} placeholder="Write your society & other address*" placeholderTextColor="#B0B0B0" value={address} onChangeText={setAddress} />
+                        <TextInput style={styles.input} placeholder="House / Office No. / Floor*" placeholderTextColor="#B0B0B0" value={houseNo} onChangeText={setHouseNo} />
                         <View style={styles.row}>
-                            <TouchableOpacity style={styles.dropdown}>
-                                <Text style={styles.dropdownText}>{selectedSector || 'Select Sector*'}</Text>
-                                <AntDesign name="down" size={16} color="#B0B0B0" />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.dropdown}>
-                                <Text style={styles.dropdownText}>{selectedCity}</Text>
-                                <AntDesign name="down" size={16} color="#B0B0B0" />
-                            </TouchableOpacity>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Area*"
+                                placeholderTextColor="#B0B0B0"
+                                value={selectedSector}
+                                onChangeText={setSelectedSector}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="City*"
+                                placeholderTextColor="#B0B0B0"
+                                value={selectedCity}
+                                onChangeText={setSelectedCity}
+                            />
                         </View>
                         <Text style={styles.tagLabel}>Tag this location for latter*</Text>
                         <View style={styles.tagRow}>
@@ -61,16 +88,18 @@ const AddAddressScreen = ({ visible, onClose, navigation }) => {
                                 </TouchableOpacity>
                             ))}
                         </View>
-                        <Text style={styles.infoTitle}>We serve only in these Location</Text>
+                        <Text style={styles.infoTitle}>Address Preview</Text>
                         <View style={styles.infoBox}>
-
                             <Text style={styles.infoText}>
-                                Sec 76, Noida, Sector 33, Noida, Sector 18 Noida, Sec 15, Noida, Sec 76, Noida & Sector 33, Noida.
+                                {address ? `Address: ${address}` : 'Address not entered yet.'}
+                            </Text>
+                            <Text style={styles.infoText}>
+                                {houseNo ? `House/Office No.: ${houseNo}` : 'House/Office No. not entered yet.'}
                             </Text>
                             <Text style={styles.infoSoon}>We will reach you soon!</Text>
                         </View>
-                        <TouchableOpacity style={styles.saveBtn} onPress={()=> {onClose(); navigation()}}>
-                            <Text style={styles.saveBtnText}>Save & Continue</Text>
+                        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={loading}>
+                            <Text style={styles.saveBtnText}>{loading ? 'Saving...' : 'Save & Continue'}</Text>
                         </TouchableOpacity>
                     </ScrollView>
                 </View>
