@@ -5,7 +5,6 @@ import ServicesScreen from '../screens/ServicesScreen';
 import MyBottomTabs from '../routes/MyBottomTabs';
 import ServiceItemScreen from '../screens/ServiceItemScreen';
 import AmountDtlsScreen from '../screens/AmountDtlsScreen';
-import AddressDtlsScreen from '../screens/AddressDtlsScreen';
 import LandingScreen from '../screens/LandingScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
 import WishlistScreen from '../screens/WishlistScreen';
@@ -25,7 +24,6 @@ export const AppScreens = {
   ServicesScreen,
   ServiceItemScreen,
   AmountDtlsScreen,
-  AddressDtlsScreen,
   LandingScreen,
   MyProfileScreen,
   WishlistScreen,

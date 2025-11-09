@@ -9,42 +9,54 @@ import { Colors } from '../../themes/Colors';
 const { width } = Dimensions.get('window');
 const THEME_COLOR = Colors.theme1;
 
-const addresses = [
-  {
-    id: '1',
-    label: 'Delivery at (Home)',
-    address: '555, FG, La Plaza, Abhay Khand, Indra Puram, Ghaziabad, U.P. 201310.',
-    phone: '+91 8766 346 545',
-    selected: true,
-    change: true,
-  },
-  {
-    id: '2',
-    label: 'Mlthu (Home)',
-    address: '555, FG, La Plaza, Abhay Khand, Ghaziabad, U.P. 201310.',
-    phone: '+91 8178496252',
-    selected: false,
-  },
-  {
-    id: '3',
-    label: 'Mlthu (Office)',
-    address: '555, FG, La Plaza, Abhay Khand, Ghaziabad, U.P. 201310.',
-    phone: '+91 8178496252',
-    selected: false,
-    radioColor: THEME_COLOR,
-  },
-  {
-    id: '4',
-    label: 'Mlthu (Other)',
-    address: '555, FG, La Plaza, Abhay Khand, Ghaziabad, U.P. 201310.',
-    phone: '+91 8178496252',
-    selected: false,
-    radioColor: '#bbb',
-  },
-];
+import { useEffect } from 'react';
+import { listUserAddresses, selectUserAddress, deleteUserAddress, addUserAddress } from '../../utils/userAddress';
+import { showToast } from '../../utils/toast';
 
 const SavedAddressScreen = ({ navigation }) => {
   const [showAddAddress, setShowAddAddress] = useState(false);
+  const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // To avoid hook order issues, define all hooks at the top level, not conditionally.
+
+  useEffect(() => {
+    fetchAddresses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function fetchAddresses() {
+    setLoading(true);
+    const result = await listUserAddresses();
+    setLoading(false);
+    if (result.success) {
+      setAddresses(result.addresses);
+    } else {
+      showToast(result.message, 'error');
+    }
+  }
+
+  async function handleSelect(addressId) {
+    setLoading(true);
+    const result = await selectUserAddress(addressId);
+    setLoading(false);
+    showToast(result.message, result.success ? 'success' : 'error');
+    if (result.success) fetchAddresses();
+  }
+
+  async function handleDelete(addressId) {
+    setLoading(true);
+    const result = await deleteUserAddress(addressId);
+    setLoading(false);
+    showToast(result.message, result.success ? 'success' : 'error');
+    if (result.success) fetchAddresses();
+  }
+
+  // Placeholder for edit functionality
+  function handleEdit(address) {
+    setShowAddAddress(true);
+    // Pass address data to AddAddressScreen as needed
+  }
 
   return (
     <View style={styles.container}>
@@ -64,42 +76,51 @@ const SavedAddressScreen = ({ navigation }) => {
         </View>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {addresses.map((item, idx) => (
+        {loading && <Text>Loading...</Text>}
+        {!loading && addresses.length === 0 && (
+          <Text style={{ color: '#888', marginTop: 20 }}>No addresses found.</Text>
+        )}
+        {!loading && addresses.map((item, idx) => (
           <View
-            key={item.id}
+            key={item._id}
             style={[
               styles.addressCard,
-              item.selected && styles.selectedCard,
+              item.isSelected && styles.selectedCard,
               idx === 0 && { borderColor: THEME_COLOR, borderWidth: 1.5 },
             ]}
           >
             <View style={styles.addressRow}>
               <View style={styles.radioCol}>
                 <AntDesign
-                  name={item.selected ? 'checkcircle' : 'circledowno'}
+                  name={item.isSelected ? 'checkcircle' : 'circledowno'}
                   size={19}
-                  color={item.selected ? THEME_COLOR : '#bbb'}
+                  color={item.isSelected ? THEME_COLOR : '#bbb'}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.addressLabel, item.selected && styles.selectedLabel]}>
-                  {item.label}
+                <Text style={[styles.addressLabel, item.isSelected && styles.selectedLabel]}>
+                  {item.fullName}
                 </Text>
                 <Text style={styles.addressText}>{item.address}</Text>
+                <Text style={styles.addressText}>{item.city}, {item.state} - {item.pinCode}</Text>
                 <Text style={styles.addressText}>{item.phone}</Text>
+                <Text style={styles.addressText}>Type: {item.addressType}</Text>
               </View>
-              {item.selected && (
+              {item.isSelected && (
                 <TouchableOpacity>
                   <Text style={styles.changeText}>Change</Text>
                 </TouchableOpacity>
               )}
-              {!item.selected && (
+              {!item.isSelected && (
                 <View style={styles.actionIcons}>
-                  <TouchableOpacity style={styles.iconBtn}>
+                  <TouchableOpacity style={styles.iconBtn} onPress={() => handleEdit(item)}>
                     <Feather name="edit" size={20} color={THEME_COLOR} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconBtn}>
+                  <TouchableOpacity style={styles.iconBtn} onPress={() => handleDelete(item._id)}>
                     <MaterialIcons name="delete-outline" size={22} color={THEME_COLOR} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconBtn} onPress={() => handleSelect(item._id)}>
+                    <AntDesign name="checkcircle" size={20} color={THEME_COLOR} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -111,7 +132,15 @@ const SavedAddressScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.addBtn} onPress={() => setShowAddAddress(true)}>
         <Text style={styles.addBtnText}>Add New Address</Text>
       </TouchableOpacity>
-      <AddAddressScreen visible={showAddAddress} onClose={() => setShowAddAddress(false)} navigation={()=> navigation.navigate('PaymentMethod')}/>
+      {/* Pass fetchAddresses to AddAddressScreen for refresh after add/edit */}
+      <AddAddressScreen
+        visible={showAddAddress}
+        onClose={() => {
+          setShowAddAddress(false);
+          fetchAddresses();
+        }}
+        navigation={() => navigation.navigate('PaymentMethod')}
+      />
     </View>
   );
 };

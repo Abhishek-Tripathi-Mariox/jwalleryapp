@@ -37,11 +37,6 @@ const Navigator = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="AddressDtlsScreen"
-          component={AppScreens.AddressDtlsScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
           name="Home"
           component={AppScreens.MyBottomTabs}
           options={{ headerShown: false }}
