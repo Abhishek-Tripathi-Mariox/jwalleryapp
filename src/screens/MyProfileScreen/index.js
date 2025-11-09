@@ -1,16 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { Colors } from '../../themes/Colors';
 import { clearStorage } from '../../utils/tokenStorage';
+import { fetchUserProfile } from '../../utils/userProfile';
 
 const { width } = Dimensions.get('window');
 
 const user = {
-  name: 'Hey User',
-  email: '',
   avatar: require('../../assets/images/profile.jpeg'), // Replace with your avatar asset
 };
 
@@ -34,6 +33,22 @@ const MyProfileScreen = ({ navigation }) => {
     }
   };
 
+  const [userProfile, setUserProfile] = useState(null);
+
+  // Fetch user profile on mount
+  useEffect(() => {
+    const getProfile = async () => {
+      const result = await fetchUserProfile();
+      if (result.success) {
+        setUserProfile(result.data);
+      } else {
+        // Optionally show a toast or handle error
+        // showToast(result.message, 'error');
+      }
+    };
+    getProfile();
+  }, []);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -56,8 +71,8 @@ const MyProfileScreen = ({ navigation }) => {
         <View style={styles.profileCard}>
           <Image source={user.avatar} style={styles.avatar} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{user.name}</Text>
-            <Text style={styles.email}>{user.email}</Text>
+            <Text style={styles.name}>{userProfile?.fullName ?? 'Hey User'}</Text>
+            <Text style={styles.email}>{userProfile?.email ?? ''}</Text>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('ProfileSettingScreen')}>
             <Feather name="settings" size={26} color="#222" />

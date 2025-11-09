@@ -1,15 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../themes/Colors';
+import { fetchUserProfile } from '../../utils/userProfile';
 
 const { height } = Dimensions.get('window');
 
 const user = {
-  name: 'Hey User',
-  email: '',
   avatar: require('../../assets/images/profile.jpeg'), // Replace with your avatar asset
 };
 
@@ -26,59 +25,76 @@ const otherMenu = [
   { key: 'about', label: 'About us', icon: <Feather name="info" size={22} color="#7B7B7B" /> },
 ];
 
-const ProfileScreen = ({ navigation }) => (
-  <SafeAreaView style={styles.overlay}>
-    <StatusBar backgroundColor={Colors.theme1} translucent />
-    <View style={styles.sidebar}>
-      {/* User Info */}
-      <View style={styles.userSection}>
-        <Image source={user.avatar} style={styles.avatar} />
-        <View style={{ marginLeft: 12 }}>
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
+const ProfileScreen = ({ navigation }) => {
+  const [userProfile, setUserProfile] = useState(null);
+
+  // Fetch user profile on mount
+  useEffect(() => {
+    const getProfile = async () => {
+      const result = await fetchUserProfile();
+      if (result.success) {
+        setUserProfile(result.data);
+      } else {
+        // Optionally show a toast or handle error
+        // showToast(result.message, 'error');
+      }
+    };
+    getProfile();
+  }, []);
+  return (
+    <SafeAreaView style={styles.overlay}>
+      <StatusBar backgroundColor={Colors.theme1} translucent />
+      <View style={styles.sidebar}>
+        {/* User Info */}
+        <View style={styles.userSection}>
+          <Image source={user.avatar} style={styles.avatar} />
+          <View style={{ marginLeft: 12 }}>
+            <Text style={styles.userName}>{userProfile?.fullName ?? 'Hey User'}</Text>
+            <Text style={styles.userEmail}>{userProfile?.email ?? ''}</Text>
+          </View>
+        </View>
+        {/* Menu */}
+        <View style={styles.menuSection}>
+          {menu.map(item => (
+            <TouchableOpacity
+              key={item.key}
+              style={[styles.menuItem, item.active && styles.menuItemActive]}
+              activeOpacity={0.7}
+              onPress={
+                item.label === 'My profile'
+                  ? () => navigation && navigation.navigate('MyProfile')
+                  : undefined
+              }
+            >
+              <View style={styles.menuIcon}>{item.icon}</View>
+              <Text style={[styles.menuLabel, item.active && styles.menuLabelActive]}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        {/* Other Section */}
+        <Text style={styles.otherLabel}>OTHER</Text>
+        <View style={styles.menuSection}>
+          {otherMenu.map(item => (
+            <TouchableOpacity
+              key={item.key}
+              style={styles.menuItem}
+              activeOpacity={0.7}
+              onPress={
+                item.label === 'My Wishlist'
+                  ? () => navigation && navigation.navigate('Wishlist')
+                  : undefined
+              }
+            >
+              <View style={styles.menuIcon}>{item.icon}</View>
+              <Text style={styles.menuLabel}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
-      {/* Menu */}
-      <View style={styles.menuSection}>
-        {menu.map(item => (
-          <TouchableOpacity
-            key={item.key}
-            style={[styles.menuItem, item.active && styles.menuItemActive]}
-            activeOpacity={0.7}
-            onPress={
-              item.label === 'My profile'
-                ? () => navigation && navigation.navigate('MyProfile')
-                : undefined
-            }
-          >
-            <View style={styles.menuIcon}>{item.icon}</View>
-            <Text style={[styles.menuLabel, item.active && styles.menuLabelActive]}>{item.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      {/* Other Section */}
-      <Text style={styles.otherLabel}>OTHER</Text>
-      <View style={styles.menuSection}>
-        {otherMenu.map(item => (
-          <TouchableOpacity
-            key={item.key}
-            style={styles.menuItem}
-            activeOpacity={0.7}
-            onPress={
-              item.label === 'My Wishlist'
-                ? () => navigation && navigation.navigate('Wishlist')
-                : undefined
-            }
-          >
-            <View style={styles.menuIcon}>{item.icon}</View>
-            <Text style={styles.menuLabel}>{item.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-    {/* The rest of the app is visible in the background */}
-  </SafeAreaView>
-);
+      {/* The rest of the app is visible in the background */}
+    </SafeAreaView>
+  );
+}
 
 const styles = StyleSheet.create({
   overlay: {

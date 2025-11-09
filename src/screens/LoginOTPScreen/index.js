@@ -29,7 +29,7 @@ const LoginScreen = (props) => {
     }
     setLoading(true);
     try {
-      const response = await fetch('/auth/login', {
+      const response = await fetch(API_BASE_URL + '/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ const LoginScreen = (props) => {
     }
     setLoading(true);
     try {
-      const response = await fetch('/auth/verifyOtp', {
+      const response = await fetch(API_BASE_URL + '/auth/verifyOtp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

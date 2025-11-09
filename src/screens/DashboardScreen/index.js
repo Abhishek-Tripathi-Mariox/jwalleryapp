@@ -50,13 +50,13 @@ const Dashboard = (props) => {
     <SafeAreaView style={styles.sectionContainer}>
       <StatusBar backgroundColor={'#fff'} />
       {/* Example: Show user mobile number if available */}
-      {userProfile && (
+      {/* {userProfile && (
         <View style={{ padding: 10, backgroundColor: '#f9f9f9' }}>
           <Text style={{ color: '#333', fontWeight: 'bold' }}>
             Welcome, {userProfile.fullName || userProfile.mobileNumber}
           </Text>
         </View>
-      )}
+      )} */}
       <ScrollView>
 
         <View>
@@ -81,7 +81,7 @@ const Dashboard = (props) => {
                 <Text style={{ color: '#fff', fontSize: 27, fontWeight: 'bold', marginTop: -2 }}>20 minutes</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
                   <Image source={AppIcons.LOCATION || AppImages.cloth} style={{ width: 16, height: 16, tintColor: '#fff' }} />
-                  <Text style={{ color: '#fff', marginLeft: 4, fontSize: 13 }}>HOME - Sultan Bhag, Erragadda</Text>
+                  <Text style={{ color: '#fff', marginLeft: 4, fontSize: 13 }}>{userProfile && userProfile?.address ? userProfile?.address : ''}</Text>
                 </View>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
