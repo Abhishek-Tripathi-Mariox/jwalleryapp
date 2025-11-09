@@ -1,27 +1,98 @@
 import React, { useState, useRef } from 'react';
 import {
-  StatusBar,
-  StyleSheet,
   Text,
   TouchableOpacity,
-  useColorScheme,
   View, TextInput, Image
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { AppImages } from '../../constants/app.image';
 import { styles } from './styles';
-import { Colors } from '../../themes/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { API_BASE_URL } from '../../constants/api';
+import { setTokenStorage } from '../../utils/tokenStorage';
+import { showToast } from '../../utils/toast';
 
 const LoginScreen = (props) => {
   const navigation = props.navigation
-  const isDarkMode = useColorScheme() === 'dark';
-  const [isChecked, setIsChecked] = useState(false);
   const [OTPView, setOTPView] = useState(false)
   const [mobileNum, setMobileNum] = useState('')
-
+  const [txnId, setTxnId] = useState('');
+  const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputs = useRef([]);
+
+  // Function to send OTP
+  const handleSendOtp = async () => {
+    if (!mobileNum || mobileNum.length !== 10) {
+      showToast('Please enter a valid 10-digit mobile number.', 'error');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch('/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          countryCode: '+91',
+          mobileNumber: mobileNum,
+        }),
+      });
+      const data = await response.json();
+      if (data.code === 1) {
+        setTxnId(data.data.txnId);
+        setOTPView(true);
+        showToast(data.message || 'OTP sent to your registered mobile number.', 'success');
+      } else {
+        showToast(data.message || 'Failed to send OTP.', 'error');
+      }
+    } catch (err) {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to verify OTP
+  const handleVerifyOtp = async () => {
+    const enteredOtp = otp.join('');
+    if (enteredOtp.length !== 6) {
+      showToast('Please enter the 6-digit OTP.', 'error');
+      return;
+    }
+    if (!txnId) {
+      showToast('Missing transaction ID. Please request OTP again.', 'error');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch('/auth/verifyOtp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          txnId: txnId,
+          otp: enteredOtp,
+        }),
+      });
+      const data = await response.json();
+      if (data.code === 1) {
+        if (data.data && data.data.token) {
+          await setTokenStorage(data.data.token);
+        }
+        showToast(data.message || 'OTP verified successfully.', 'success');
+        navigation.navigate('Home')
+      } else {
+        showToast(data.message || 'Incorrect OTP, try again!', 'error');
+      }
+    } catch (err) {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChangeText = (text, index) => {
     const newOtp = [...otp];
@@ -40,29 +111,7 @@ const LoginScreen = (props) => {
     }
   };
 
-  const APICall = () => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("Authorization", "Bearer 2b49e06599de3a61761ba62a70334e3f:ZTly8itkXhgscOztDpvowtZaTV1ks03V0FiqS4HQSc5fMpmbr8AXoFey16bPVK/jQuFuUKP5cDHG4JZUJWVo/djvEMQ4q9SOW6jFh6XCNPdskCwtSwPWRqsHMSrW8dM9OKffaY99j4rFh3tUKTjRdnmuch7XD6o4+lanTzYd1uNwvz0u7PhmfQLbj3rXJ+49BVA4aSjTejIrPtkGc3egNwhymCHLQzhZ/jv+b7CTyQ9PeG/ggWbuuqSkAPd6gMLe/hkJdAsHSsdE+iVUpX04yKDGD9Zw50Zzb1HX5CnWHP2OUqn6mT1MKz7/rt5rThRun8MDKF6mcY+EMcf2WOHFDaPLwyXvuBX+7BmznN8tSq8JGnw+zpFedqNkQY6gr4G6cv+L13Hd7bMkRQ+t/JV0S92GujQZipOH/kxPRJjuFtI=");
 
-    const raw = JSON.stringify({
-      "amount": 300,
-      "currency": "INR",
-      "description": "This is the testing payment 1"
-    });
-
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow"
-    };
-
-    fetch("http://13.126.9.67:7250/v1/user/payment", requestOptions)
-      .then((response) => response.text())
-      .then((result) => console.log(result))
-      .catch((error) => console.error(error));
-  }
 
   return (
     <SafeAreaView
@@ -100,7 +149,7 @@ const LoginScreen = (props) => {
 
             <TouchableOpacity
               style={styles.button}
-              onPress={() => navigation.navigate('Home')}>
+              onPress={handleVerifyOtp}>
               <Text style={styles.text}>Verify</Text>
             </TouchableOpacity>
           </>
@@ -135,10 +184,10 @@ const LoginScreen = (props) => {
             </TouchableOpacity> */}
 
             <TouchableOpacity
-              onPress={() => setOTPView(true)}
+              onPress={handleSendOtp}
               style={styles.button}
             >
-              <Text style={styles.text}>Get OTP</Text>
+              <Text style={styles.text}>{loading ? 'Sending...' : 'Get OTP'}</Text>
             </TouchableOpacity>
 
           </>
