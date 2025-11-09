@@ -1,108 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Image,
   ScrollView,
   Text,
   View,
-  Dimensions,
   TouchableOpacity,
-  Modal,
   ImageBackground,
   StatusBar
 } from 'react-native';
-import MainHeader from '../../components/Header/MainHeader';
-import HeadingDiv from '../../components/OptHeading/Heading';
 import { AppIcons } from '../../constants/app.icon';
 import { Colors } from '../../themes/Colors';
 import { styles } from './styles';
-import { AppVideos } from '../../constants/app.video';
 import { AppImages } from '../../constants/app.image';
 import Search from '../../components/Header/Search';
-import PolicyView from '../../components/PolicyContainer/PolicyView';
-import HeadingView from '../../components/OptHeading/HeadingView';
 import { SafeAreaView } from 'react-native-safe-area-context';
-const { width, height } = Dimensions.get('window');
+import { fetchUserProfile } from '../../utils/userProfile';
 
 const Dashboard = (props) => {
   const navigation = props.navigation
-  const [modalVisible, setModalVisible] = useState(false);
-
-  // State for search bar
+  const [userProfile, setUserProfile] = useState(null);
   const [searchText, setSearchText] = useState('');
 
-  // Example search handler
-  const handleSearch = (text) => {
-    setSearchText(text);
-    // Add your search logic here (e.g., filter data, call API, etc.)
-  };
-
-
-  const DailyServiceCard = (props) => {
-    return (
-      <View style={styles.SplCard}>
-        <TouchableOpacity style={styles.roundView} onPress={() => setModalVisible(true)}>
-          <View>
-            <Image
-              source={props.icon}
-              style={[styles.brandIcon, { width: props.width, height: props.height }]}
-            />
-            <Text style={styles.DSlabel}>{props.label}</Text>
-          </View>
-        </TouchableOpacity>
-      </View>)
-  }
-
-  const ServiceCard = ({ label, icon, size }) => {
-    return (
-      <TouchableOpacity
-        onPress={() => navigation.navigate('ServiceItemScreen')}
-        style={styles.serviceCard}>
-        <Image
-          source={icon}
-          style={[styles.brandIcon, { width: size, height: size, elevation: 10 }]}
-        />
-        <Text style={styles.Cardlabel}>{label}</Text>
-      </TouchableOpacity>
-    )
-  }
-
-  const DashboardVideo = (props) => {
-    return (
-      <View style={styles.videoCard}>
-        <View style={styles.imageBackground} />
-        <Image
-          source={props.IMG}
-          style={styles.images}
-        />
-      </View>
-    );
-  };
-
-  const BannerCard = (props) => {
-    return (
-      <View>
-        <Image
-          source={props.IMG}
-          style={styles.bannerImg}
-        />
-      </View>
-
-    );
-  };
-
-  const SubServiceCard = ({ label, icon, size }) => {
-    return (
-      <TouchableOpacity
-        onPress={() => setModalVisible(true)}
-        style={styles.subServiceCard}>
-        <Text style={styles.Cardlabel}>{label}</Text>
-      </TouchableOpacity>
-    )
-  }
+  // Fetch user profile on mount
+  useEffect(() => {
+    const getProfile = async () => {
+      const result = await fetchUserProfile();
+      if (result.success) {
+        setUserProfile(result.data);
+      } else {
+        // Optionally show a toast or handle error
+        // showToast(result.message, 'error');
+      }
+    };
+    getProfile();
+  }, []);
 
   return (
     <SafeAreaView style={styles.sectionContainer}>
       <StatusBar backgroundColor={'#fff'} />
+      {/* Example: Show user mobile number if available */}
+      {userProfile && (
+        <View style={{ padding: 10, backgroundColor: '#f9f9f9' }}>
+          <Text style={{ color: '#333', fontWeight: 'bold' }}>
+            Welcome, {userProfile.fullName || userProfile.mobileNumber}
+          </Text>
+        </View>
+      )}
       <ScrollView>
 
         <View>
@@ -118,11 +61,9 @@ const Dashboard = (props) => {
               justifyContent: 'space-between',
               paddingVertical: 10,
               paddingHorizontal: 9,
-              // backgroundColor: Colors.THEMECOLOR,
               borderTopLeftRadius: 16,
               borderTopRightRadius: 16,
               marginBottom: 2,
-              // width: '90%'
             }}>
               <View>
                 <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Delivery in</Text>
@@ -851,14 +792,9 @@ const Dashboard = (props) => {
 
             </ScrollView>
           </View>
-          {/* bhbhf */}
-
-
-
-
 
           {/* Promo Codes for More Savings Section */}
-          <View style={{ backgroundColor: '#fff', padding: 8, marginTop: 12,  marginBottom: 15 }}>
+          <View style={{ backgroundColor: '#fff', padding: 8, marginTop: 12, marginBottom: 15 }}>
             <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 10, color: '#222' }}>
               Promo Codes for More Savings
             </Text>
@@ -889,46 +825,6 @@ const Dashboard = (props) => {
         </View>
 
       </ScrollView>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContent}>
-            <Text style={[styles.modalText, { fontSize: 22 }]}>Please select Sub Services</Text>
-            <View style={[styles.wrapCard, { marginTop: 10 }]}>
-              <SubServiceCard label={'House cleaning'} icon={"home"} />
-              <SubServiceCard label={'Kitchen cleaning'} icon={"home"} />
-              <SubServiceCard label={'cleaning'} icon={"home"} />
-              <SubServiceCard label={'Cleaning and dusting'} icon={"home"} />
-              <SubServiceCard label={'test'} icon={"home"} />
-              <SubServiceCard label={'House'} icon={"home"} />
-              <SubServiceCard label={'Mopping and cleaning'} icon={"home"} />
-              <SubServiceCard label={'Chopping and cooking'} icon={"home"} />
-              <SubServiceCard label={'House'} icon={"home"} />
-              <SubServiceCard label={'Kitchen cleaning'} icon={"home"} />
-              <SubServiceCard label={'cleaning'} icon={"home"} />
-              <SubServiceCard label={'Cleaning and dusting'} icon={"home"} />
-              <SubServiceCard label={'test'} icon={"home"} />
-              <SubServiceCard label={'House'} icon={"home"} />
-              <SubServiceCard label={'Mopping and cleaning'} icon={"home"} />
-              <SubServiceCard label={'Chopping and cooking'} icon={"home"} />
-              <SubServiceCard label={'House'} icon={"home"} />
-            </View>
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={{ elevation: 10, flexDirection: 'row', justifyContent: 'center', backgroundColor: Colors.THEMECOLOR, width: '46%', borderRadius: 25, paddingVertical: 16, marginTop: height * 0.02 }}>
-              <Text style={{ color: '#ffffff', fontSize: 17, fontWeight: '500', alignSelf: 'center', paddingLeft: width * 0.02 }}>Ok</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-
-
     </SafeAreaView>
   );
 }
