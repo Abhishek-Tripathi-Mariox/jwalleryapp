@@ -11,7 +11,6 @@ import MyProfileScreen from '../screens/MyProfileScreen';
 import WishlistScreen from '../screens/WishlistScreen';
 import SavedAddressScreen from '../screens/SavedAddressScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-
 import DressDetailScreen from '../screens/DressDetailScreen';
 import PaymentMethodScreen from '../screens/PaymentMethodScreen';
 import ProfileSettingScreen from '../screens/ProfileSettingScreen';

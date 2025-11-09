@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -21,7 +22,7 @@ const menu = [
   { key: 'logout', label: 'Log out', icon: <Feather name="log-out" size={22} color="#b0b0b0" /> },
 ];
 
-const THEME_COLOR = '#FF6F61';
+const THEME_COLOR = Colors.theme1;
 
 const MyProfileScreen = ({ navigation }) => (
   <View style={styles.container}>

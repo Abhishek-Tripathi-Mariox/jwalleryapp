@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { Colors } from '../../themes/Colors';
 
 const { height } = Dimensions.get('window');
 
@@ -13,7 +14,6 @@ const user = {
 };
 
 const menu = [
-  { key: 'address', label: 'Address', icon: <Feather name="map-pin" size={22} color="#7B7B7B" /> },
   { key: 'homepage', label: 'Homepage', icon: <AntDesign name="home" size={22} color="#7B7B7B" />, active: true },
   { key: 'discover', label: 'Discover', icon: <Feather name="search" size={22} color="#7B7B7B" /> },
   { key: 'order', label: 'My Order', icon: <Feather name="shopping-bag" size={22} color="#7B7B7B" /> },
@@ -21,14 +21,14 @@ const menu = [
 ];
 
 const otherMenu = [
-  { key: 'wishlist', label: 'My Wishlist', icon: <AntDesign name="hearto" size={22} color="#7B7B7B" /> },
   { key: 'setting', label: 'Setting', icon: <Feather name="settings" size={22} color="#7B7B7B" /> },
   { key: 'support', label: 'Support', icon: <Feather name="mail" size={22} color="#7B7B7B" /> },
   { key: 'about', label: 'About us', icon: <Feather name="info" size={22} color="#7B7B7B" /> },
 ];
 
 const ProfileScreen = ({ navigation }) => (
-  <View style={styles.overlay}>
+  <SafeAreaView style={styles.overlay}>
+    <StatusBar backgroundColor={Colors.theme1} translucent />
     <View style={styles.sidebar}>
       {/* User Info */}
       <View style={styles.userSection}>
@@ -77,7 +77,7 @@ const ProfileScreen = ({ navigation }) => (
       </View>
     </View>
     {/* The rest of the app is visible in the background */}
-  </View>
+  </SafeAreaView>
 );
 
 const styles = StyleSheet.create({
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopRightRadius: 40,
     borderBottomRightRadius: 40,
-    paddingTop: 48,
+    paddingTop: 30,
     paddingHorizontal: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

@@ -6,20 +6,33 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
-import ProfileScreen from '../screens/ProfileScreen';
 import Alert from '../components/Modal/Alert';
 import SearchScreen from '../screens/SearchScreen';
-import OrderScreen from '../screens/OrderScreen';
 import CartScreen from '../screens/CartScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
 
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get('window');
 
-const TAB_BG_COLOR = "rgba(255, 96, 81, 1)";
+const TAB_BG_COLOR = Colors.theme1;
 const ICON_SIZE = 25;
 
+import { getTokenStorage } from '../utils/tokenStorage';
+import { Colors } from '../themes/Colors';
+
 const CustomTabBar = ({ state, descriptors, navigation }) => {
+  // Handler to check token and navigate accordingly
+  const handleTabPress = async (routeName) => {
+    if (routeName === 'Cart' || routeName === 'MyProfile') {
+      const token = await getTokenStorage();
+      if (!token) {
+        navigation.navigate('Login');
+        return;
+      }
+    }
+    navigation.navigate(routeName);
+  };
+
   return (
     <View style={styles.customTabBarContainer}>
       <View style={styles.tabBarBg} />
@@ -62,7 +75,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
                 accessibilityState={{ selected: true }}
                 accessibilityLabel={options.tabBarAccessibilityLabel}
                 testID={options.tabBarTestID}
-                onPress={() => navigation.navigate(route.name)}
+                onPress={() => handleTabPress(route.name)}
                 style={[
                   styles.homeButton,
                   { backgroundColor: TAB_BG_COLOR, borderColor: '#fff', borderWidth: 5 },
@@ -85,7 +98,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
               accessibilityState={{}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               testID={options.tabBarTestID}
-              onPress={() => navigation.navigate(route.name)}
+              onPress={() => handleTabPress(route.name)}
               style={styles.tabButton}
               activeOpacity={0.8}
             >

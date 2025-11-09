@@ -52,7 +52,7 @@ const Navigator = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Profile"
+          name="ProfileScreen"
           component={AppScreens.ProfileScreen}
           options={{ headerShown: false }}
         />
