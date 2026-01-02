@@ -24,8 +24,6 @@ const LoginScreen = (props) => {
 
   // Function to send OTP
   const handleSendOtp = async () => {
-        setOTPView(true);
-        return
     if (!mobileNum || mobileNum.length !== 10) {
       showToast('Please enter a valid 10-digit mobile number.', 'error');
       return;
@@ -59,8 +57,6 @@ const LoginScreen = (props) => {
 
   // Function to verify OTP
   const handleVerifyOtp = async () => {
-      navigation.navigate('Home')
-      return
     const enteredOtp = otp.join('');
     if (enteredOtp.length !== 6) {
       showToast('Please enter the 6-digit OTP.', 'error');
@@ -147,7 +143,7 @@ const LoginScreen = (props) => {
               ))}
             </View>
             <TouchableOpacity>
-              <Text style={{ padding: 5, paddingTop: 10, color: '#5A5A5A', fontSize: 15, textAlign: 'right' }}>Didn’t receive code? <Text style={{ color: '#8A0017', fontWeight:'700' }}>Resend again</Text></Text>
+              <Text style={{ padding: 5, paddingTop: 10, color: '#5A5A5A', fontSize: 15, textAlign: 'right' }}>Didn’t receive code? <Text style={{ color: '#8A0017', fontWeight: '700' }}>Resend again</Text></Text>
             </TouchableOpacity>
 
 

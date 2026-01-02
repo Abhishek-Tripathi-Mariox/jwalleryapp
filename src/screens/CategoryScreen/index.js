@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, FlatList, Alert } from 'react-native';
-import Voice from 'react-native-voice';
+// import Voice from 'react-native-voice';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { Colors } from '../../themes/Colors';
 
@@ -24,32 +24,32 @@ export default function CategoryScreen({ navigation }) {
   //   }
   // };
 
-  const handleVoiceSearch = async () => {
-    try {
-      if (isListening.current) {
-        await Voice.stop();
-        isListening.current = false;
-        return;
-      }
-      Voice.onSpeechResults = (event) => {
-        if (event.value && event.value.length > 0) {
-          handleSearch(event.value[0]);
-        }
-        Voice.destroy().then(Voice.removeAllListeners);
-        isListening.current = false;
-      };
-      Voice.onSpeechError = (e) => {
-        Alert.alert('Voice Error', e.error?.message || 'Voice recognition failed');
-        Voice.destroy().then(Voice.removeAllListeners);
-        isListening.current = false;
-      };
-      isListening.current = true;
-      await Voice.start('en-US');
-    } catch (e) {
-      Alert.alert('Voice Error', e.message || 'Voice recognition failed');
-      isListening.current = false;
-    }
-  };
+  // const handleVoiceSearch = async () => {
+  //   try {
+  //     if (isListening.current) {
+  //       await Voice.stop();
+  //       isListening.current = false;
+  //       return;
+  //     }
+  //     Voice.onSpeechResults = (event) => {
+  //       if (event.value && event.value.length > 0) {
+  //         handleSearch(event.value[0]);
+  //       }
+  //       Voice.destroy().then(Voice.removeAllListeners);
+  //       isListening.current = false;
+  //     };
+  //     Voice.onSpeechError = (e) => {
+  //       Alert.alert('Voice Error', e.error?.message || 'Voice recognition failed');
+  //       Voice.destroy().then(Voice.removeAllListeners);
+  //       isListening.current = false;
+  //     };
+  //     isListening.current = true;
+  //     await Voice.start('en-US');
+  //   } catch (e) {
+  //     Alert.alert('Voice Error', e.message || 'Voice recognition failed');
+  //     isListening.current = false;
+  //   }
+  // };
 
   const handleImageSearch = async () => {
     try {
@@ -123,9 +123,9 @@ export default function CategoryScreen({ navigation }) {
             placeholder="Search for Gold Jewellery, Diamond more..."
             onSubmitEditing={e => handleSearch(e.nativeEvent.text)}
           />
-          <TouchableOpacity onPress={handleVoiceSearch}>
+          {/* <TouchableOpacity onPress={handleVoiceSearch}> */}
             <Image source={require('../../assets/images/mm.png')} style={styles.voiceIcon} />
-          </TouchableOpacity>
+          {/* </TouchableOpacity> */}
           <TouchableOpacity onPress={handleImageSearch}>
             <Image source={require('../../assets/images/jj.png')} style={styles.cameraIcon} />
           </TouchableOpacity>
