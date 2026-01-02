@@ -11,17 +11,17 @@ export const styles = StyleSheet.create({
     },
     mainContainer: {
         flex: 1,
-        backgroundColor: Colors.MAINBG,
+        // backgroundColor: Colors.MAINBG,
         justifyContent: 'center',
     },
     mainCard: {
-        width: 169,
-        height: 169,
-        elevation: 10,
-        backgroundColor: Colors.WHITE,
-        alignSelf: 'center',
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
+        // width: 169,
+        // height: 169,
+        // elevation: 10,
+        // backgroundColor: Colors.WHITE,
+        // alignSelf: 'center',
+        // borderRadius: 20,
+        // justifyContent: 'center',
+        // alignItems: 'center',
     }
 });

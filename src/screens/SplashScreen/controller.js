@@ -7,7 +7,7 @@ const TimeOut = (props) => {
         if (token) {
             navigation.navigate('Home');
         } else {
-            navigation.navigate('Landing');
+            navigation.navigate('Login');
         }
     }, 3000);
 

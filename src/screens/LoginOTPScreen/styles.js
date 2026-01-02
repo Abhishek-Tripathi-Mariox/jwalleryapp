@@ -4,14 +4,14 @@ import { Colors } from '../../themes/Colors';
 
 export const styles = StyleSheet.create({
   image: {
-    width: width * 1,
-    height: height * 0.09,
+    width: 235,
+    height: 55,
     alignSelf: 'center',
     resizeMode: 'contain',
   },
   mainContainer: {
     flex: 1,
-    backgroundColor: Colors.MAINBG,
+    backgroundColor: Colors.jbackground,
     justifyContent: 'center',
   },
   mainCard: {
@@ -28,34 +28,39 @@ export const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 30,
     marginTop: height * 0.06,
-    height: height * 0.09
+    height: height * 0.09,
   },
   text: {
-    fontSize: 16,
-    color: Colors.WHITE1,
-    fontWeight: '500',
-    fontFamily: 'Poppins-Medium'
+    fontSize: 17,
+    color: '#ffffff',
+    fontWeight: '700',
+    fontFamily: 'Poppins-Bold',
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
 
   button: {
-    backgroundColor: Colors.theme1,
     height: 50,
-    borderRadius: 8,
+    width: '100%',
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: height * 0.031,
+    overflow: 'hidden', // important for rounded gradient
+    marginTop: 18,
+    marginBottom: 8,
+    backgroundColor:'#8A0017'
   },
 
   input: {
     height: 50,
-    borderColor: Colors.GRAY5,
+    borderColor: Colors.GRAY11,
     borderWidth: 1,
     paddingHorizontal: 18,
     marginBottom: 16,
     borderRadius: 8,
     fontSize: 16,
     marginVertical: height * 0.02,
-    color: Colors.BLACK,
+    color: Colors.GRAY10,
   },
   OTPInput: {
     width: height * 0.062,
@@ -84,17 +89,18 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   heading: {
-    color: Colors.BLACK1,
+    color: Colors.BLACK5,
     fontSize: 24,
     fontWeight: 'bold',
     paddingVertical: height * 0.005,
     // marginTop: height * 0.1,
     textAlign: 'center',
-    fontFamily: 'Poppins-Semibold'
+    fontFamily: 'Poppins-Semibold',
+    marginTop: 10
 
   },
   subHeading: {
-    color: Colors.GRAY6,
+    color: Colors.GRAY12,
     fontSize: 16,
     paddingVertical: 7,
     fontFamily: 'Poppind-regular',
@@ -102,13 +108,13 @@ export const styles = StyleSheet.create({
     textAlign: 'center'
   },
   termsText: {
-    color: '#000',
+    color: '#000000ff',
     fontSize: 14.5,
     textAlign: 'center',
     marginTop: 12,
   },
   linkText: {
-    color: '#56a7f9ff',
+    color: '#123cc6ff',
     textDecorationLine: 'underline',
   },
 });

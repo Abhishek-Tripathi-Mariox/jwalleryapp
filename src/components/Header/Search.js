@@ -12,29 +12,38 @@ import { Colors } from '../../themes/Colors';
 
 const Search = (props) => {
     return (
+
+        // value={searchText}
+        // onChangeText={setSearchText}
+        // placeholder="Search for Gold Jewellery, Diamond more..."
+        // iconMic={AppImages.mic}
+        // iconCamera={AppImages.jcam}
+        // iconSearch={AppImages.jsearch}
         <SafeAreaView>
-            <View style={{ marginVertical: 10, marginHorizontal: 15 }}>
+            <View style={{ marginVertical: 5, marginHorizontal: 15 }}>
                 <SearchBar
-                    placeholder="Search"
+                    placeholder="Search for Gold Jewellery, Diamond more..."
                     onChangeText={props.onChangeText}
                     onSearchPress={props.onSearchPress}
                     value={props.value}
                     style={{
-                        backgroundColor: '#fff',
-                        borderRadius: 8,
-                        elevation: 4,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.1,
-                        shadowRadius: 4,
-                        paddingHorizontal: 8,
+                        borderRadius: 30,
+                        paddingHorizontal: 0,
+                        height:47,
                         width: '100%',
+                        borderWidth: 1,
+                        borderColor:'#929292',
+                        fontSize: 6, 
+                        color: '#66a919ff', 
+                        marginTop:10,
+
                     }}
                     iconColor={Colors.theme1}
                     clearIconColor={Colors.theme1}
                     searchIconComponent={<AntDesign name="search1" size={20} color={Colors.theme1} />}
                     clearIconComponent={<AntDesign name="close" size={20} color={Colors.theme1} />}
                 />
+
             </View>
         </SafeAreaView>
     );

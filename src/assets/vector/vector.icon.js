@@ -12,7 +12,7 @@ export const Vector = {
     LANGUAGE_ICON: <FontAwesome5 name={"language"} size={25} color={Colors.WHITE} style={{ alignSelf: 'center' }} />,
     MENU_ICON: <Entypo name={"menu"} size={30} color={Colors.WHITE} style={{ alignSelf: 'center' }} />,
     SEARCH_ICON: <AntDesign name={"search1"} size={22} color={Colors.GRAY4} style={{ alignSelf: 'center' }} />,
-    CHECK_ICON: <AntDesign name={"checkcircle"} size={16} color={'green'} style={{ alignSelf: 'center' }} />,
+    CHECK_ICON: <AntDesign name={"checkcircle"} size={16} color={Colors.WHITE} style={{ alignSelf: 'center' }} />,
     SECURITY_ICON: <MaterialIcons name={"security"} size={22} color={Colors.GRAY4} style={{ alignSelf: 'center' }} />,
     RIGHT_ICON: <AntDesign name={"right"} size={13} color={Colors.GRAY4} style={{ alignSelf: 'center' }} />,
     STAR_ICON: <Octicons name={"feed-star"} size={18} color={'red'} />,

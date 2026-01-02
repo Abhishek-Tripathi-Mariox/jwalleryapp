@@ -1,81 +1,59 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { Colors } from '../../themes/Colors';
-import { clearStorage } from '../../utils/tokenStorage';
-import { fetchUserProfile } from '../../utils/userProfile';
 
 const { width } = Dimensions.get('window');
 
 const user = {
-  avatar: require('../../assets/images/profile.jpeg'), // Replace with your avatar asset
+  avatar: require('../../assets/images/jwel3.jpg'),
+  cover: require('../../assets/images/jwel3.jpg'), //back
+  name: 'Josephine Jackson',
+  phone: '+91 6267266688',
+  location: 'Brooklyn, NYC',
 };
 
 const menu = [
-  { key: 'address', label: 'Address', icon: <Feather name="map-pin" size={22} color="#b0b0b0" /> },
-  { key: 'payment', label: 'Payment method', icon: <Feather name="credit-card" size={22} color="#b0b0b0" /> },
-  { key: 'voucher', label: 'Voucher', icon: <MaterialIcons name="confirmation-number" size={22} color="#b0b0b0" /> },
-  { key: 'wishlist', label: 'My Wishlist', icon: <AntDesign name="hearto" size={22} color="#b0b0b0" /> },
-  { key: 'rate', label: 'Rate this app', icon: <AntDesign name="staro" size={22} color="#b0b0b0" /> },
-  { key: 'logout', label: 'Log out', icon: <Feather name="log-out" size={22} color="#b0b0b0" /> },
+  { key: 'profile', label: 'Profile Details', icon: <Feather name="user" size={21} color="#000000" /> },
+  { key: 'address', label: 'Address', icon: <Feather name="map-pin" size={21} color="#000000" /> },
+  { key: 'wishlist', label: 'Wishlist', icon: <AntDesign name="hearto" size={21} color="#000000" /> },
+  { key: 'orders', label: 'Orders', icon: <MaterialIcons name="receipt-long" size={21} color="#000000" /> },
+  { key: 'payment', label: 'Payment Methods', icon: <Feather name="credit-card" size={21} color="#000000" /> },
+  { key: 'contact', label: 'Contact Us', icon: <Feather name="phone" size={21} color="#000000" /> },
 ];
 
-const THEME_COLOR = Colors.theme1;
-
-const MyProfileScreen = ({ navigation }) => {
-  // Logout handler
-  const handleLogout = async () => {
-    await clearStorage();
-    if (navigation && navigation.replace) {
-      navigation.replace('Login'); // Change to your login/landing screen route name
-    }
-  };
-
-  const [userProfile, setUserProfile] = useState(null);
-
-  // Fetch user profile on mount
-  useEffect(() => {
-    const getProfile = async () => {
-      const result = await fetchUserProfile();
-      if (result.success) {
-        setUserProfile(result.data);
-      } else {
-        // Optionally show a toast or handle error
-        // showToast(result.message, 'error');
-      }
-    };
-    getProfile();
-  }, []);
-
+export default function MyProfileScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <AntDesign name="arrowleft" size={24} color="#fff" />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
+            <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
+          </TouchableOpacity>
+        <Text style={styles.headerTitle}>PROFILE</Text>
+        <TouchableOpacity style={styles.headerBellBtn}>
+          <Image source={require('../../assets/images/jnot.png')} style={styles.headerBellIcon} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile</Text>
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <AntDesign name="hearto" size={22} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Feather name="search" size={22} color="#fff" />
-          </TouchableOpacity>
-        </View>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
+        {/* Cover and Avatar */}
+        <View style={styles.coverContainer}>
+          <Image source={user.cover} style={styles.coverImage} />
           <Image source={user.avatar} style={styles.avatar} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{userProfile?.fullName || 'Hey User'}</Text>
-            <Text style={styles.email}>{userProfile?.email || ''}</Text>
+          <View style={styles.profileInfo}>
+            <Text style={styles.name}>{user.name}</Text>
+            <View style={styles.row}>
+              <Feather name="phone" size={14} color="#888" />
+              <Text style={styles.phone}>{user.phone}</Text>
+            </View>
+            <View style={styles.row}>
+              <Feather name="map-pin" size={14} color="#888" />
+              <Text style={styles.location}>{user.location}</Text>
+            </View>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('ProfileSettingScreen')}>
-            <Feather name="settings" size={26} color="#222" />
+          <TouchableOpacity style={styles.editBtn}>
+            <Text style={styles.editText}>Edit</Text>
           </TouchableOpacity>
         </View>
         {/* Menu List */}
@@ -85,120 +63,157 @@ const MyProfileScreen = ({ navigation }) => {
               key={item.key}
               style={styles.menuItem}
               activeOpacity={0.7}
-              onPress={
-                item.label === 'My Wishlist'
-                  ? () => navigation && navigation.navigate('Wishlist')
-                  : item.label === 'Address'
-                    ? () => navigation && navigation.navigate('SavedAddress')
-                    : item.label === 'Payment method'
-                      ? () => navigation && navigation.navigate('PaymentMethod')
-                      : item.label === 'Rate this app'
-                        ? () => navigation && navigation.navigate('FeedbackScreen')
-                        : item.label === 'Log out'
-                          ? handleLogout
-                          : undefined
-              }
+              onPress={() => {
+                // if (item.key === 'wishlist') navigation.navigate('Wishlist');
+                if (item.key === 'address') navigation.navigate('SavedAddress');
+                // else if (item.key === 'payment') navigation.navigate('PaymentMethod');
+                else if (item.key === 'orders') navigation.navigate('OrderScreen');
+                // else if (item.key === 'profile') navigation.navigate('ProfileSettingScreen');
+                // Add more navigation as needed
+              }}
             >
               <View style={styles.menuIcon}>{item.icon}</View>
               <Text style={styles.menuLabel}>{item.label}</Text>
-              <AntDesign name="right" size={18} color="#b0b0b0" style={{ marginLeft: 'auto' }} />
             </TouchableOpacity>
           ))}
         </View>
+        <TouchableOpacity style={styles.signOutBtn}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF8E1',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME_COLOR,
-    paddingHorizontal: 16,
+    backgroundColor: '#A1011B',
     paddingTop: 40,
-    paddingBottom: 18,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    elevation: 4,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    justifyContent: 'space-between',
+  },
+  headerBackBtn: {
+    backgroundColor: '#fff',
+    height: 30,
+    width: 30,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+    headerBackIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#A1011B',
   },
   headerTitle: {
-    flex: 1,
     color: '#fff',
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginLeft: 16,
-    marginRight: 16,
+    letterSpacing: 2,
+    flex: 1,
+    textAlign: 'center',
+    marginLeft: -30,
   },
-  headerIcons: {
-    flexDirection: 'row',
+  headerBellBtn: {
+    backgroundColor: 'transparent',
+    height: 30,
+    width: 30,
+    borderRadius: 50,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  iconButton: {
-    marginLeft: 16,
+  headerBellIcon: {
+    width: 22,
+    height: 22,
+    tintColor: '#fff',
   },
   scrollContent: {
-    paddingHorizontal: 0,
-    paddingTop: 18,
-    paddingBottom: 90,
-    alignItems: 'center',
+    paddingBottom: 24,
   },
-  profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 18,
-    marginHorizontal: 18,
-    marginBottom: 18,
-    marginTop: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
-    width: width - 32,
+  coverContainer: {
+    marginTop: 15,
+    marginBottom: 5,
+    marginHorizontal: 5,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+    alignItems: 'flex-start',
+    justifyContent:'center',
+    alignSelf:'center'
+  },
+  coverImage: {
+    width: 350,
+    height: 120,
+    resizeMode: 'cover',
   },
   avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 18,
-    backgroundColor: '#F7F7F7',
+    width: 100,
+    height: 100,
+    position: 'absolute',
+    top: 90,
+    left: 12,
+    backgroundColor: '#fff',
+  },
+  profileInfo: {
+    marginTop: 5,
+    marginLeft: 130,
+    marginBottom: 8,
   },
   name: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 2,
+    color: '#333333',
+    // marginBottom: 2,
   },
-  email: {
-    fontSize: 14,
-    color: '#888',
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  phone: {
+    fontSize: 13,
+    color: '#888888',
+    marginLeft: 6,
+  },
+  location: {
+    fontSize: 13,
+    color: '#888888',
+    marginLeft: 6,
+  },
+  editBtn: {
+    position: 'absolute',
+    right: 12,
+    top: 127,
+  },
+  editText: {
+    color: '#B4011E',
+    fontWeight: 'bold',
+    fontSize: 13,
   },
   menuList: {
-    backgroundColor: '#fff',
     borderRadius: 18,
-    marginHorizontal: 12,
-    paddingVertical: 2,
-    width: width - 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    marginHorizontal: 15,
+    marginTop: 0,
+    marginBottom: 12,
+    paddingVertical: 0,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 18,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F3F3',
+    borderBottomColor: '#cdc8c8ff',
+    paddingTop:25,
+    paddingBottom:12
+
   },
   menuIcon: {
     marginRight: 18,
@@ -206,10 +221,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuLabel: {
-    fontSize: 16,
-    color: '#222',
+    fontSize: 14,
+    color: '#333333',
     fontWeight: '500',
   },
+  signOutBtn: {
+    marginTop: 16,
+    alignSelf: 'center',
+  },
+  signOutText: {
+    color: '#FA3636',
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 1,
+  },
 });
-
-export default MyProfileScreen;

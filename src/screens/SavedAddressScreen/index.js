@@ -1,256 +1,167 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import React from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import AddAddressScreen from '../AddAddressScreen/index';
-import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
-const THEME_COLOR = Colors.theme1;
 
-import { useEffect } from 'react';
-import { listUserAddresses, selectUserAddress, deleteUserAddress, addUserAddress } from '../../utils/userAddress';
-import { showToast } from '../../utils/toast';
+const addresses = [
+  {
+    id: '1',
+    label: 'Deliver to Mithu (Home)',
+    address: '32 main, mangal bazar rd, noida, uttar pradesh, 201309',
+    phone: '+91 8178496252',
+    email: 'mithukumar08907@gmail.com',
+    type: 'Home',
+  },
+  {
+    id: '2',
+    label: 'Deliver to Mithu(Work)',
+    address: '32 main, mangal bazar rd, noida, uttar pradesh, 201309',
+    phone: '+91 8178496252',
+    email: 'mithukumar08907@gmail.com',
+    type: 'Work',
+  },
+];
 
-const SavedAddressScreen = ({ navigation }) => {
-  const [showAddAddress, setShowAddAddress] = useState(false);
-  const [addresses, setAddresses] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  // To avoid hook order issues, define all hooks at the top level, not conditionally.
-
-  useEffect(() => {
-    fetchAddresses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function fetchAddresses() {
-    setLoading(true);
-    const result = await listUserAddresses();
-    setLoading(false);
-    if (result.success) {
-      setAddresses(result.addresses);
-    } else {
-      showToast(result.message, 'error');
-    }
-  }
-
-  async function handleSelect(addressId) {
-    setLoading(true);
-    const result = await selectUserAddress(addressId);
-    setLoading(false);
-    showToast(result.message, result.success ? 'success' : 'error');
-    if (result.success) fetchAddresses();
-  }
-
-  async function handleDelete(addressId) {
-    setLoading(true);
-    const result = await deleteUserAddress(addressId);
-    setLoading(false);
-    showToast(result.message, result.success ? 'success' : 'error');
-    if (result.success) fetchAddresses();
-  }
-
-  // Placeholder for edit functionality
-  function handleEdit(address) {
-    setShowAddAddress(true);
-    // Pass address data to AddAddressScreen as needed
-  }
-
+export default function SavedAddressScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation && navigation.goBack()}>
-          <AntDesign name="arrowleft" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Saved Address</Text>
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <AntDesign name="hearto" size={20} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Feather name="search" size={20} color="#fff" />
-          </TouchableOpacity>
-        </View>
+       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
+                   <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
+                 </TouchableOpacity>
+        <Text style={styles.headerTitle}>ADRESS</Text>
+        <View style={{ width: 30 }} />
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {loading && <Text>Loading...</Text>}
-        {!loading && addresses.length === 0 && (
-          <Text style={{ color: '#888', marginTop: 20 }}>No addresses found.</Text>
-        )}
-        {!loading && addresses.map((item, idx) => (
-          <View
-            key={item._id}
-            style={[
-              styles.addressCard,
-              item.isSelected && styles.selectedCard,
-              idx === 0 && { borderColor: THEME_COLOR, borderWidth: 1.5 },
-            ]}
-          >
+        {addresses.map(addr => (
+          <View key={addr.id} style={styles.addressCard}>
             <View style={styles.addressRow}>
-              <View style={styles.radioCol}>
-                <AntDesign
-                  name={item.isSelected ? 'checkcircle' : 'circledowno'}
-                  size={19}
-                  color={item.isSelected ? THEME_COLOR : '#bbb'}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.addressLabel, item.isSelected && styles.selectedLabel]}>
-                  {item.fullName}
-                </Text>
-                <Text style={styles.addressText}>{item.address}</Text>
-                <Text style={styles.addressText}>{item.city}, {item.state} - {item.pinCode}</Text>
-                <Text style={styles.addressText}>{item.phone}</Text>
-                <Text style={styles.addressText}>Type: {item.addressType}</Text>
-              </View>
-              {item.isSelected && (
-                <TouchableOpacity>
-                  <Text style={styles.changeText}>Change</Text>
-                </TouchableOpacity>
-              )}
-              {!item.isSelected && (
-                <View style={styles.actionIcons}>
-                  <TouchableOpacity style={styles.iconBtn} onPress={() => handleEdit(item)}>
-                    <Feather name="edit" size={20} color={THEME_COLOR} />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconBtn} onPress={() => handleDelete(item._id)}>
-                    <MaterialIcons name="delete-outline" size={22} color={THEME_COLOR} />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconBtn} onPress={() => handleSelect(item._id)}>
-                    <AntDesign name="checkcircle" size={20} color={THEME_COLOR} />
-                  </TouchableOpacity>
-                </View>
-              )}
+              <Feather name="map-pin" size={18} color="#101820" style={{ marginRight: 8 }} />
+              <Text style={styles.addressLabel}>{addr.label}</Text>
+              <TouchableOpacity style={styles.changeBtn}>
+                <Text style={styles.changeText}>Change</Text>
+              </TouchableOpacity>
             </View>
+            <Text style={styles.addressText}>{addr.address}</Text>
+            <Text style={styles.addressMeta}>{addr.phone}   |   {addr.email}</Text>
           </View>
         ))}
-        <View style={{ height: 80 }} />
+        <TouchableOpacity style={styles.addAddressBtn}>
+          <Text style={styles.addAddressText}>+ Add Address</Text>
+        </TouchableOpacity>
       </ScrollView>
-      <TouchableOpacity style={styles.addBtn} onPress={() => setShowAddAddress(true)}>
-        <Text style={styles.addBtnText}>Add New Address</Text>
-      </TouchableOpacity>
-      {/* Pass fetchAddresses to AddAddressScreen for refresh after add/edit */}
-      <AddAddressScreen
-        visible={showAddAddress}
-        onClose={() => {
-          setShowAddAddress(false);
-          fetchAddresses();
-        }}
-        navigation={() => navigation.navigate('PaymentMethod')}
-      />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF8E1',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME_COLOR,
-    paddingHorizontal: 16,
+    backgroundColor: '#A1011B',
     paddingTop: 40,
-    paddingBottom: 18,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    elevation: 4,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    justifyContent: 'space-between',
   },
-  headerTitle: {
-    flex: 1,
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  headerIcons: {
-    flexDirection: 'row',
+  headerBackBtn: {
+    backgroundColor: '#fff',
+    height: 30,
+    width: 30,
+    borderRadius: 50,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  iconButton: {
-    marginLeft: 16,
+    headerBackIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#A1011B',
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+    flex: 1,
+    textAlign: 'center',
+    marginLeft: -30,
   },
   scrollContent: {
-    paddingHorizontal: 12,
-    paddingTop: 18,
-    paddingBottom: 90,
+    paddingTop: 24,
+    paddingBottom: 24,
+    alignItems: 'center',
   },
   addressCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF80',
     borderRadius: 16,
-    marginBottom: 16,
-    padding: 16,
-    shadowColor: '#000',
+    padding: 18,
+    marginBottom: 18,
+    width: width - 32,
+    shadowColor: '#DDDDDDDD',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 2,
-    borderColor: '#eee',
-    borderWidth: 1,
-  },
-  selectedCard: {
-    borderColor: THEME_COLOR,
-    borderWidth: 1.5,
+    borderWidth:2,
+    borderColor:'#ffffffff'
+    // elevation: 2,
   },
   addressRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  radioCol: {
-    marginRight: 12,
-    marginTop: 2,
+    alignItems: 'center',
+    marginBottom: 6,
   },
   addressLabel: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 2,
+    color: '#333333',
+    flex: 1,
   },
-  selectedLabel: {
-    color: THEME_COLOR,
-  },
-  addressText: {
-    fontSize: 12,
-    color: '#444',
-    marginBottom: 2,
+  changeBtn: {
+    borderWidth: 1,
+    borderColor: '#FFC700',
+    borderRadius: 22,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginLeft: 8,
+    backgroundColor:'#FFFDE9'
   },
   changeText: {
-    color: THEME_COLOR,
+    color: '#FFC700',
     fontWeight: 'bold',
     fontSize: 14,
-    marginLeft: 12,
-    marginTop: 2,
   },
-  actionIcons: {
-    flexDirection: 'row',
-    marginLeft: 8,
-    marginTop: 2,
+  addressText: {
+    fontSize: 11,
+    color: '#333333',
+    marginBottom: 2,
   },
-  iconBtn: {
-    marginLeft: 8,
+  addressMeta: {
+    fontSize: 12,
+    color: '#333333',
   },
-  addBtn: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 24,
-    backgroundColor: THEME_COLOR,
-    borderRadius: 12,
+  addAddressBtn: {
+    borderWidth: 1,
+    borderColor: '#B0011D',
+    borderRadius: 32,
     paddingVertical: 14,
+    paddingHorizontal: 0,
+    width: width - 32,
     alignItems: 'center',
-    elevation: 4,
+    marginTop: 18,
+    backgroundColor:'#FFFFFF80'
   },
-  addBtnText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  addAddressText: {
+    color: '#333333',
+    fontWeight: '600',
+    fontSize: 16,
     letterSpacing: 1,
   },
 });
-
-export default SavedAddressScreen;

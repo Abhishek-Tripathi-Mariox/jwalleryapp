@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Dimensions, TouchableOpacity, View, Text, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Dashboard from '../screens/DashboardScreen';
+import CategoryScreen from '../screens/CategoryScreen';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import Alert from '../components/Modal/Alert';
-import SearchScreen from '../screens/SearchScreen';
 import CartScreen from '../screens/CartScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
 
@@ -23,13 +23,13 @@ import { Colors } from '../themes/Colors';
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   // Handler to check token and navigate accordingly
   const handleTabPress = async (routeName) => {
-    if (routeName === 'Cart' || routeName === 'MyProfile') {
-      const token = await getTokenStorage();
-      if (!token) {
-        navigation.navigate('Login');
-        return;
-      }
-    }
+    // if (routeName === 'Cart' || routeName === 'MyProfile') {
+    //   const token = await getTokenStorage();
+    //   if (!token) {
+    //     navigation.navigate('Login');
+    //     return;
+    //   }
+    // }
     navigation.navigate(routeName);
   };
 
@@ -55,7 +55,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
         } else if (route.name === 'Search') {
           icon = <Feather name="search" size={ICON_SIZE} color="#fff" />;
           LargeIcon = <Feather name="search" size={28} color="#fff" />;
-        } else if (route.name === 'Order') {
+        } else if (route.name === 'Category') {
           icon = <MaterialIcons name="receipt-long" size={ICON_SIZE} color="#fff" />;
           LargeIcon = <MaterialIcons name="receipt-long" size={28} color="#fff" />;
         } else if (route.name === 'Cart') {
@@ -118,14 +118,21 @@ const MyBottomTabs = () => {
   return (
     <>
       <Tab.Navigator
-        tabBar={props => <CustomTabBar {...props} />}
+        tabBar={props => {
+          // White tab bar only on Profile screen
+          const routeName = props.state.routeNames[props.state.index];
+          if (routeName === 'Cart') return null;
+          if (routeName === 'Profile') {
+            return <CustomTabBar {...props} profileTab />;
+          }
+          return <CustomTabBar {...props} />;
+        }}
         screenOptions={{
           headerShown: false,
         }}
       >
         <Tab.Screen name="Home" component={Dashboard} />
-        <Tab.Screen name="Order" component={Dashboard} />
-        <Tab.Screen name="Search" component={SearchScreen} />
+        <Tab.Screen name="Category" component={CategoryScreen} />
         <Tab.Screen name="Cart" component={CartScreen} />
         <Tab.Screen name="Profile" component={MyProfileScreen} />
       </Tab.Navigator>
@@ -139,36 +146,26 @@ export default MyBottomTabs;
 const styles = StyleSheet.create({
   customTabBarContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    backgroundColor: 'transparent',
-    height: 80,
-    paddingHorizontal: 10,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 10,
-    position: 'relative',
-  },
-  tabBarBg: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: TAB_BG_COLOR,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    backgroundColor: '#C8002F',
     height: 64,
-    top: 16,
-    zIndex: 0,
+    paddingHorizontal: 0,
+    paddingBottom: Platform.OS === 'ios' ? 12 : 0,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    zIndex: 1,
+    justifyContent: 'center',
     height: 64,
-    marginTop: 16,
   },
   tabLabel: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 15,
     marginTop: 2,
     fontWeight: '400',
+    fontFamily: 'System',
+    letterSpacing: 0.5,
   },
   homeTabWrapper: {
     flex: 1,

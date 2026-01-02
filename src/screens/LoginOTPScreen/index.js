@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   View, TextInput, Image
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { AppImages } from '../../constants/app.image';
 import { styles } from './styles';
@@ -23,6 +24,8 @@ const LoginScreen = (props) => {
 
   // Function to send OTP
   const handleSendOtp = async () => {
+        setOTPView(true);
+        return
     if (!mobileNum || mobileNum.length !== 10) {
       showToast('Please enter a valid 10-digit mobile number.', 'error');
       return;
@@ -56,6 +59,8 @@ const LoginScreen = (props) => {
 
   // Function to verify OTP
   const handleVerifyOtp = async () => {
+      navigation.navigate('Home')
+      return
     const enteredOtp = otp.join('');
     if (enteredOtp.length !== 6) {
       showToast('Please enter the 6-digit OTP.', 'error');
@@ -142,7 +147,7 @@ const LoginScreen = (props) => {
               ))}
             </View>
             <TouchableOpacity>
-              <Text style={{ padding: 5, paddingTop: 10, color: '#000', fontSize: 15, textAlign: 'right' }}>Didn’t receive code? <Text style={{ color: '#CE1D5A' }}>Resend again</Text></Text>
+              <Text style={{ padding: 5, paddingTop: 10, color: '#5A5A5A', fontSize: 15, textAlign: 'right' }}>Didn’t receive code? <Text style={{ color: '#8A0017', fontWeight:'700' }}>Resend again</Text></Text>
             </TouchableOpacity>
 
 
@@ -156,7 +161,7 @@ const LoginScreen = (props) => {
           :
           <>
             <Image
-              source={AppImages.LOGO_2}
+              source={AppImages.jlogo1}
               style={styles.image}
             />
             <Text style={styles.heading}>sign in</Text>
@@ -185,10 +190,20 @@ const LoginScreen = (props) => {
 
             <TouchableOpacity
               onPress={handleSendOtp}
-              style={styles.button}
+              activeOpacity={0.85}
+              style={{ width: '100%' }}
             >
-              <Text style={styles.text}>{loading ? 'Sending...' : 'Get OTP'}</Text>
+              <LinearGradient
+                colors={['#B4001E', '#8A0017']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.button}
+              >
+                <Text style={styles.text}>{loading ? 'Sending...' : 'Get OTP'}</Text>
+              </LinearGradient>
             </TouchableOpacity>
+
+
 
           </>
         }
