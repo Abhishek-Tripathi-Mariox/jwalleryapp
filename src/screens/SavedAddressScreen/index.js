@@ -29,22 +29,55 @@ const initialAddresses = [
 export default function SavedAddressScreen({ navigation }) {
   const [addresses, setAddresses] = useState(initialAddresses);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
 
   const handleAddAddress = (addressData) => {
-    // Compose address string for display
     const composedAddress = `${addressData.houseNo}, ${addressData.apartment}, ${addressData.city}, ${addressData.state}, ${addressData.pincode}`;
-    setAddresses(prev => [
-      ...prev,
-      {
-        id: (prev.length + 1).toString(),
+    if (editIndex !== null) {
+      // Edit existing address
+      setAddresses(prev => prev.map((addr, idx) => idx === editIndex ? {
+        ...addr,
         label: `Deliver to ${addressData.fullName} (${addressData.addressType})`,
         address: composedAddress,
         phone: '',
         email: addressData.email,
         type: addressData.addressType,
-      },
-    ]);
+      } : addr));
+    } else {
+      // Add new address
+      setAddresses(prev => [
+        ...prev,
+        {
+          id: (prev.length + 1).toString(),
+          label: `Deliver to ${addressData.fullName} (${addressData.addressType})`,
+          address: composedAddress,
+          phone: '',
+          email: addressData.email,
+          type: addressData.addressType,
+        },
+      ]);
+    }
     setModalVisible(false);
+    setEditIndex(null);
+  };
+
+  // Prepare initial values for modal if editing
+  const getEditInitialValues = () => {
+    if (editIndex === null) return undefined;
+    const addr = addresses[editIndex];
+    if (!addr) return undefined;
+    // Try to parse address fields from string
+    const [houseNo = '', apartment = '', city = '', state = '', pincode = ''] = (addr.address || '').split(',').map(s => s.trim());
+    return {
+      pincode,
+      city,
+      state,
+      houseNo,
+      apartment,
+      fullName: addr.label.replace(/^Deliver to | \(.*\)$/g, ''),
+      email: addr.email,
+      addressType: addr.type,
+    };
   };
 
   return (
@@ -55,12 +88,12 @@ export default function SavedAddressScreen({ navigation }) {
         title="ADDRESS"
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {addresses.map(addr => (
+        {addresses.map((addr, idx) => (
           <View key={addr.id} style={styles.addressCard}>
             <View style={styles.addressRow}>
               <Feather name="map-pin" size={18} color="#101820" style={{ marginRight: 8 }} />
               <Text style={styles.addressLabel}>{addr.label}</Text>
-              <TouchableOpacity style={styles.changeBtn}>
+              <TouchableOpacity style={styles.changeBtn} onPress={() => { setEditIndex(idx); setModalVisible(true); }}>
                 <Text style={styles.changeText}>Change</Text>
               </TouchableOpacity>
             </View>
@@ -68,14 +101,15 @@ export default function SavedAddressScreen({ navigation }) {
             <Text style={styles.addressMeta}>{addr.phone}   |   {addr.email}</Text>
           </View>
         ))}
-        <TouchableOpacity style={styles.addAddressBtn} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity style={styles.addAddressBtn} onPress={() => { setEditIndex(null); setModalVisible(true); }}>
           <Text style={styles.addAddressText}>+ Add Address</Text>
         </TouchableOpacity>
       </ScrollView>
       <AddressModal
         visible={modalVisible}
-        onClose={() => setModalVisible(false)}
+        onClose={() => { setModalVisible(false); setEditIndex(null); }}
         onSave={handleAddAddress}
+        initialValues={getEditInitialValues()}
       />
     </View>
   );

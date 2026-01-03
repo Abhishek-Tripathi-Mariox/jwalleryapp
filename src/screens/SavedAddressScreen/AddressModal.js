@@ -6,15 +6,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
-const AddressModal = ({ visible, onClose, onSave }) => {
-  const [pincode, setPincode] = useState('201309');
-  const [city, setCity] = useState('Ghaziabad');
-  const [state, setState] = useState('Uttar Pradesh');
-  const [houseNo, setHouseNo] = useState('');
-  const [apartment, setApartment] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [addressType, setAddressType] = useState('Home');
+const AddressModal = ({ visible, onClose, onSave, initialValues }) => {
+  const [pincode, setPincode] = useState(initialValues?.pincode || '201309');
+  const [city, setCity] = useState(initialValues?.city || 'Ghaziabad');
+  const [state, setState] = useState(initialValues?.state || 'Uttar Pradesh');
+  const [houseNo, setHouseNo] = useState(initialValues?.houseNo || '');
+  const [apartment, setApartment] = useState(initialValues?.apartment || '');
+  const [fullName, setFullName] = useState(initialValues?.fullName || '');
+  const [email, setEmail] = useState(initialValues?.email || '');
+  const [addressType, setAddressType] = useState(initialValues?.addressType || 'Home');
+
+  // Reset fields when modal is opened for a different address
+  React.useEffect(() => {
+    setPincode(initialValues?.pincode || '');
+    setCity(initialValues?.city || '');
+    setState(initialValues?.state || 'Uttar Pradesh');
+    setHouseNo(initialValues?.houseNo || '');
+    setApartment(initialValues?.apartment || '');
+    setFullName(initialValues?.fullName || '');
+    setEmail(initialValues?.email || '');
+    setAddressType(initialValues?.addressType || 'Home');
+  }, [visible, initialValues]);
 
   return (
     <Modal
@@ -216,7 +228,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 15,
     marginBottom: 10,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#fff',
     color: '#222',
   },
   row: {
