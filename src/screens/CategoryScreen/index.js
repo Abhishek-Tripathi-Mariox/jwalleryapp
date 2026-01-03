@@ -67,10 +67,7 @@ export default function CategoryScreen({ navigation }) {
   const handleCategoryPress = (categoryKey, categoryLabel) => {
     if (categoryKey === 'earrings') {
       navigation.navigate('EarringsList', { category: categoryKey, categoryLabel });
-    } else {
-      navigation.navigate('EarringsList', { category: categoryKey, categoryLabel });
-    }
-    if (categoryKey === 'necklaces') {
+    } else if (categoryKey === 'necklaces') {
       navigation.navigate('NecklaceList', { category: categoryKey, categoryLabel });
     } else {
       navigation.navigate('EarringsList', { category: categoryKey, categoryLabel });

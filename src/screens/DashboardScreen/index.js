@@ -20,7 +20,11 @@ const goldPrice = '₹ 7431 per gram (22K)';
 const categories = [
   {
     name: 'Earrings',
-    icon: AppImages.jearing,
+    icon: AppImages.jwel1,
+  },
+  {
+    name: 'Necklace',
+    icon: AppImages.jwel5,
   },
   {
     name: 'Rings',
@@ -32,11 +36,7 @@ const categories = [
   },
   {
     name: 'Chains',
-    icon: AppImages.jchain,
-  },
-  {
-    name: 'Necklace',
-    icon: AppImages.jnecklace,
+    icon: AppImages.jwel4,
   },
   {
     name: 'Mangalsutra',
@@ -109,6 +109,17 @@ const Dashboard = ({ navigation }) => {
             </View>
           </ScrollView>
 
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+            {categories.map((cat, idx) => (
+              <TouchableOpacity onPress={() => navigation.navigate('NecklaceList', { categoryLabel: 'Items' })} key={cat.name} style={styles.categoryItem}>
+                <View style={styles.categoryIconWrapper}>
+                  <Image source={cat.icon} style={styles.categoryIcon} />
+                  <Text style={styles.categoryLabel}>{cat.name}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
           <View style={styles.specialOffersContainer}>
             <Text style={styles.specialOffersTitle}>
               Special Offers
@@ -120,7 +131,7 @@ const Dashboard = ({ navigation }) => {
               />
             </View>
           </View>
-          <View style={styles.shopByCategorySection}>
+          {/* <View style={styles.shopByCategorySection}>
             <View style={styles.shopByCategoryHeader}>
               <Text style={styles.shopByCategoryTitle}>
                 Shop By Category
@@ -150,8 +161,7 @@ const Dashboard = ({ navigation }) => {
                 </View>
               ))}
             </ScrollView>
-          </View>
-          <View style={styles.scrollSpacer} />
+          </View> */}
         </LinearGradient>
       </ScrollView>
 

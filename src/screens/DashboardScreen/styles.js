@@ -109,35 +109,33 @@ export const styles = StyleSheet.create({
         fontSize: 14,
     },
     categoryScroll: {
-        marginTop: 2,
-        marginBottom: 8,
-        paddingLeft: 8,
+        padding: 8
     },
     categoryItem: {
         alignItems: 'center',
-        marginRight: 24,
+        marginLeft: 5,
+        marginRight: 8
     },
     categoryIconWrapper: {
-        width: 65,
-        height: 65,
+        width: '100%',
+        height: 130,
         backgroundColor: '#fff',
-        borderRadius: 50,
-        justifyContent: 'center',
+        borderRadius: 8,
         alignItems: 'center',
-    },
-    gradientBorder: {
-        padding: 2,   // thickness of border
-        borderRadius: 50, // match inner view border radius
+        padding: 6
     },
     categoryIcon: {
-        width: 48,
-        height: 48,
-        resizeMode: 'contain',
+        width: 96,
+        height: 90,
+        borderRadius: 8,
     },
     categoryLabel: {
         fontSize: 15,
         color: Colors.BLACK,
-        fontWeight: '600',
+        fontWeight: '500',
+        position: 'absolute',
+        bottom: 10
+
     },
     scrollSpacer: {
         height: 80,
