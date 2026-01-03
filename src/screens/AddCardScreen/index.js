@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A8011C',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   headerBackIcon: {
     width: 18,
     height: 18,
-    tintColor: '#A8011C',
+    tintColor: Colors.theme1,
   },
   headerTitle: {
     color: '#fff',
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   addCardBtn: {
-    backgroundColor: '#A8011C',
+    backgroundColor: Colors.theme1,
     borderRadius: 24,
     paddingVertical: 14,
     alignItems: 'center',

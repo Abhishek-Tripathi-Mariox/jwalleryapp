@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import OrderTrackModal from '../../components/Modal/OrderTrackModal';
+import { Colors } from '../../themes/Colors';
 
 export default function OrderPlacedModal({ visible, onClose, onTrackOrder }) {
   return (
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   trackBtn: {
-    backgroundColor: '#A8011C',
+    backgroundColor: Colors.theme1,
     borderRadius: 30,
     paddingVertical: 18,
     paddingHorizontal: 32,

@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '40%',
         height: height * 0.065,
-        alignItems:'center'
+        alignItems: 'center'
     },
     backHeaderlabel: {
         color: Colors.GRAY3,
@@ -63,5 +63,44 @@ export const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '400',
         left: width * 0.025
-    }
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: Colors.theme1,
+        paddingHorizontal: 16,
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+        justifyContent: 'space-between',
+        height: 70,
+        paddingTop: 10
+    },
+    headerBackBtn: {
+        width: height * 0.04,
+        height: height * 0.04,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: Colors.WHITE,
+        borderRadius: 50,
+    },
+    headerTitle: {
+        color: '#fff',
+        fontSize: 19,
+        fontWeight: 'bold',
+        letterSpacing: 2,
+        flex: 1,
+        textAlign: 'center',
+    },
+    headerRightBtn: {
+        width: height * 0.05,
+        height: height * 0.05,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerRightIcon: {
+        resizeMode: 'contain',
+        width: 22,
+        height: 22,
+        tintColor: '#fff',
+    },
 });

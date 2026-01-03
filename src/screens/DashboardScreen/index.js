@@ -74,7 +74,7 @@ const Dashboard = (props) => {
           end={{ x: 1, y: 1 }}>
           <View>
 
-            <Search /> {/*search */}
+            <Search /> 
           </View>
           <ScrollView
             horizontal

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList } from 'react-native';
+import BackHeader from '../../components/Header/BackHeader';
 import { AppImages } from '../../constants/app.image';
 import { Colors } from '../../themes/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -77,15 +78,12 @@ export default function CheckoutScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-          <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>CHECKOUT</Text>
-        <TouchableOpacity style={styles.headerBellBtn}>
-          <Image source={require('../../assets/images/jnot.png')} style={styles.headerBellIcon} />
-        </TouchableOpacity>
-      </View>
+      <BackHeader
+        navigation={navigation}
+        title="CHECKOUT"
+        rightIcon={require('../../assets/images/jnot.png')}
+        onRightPress={() => { }}
+      />
       {/* Cart List */}
       <FlatList
         data={items}
@@ -117,52 +115,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF8E1',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.theme1,
-    paddingTop: 40,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
-    justifyContent: 'space-between',
-  },
-  headerBackBtn: {
-    backgroundColor: '#fff',
-    height: 30,
-    width: 30,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerBackIcon: {
-    width: 18,
-    height: 18,
-    tintColor: Colors.theme1,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 22,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-    flex: 1,
-    textAlign: 'center',
-    marginLeft: -30,
-  },
-  headerBellBtn: {
-    backgroundColor: 'transparent',
-    height: 30,
-    width: 30,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerBellIcon: {
-    width: 22,
-    height: 22,
-    tintColor: '#fff',
   },
   cartItem: {
     flexDirection: 'row',
