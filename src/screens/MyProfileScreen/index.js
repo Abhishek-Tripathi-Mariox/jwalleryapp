@@ -33,7 +33,7 @@ export default function MyProfileScreen({ navigation }) {
         navigation={navigation}
         title="PROFILE"
         rightIcon={require('../../assets/images/jnot.png')}
-         onRightPress={() => navigation.navigate('Notification')}
+        onRightPress={() => navigation.navigate('Notification')}
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Cover and Avatar */}
@@ -63,12 +63,12 @@ export default function MyProfileScreen({ navigation }) {
               style={styles.menuItem}
               activeOpacity={0.7}
               onPress={() => {
-                // if (item.key === 'wishlist') navigation.navigate('Wishlist');
+                if (item.key === 'profile') navigation.navigate('ProfileSettingScreen');
                 if (item.key === 'address') navigation.navigate('SavedAddress');
-                // else if (item.key === 'payment') navigation.navigate('PaymentMethod');
-                else if (item.key === 'orders') navigation.navigate('OrderScreen');
-                // else if (item.key === 'profile') navigation.navigate('ProfileSettingScreen');
-                // Add more navigation as needed
+                if (item.key === 'wishlist') navigation.navigate('Wishlist');
+                if (item.key === 'orders') navigation.navigate('OrderScreen');
+                if (item.key === 'payment') navigation.navigate('PaymentMethod');
+                if (item.key === 'contact') navigation.navigate('PaymentMethod');
               }}
             >
               <View style={styles.menuIcon}>{item.icon}</View>

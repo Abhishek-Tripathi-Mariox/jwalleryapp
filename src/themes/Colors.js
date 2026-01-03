@@ -74,6 +74,7 @@ export const Colors = {
     GRAY11: '#B8B8B8',
     GRAY12: '#A0A0A0',
     theme1: "#940A57",
+    theme2: "#FFF8E1",
     themeborder: 'rgba(239, 54, 37, 1)',
     WHITE1: 'rgba(255, 255, 255, 1)',
     RED1: 'rgba(242, 32, 79, 1)',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../themes/Colors';
@@ -6,7 +6,8 @@ import BackHeader from '../../components/Header/BackHeader';
 
 const { width } = Dimensions.get('window');
 
-const addresses = [
+
+const initialAddresses = [
   {
     id: '1',
     label: 'Deliver to Mithu (Home)',
@@ -26,10 +27,30 @@ const addresses = [
 ];
 
 export default function SavedAddressScreen({ navigation }) {
+  const [addresses, setAddresses] = useState(initialAddresses);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleAddAddress = (addressData) => {
+    // Compose address string for display
+    const composedAddress = `${addressData.houseNo}, ${addressData.apartment}, ${addressData.city}, ${addressData.state}, ${addressData.pincode}`;
+    setAddresses(prev => [
+      ...prev,
+      {
+        id: (prev.length + 1).toString(),
+        label: `Deliver to ${addressData.fullName} (${addressData.addressType})`,
+        address: composedAddress,
+        phone: '',
+        email: addressData.email,
+        type: addressData.addressType,
+      },
+    ]);
+    setModalVisible(false);
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
-       <BackHeader
+      <BackHeader
         navigation={navigation}
         title="ADDRESS"
       />
@@ -47,10 +68,15 @@ export default function SavedAddressScreen({ navigation }) {
             <Text style={styles.addressMeta}>{addr.phone}   |   {addr.email}</Text>
           </View>
         ))}
-        <TouchableOpacity style={styles.addAddressBtn}>
+        <TouchableOpacity style={styles.addAddressBtn} onPress={() => setModalVisible(true)}>
           <Text style={styles.addAddressText}>+ Add Address</Text>
         </TouchableOpacity>
       </ScrollView>
+      <AddressModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSave={handleAddAddress}
+      />
     </View>
   );
 }
@@ -164,3 +190,4 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 });
+import AddressModal from './AddressModal';
