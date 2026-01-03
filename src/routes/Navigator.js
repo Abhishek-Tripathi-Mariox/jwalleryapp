@@ -21,7 +21,6 @@ const Navigator = () => {
           component={AppScreens.LoginScreen}
           options={{ headerShown: false }}
         />
-     
         <Stack.Screen
           name="Home"
           component={AppScreens.MyBottomTabs}
@@ -30,11 +29,6 @@ const Navigator = () => {
         <Stack.Screen
           name="MyProfile"
           component={AppScreens.MyProfileScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ProfileScreen"
-          component={AppScreens.ProfileScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
@@ -57,8 +51,8 @@ const Navigator = () => {
           component={AppScreens.WriteReviewScreen}
           options={{ headerShown: false }}
         />
-         <Stack.Screen
-          name="CustomerServiceChatScreen"
+        <Stack.Screen
+          name="CustomerServiceChat"
           component={AppScreens.CustomerServiceChatScreen}
           options={{ headerShown: false }}
         />
@@ -67,47 +61,41 @@ const Navigator = () => {
           component={AppScreens.OrderCancellationModal}
           options={{ headerShown: false }}
         />
-
-        {/* <Stack.Screen
-          name="OrderConfirmedScreen"
-          component={AppScreens.OrderConfirmedScreen}
+        <Stack.Screen
+          name="Wishlist"
+          component={AppScreens.WishlistScreen}
           options={{ headerShown: false }}
-        /> */}
-        {/* <Stack.Screen
-          name="OrderTrackingScreen"
-          component={AppScreens.OrderTrackingScreen}
+        />
+        <Stack.Screen
+          name="ProfileDetail"
+          component={AppScreens.ProfileDetailScreen}
           options={{ headerShown: false }}
-        /> */}
-        {/* <Stack.Screen
-          name="DressDetailScreen"
-          component={AppScreens.DressDetailScreen}
+        />
+        <Stack.Screen
+          name="EarringsList"
+          component={AppScreens.EarringsListScreen}
           options={{ headerShown: false }}
-        /> */}
-       <Stack.Screen
-         name="EarringsList"
-         component={AppScreens.EarringsListScreen}
-         options={{ headerShown: false }}
-       />
-       <Stack.Screen
-         name="Notification"
-         component={AppScreens.NotificationScreen}
-         options={{ headerShown: false }}
-       />
-      <Stack.Screen
-        name="NecklaceList"
-        component={AppScreens.NecklaceListScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ProductDetail"
-        component={AppScreens.ProductDetailScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Checkout"
-        component={AppScreens.CheckoutScreen}
-        options={{ headerShown: false }}
-      />
+        />
+        <Stack.Screen
+          name="Notification"
+          component={AppScreens.NotificationScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="NecklaceList"
+          component={AppScreens.NecklaceListScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ProductDetail"
+          component={AppScreens.ProductDetailScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Checkout"
+          component={AppScreens.CheckoutScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="OrderPlaced"
           component={AppScreens.OrderPlacedScreen}
@@ -126,6 +114,16 @@ const Navigator = () => {
         <Stack.Screen
           name="AddCard"
           component={AppScreens.AddCardScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Cart"
+          component={AppScreens.CartScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="PaymentMethod"
+          component={AppScreens.PaymentMethodScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

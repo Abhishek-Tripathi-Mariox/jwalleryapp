@@ -73,7 +73,7 @@ export default function OrderTrackModal({ visible, onClose, onCancelOrder, navig
           <View style={styles.actionRow}>
             <TouchableOpacity
               style={styles.chatBtn}
-              onPress={() => navigation && navigation.navigate('CustomerServiceChatScreen')}
+              onPress={() => navigation && navigation.navigate('CustomerServiceChat')}
             >
               <Text style={styles.chatBtnText}>Chat with us</Text>
             </TouchableOpacity>

@@ -3,7 +3,6 @@ import LoginScreen from '../screens/LoginOTPScreen';
 import MyBottomTabs from '../routes/MyBottomTabs';
 import MyProfileScreen from '../screens/MyProfileScreen';
 import SavedAddressScreen from '../screens/SavedAddressScreen';
-import ProfileScreen from '../screens/ProfileScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
 import OrderPlacedScreen from '../screens/OrderPlacedScreen';
 import AddShippingAddressScreen from '../screens/AddShippingAddressScreen';
@@ -15,6 +14,10 @@ import AddCardScreen from '../screens/AddCardScreen';
 import CustomerServiceChatScreen from '../screens/CustomerServiceChatScreen';
 import OrderCancellationModal from '../components/Modal/OrderCancellationModal';
 import NotificationScreen from '../screens/NotificationScreen';
+import WishlistScreen from '../screens/WishlistScreen';
+import CartScreen from '../screens/CartScreen';
+import ProfileDetailScreen from '../screens/ProfileDetailScreen';
+import PaymentMethodScreen from '../screens/PaymentMethodScreen';
 
 export const AppScreens = {
   SplashScreen,
@@ -22,7 +25,6 @@ export const AppScreens = {
   MyBottomTabs,
   MyProfileScreen,
   SavedAddressScreen,
-  ProfileScreen,
   FeedbackScreen,
   OrderPlacedScreen,
   AddShippingAddressScreen,
@@ -37,4 +39,8 @@ export const AppScreens = {
   CustomerServiceChatScreen,
   OrderCancellationModal,
   NotificationScreen,
+  WishlistScreen,
+  CartScreen,
+  ProfileDetailScreen,
+  PaymentMethodScreen
 };

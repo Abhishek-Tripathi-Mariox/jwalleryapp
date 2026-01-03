@@ -51,7 +51,7 @@ export default function MyProfileScreen({ navigation }) {
               <Text style={styles.location}>{user.location}</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.editBtn}>
+          <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate('ProfileDetail')}>
             <Text style={styles.editText}>Edit</Text>
           </TouchableOpacity>
         </View>
@@ -63,12 +63,12 @@ export default function MyProfileScreen({ navigation }) {
               style={styles.menuItem}
               activeOpacity={0.7}
               onPress={() => {
-                if (item.key === 'profile') navigation.navigate('ProfileSettingScreen');
+                if (item.key === 'profile') navigation.navigate('ProfileDetail');
                 if (item.key === 'address') navigation.navigate('SavedAddress');
                 if (item.key === 'wishlist') navigation.navigate('Wishlist');
                 if (item.key === 'orders') navigation.navigate('OrderScreen');
                 if (item.key === 'payment') navigation.navigate('PaymentMethod');
-                if (item.key === 'contact') navigation.navigate('PaymentMethod');
+                if (item.key === 'contact') navigation.navigate('CustomerServiceChat');
               }}
             >
               <View style={styles.menuIcon}>{item.icon}</View>
@@ -193,9 +193,9 @@ const styles = StyleSheet.create({
     top: 127,
   },
   editText: {
-    color: '#B4011E',
+    color: Colors.theme1,
     fontWeight: 'bold',
-    fontSize: 13,
+    fontSize: 14,
   },
   menuList: {
     borderRadius: 18,

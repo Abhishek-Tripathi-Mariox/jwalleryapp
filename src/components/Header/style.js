@@ -86,7 +86,7 @@ export const styles = StyleSheet.create({
     headerTitle: {
         color: '#fff',
         fontSize: 19,
-        fontWeight: 'bold',
+        fontWeight: '500',
         letterSpacing: 2,
         flex: 1,
         textAlign: 'center',
