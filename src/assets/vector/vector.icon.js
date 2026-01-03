@@ -20,7 +20,7 @@ export const Vector = {
     MINUS_ICON: <AntDesign name={"minus"} size={15} color={Colors.WHITE} style={{ alignSelf: 'center' }} />,
     ADMIN_ICON: <Ionicons name={"person-outline"} size={22} color={Colors.DARK_GRAY} style={{ alignSelf: 'center' }} />,
     MAP_ICON: <Feather name={"map-pin"} size={22} color={Colors.DARK_GRAY} style={{ alignSelf: 'center' }} />,
-    NOTIFICATION_ICON: <Feather name={"bell"} size={22} color={Colors.DARK_GRAY} style={{ alignSelf: 'center' }} />,
+    NOTIFICATION_ICON: <Feather name={"bell"} size={22} color={Colors.WHITE} />,
     HELP_ICON: <Ionicons name={"help-buoy-outline"} size={22} color={Colors.DARK_GRAY} style={{ alignSelf: 'center' }} />,
     SUPPORT_ICON: <MaterialIcons name={"contact-mail"} size={22} color={Colors.DARK_GRAY} style={{ alignSelf: 'center' }} />,
     DELETE_ICON: <MaterialIcons name={"delete-outline"} size={23} color={'red'} style={{ alignSelf: 'center' }} />,

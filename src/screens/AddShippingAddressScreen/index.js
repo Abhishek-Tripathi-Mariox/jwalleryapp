@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, TouchableOpacity, Image, StyleSheet, TextInput, Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors } from '../../themes/Colors';
+import BackHeader from '../../components/Header/BackHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -18,13 +19,13 @@ const AddShippingAddressScreen = ({ navigation }) => {
         style={{ flex: 1 }}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-            <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>ADD SHIPPING ADRESS</Text>
-          <View style={{ width: 30 }} />
-        </View>
+
+        <BackHeader
+          navigation={navigation}
+          title="ADD SHIPPING ADDRESS"
+          rightIcon={require('../../assets/images/jnot.png')}
+          onRightPress={() => { }}
+        />
 
         {/* Form */}
         <View style={{ flex: 1, paddingHorizontal: 18, paddingTop: 18 }}>
@@ -33,17 +34,17 @@ const AddShippingAddressScreen = ({ navigation }) => {
             <TextInput placeholder="Last name" style={styles.inputHalf} placeholderTextColor="#979797" />
           </View>
           <View style={styles.row}>
-          <TextInput placeholder="Adress" style={styles.input} placeholderTextColor="#979797" />
+            <TextInput placeholder="Address" style={styles.input} placeholderTextColor="#979797" />
           </View>
           <View style={styles.row}>
-          <TextInput placeholder="City" style={styles.input} placeholderTextColor="#979797" />
+            <TextInput placeholder="City" style={styles.input} placeholderTextColor="#979797" />
           </View>
           <View style={styles.row}>
             <TextInput placeholder="State" style={styles.inputHalf} placeholderTextColor="#979797" />
             <TextInput placeholder="ZIP code" style={styles.inputHalf} placeholderTextColor="#979797" />
           </View>
           <View style={styles.row}>
-          <TextInput placeholder="Phone number" style={styles.input} placeholderTextColor="#979797" />
+            <TextInput placeholder="Phone number" style={styles.input} placeholderTextColor="#979797" />
           </View>
 
           <Text style={styles.saveAsLabel}>Save Address As</Text>
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 1,
     flex: 1,
-    marginHorizontal:10
+    marginHorizontal: 10
     // textAlign: 'center',
   },
   row: {

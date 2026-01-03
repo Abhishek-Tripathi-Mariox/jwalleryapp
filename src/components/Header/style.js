@@ -72,12 +72,12 @@ export const styles = StyleSheet.create({
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
         justifyContent: 'space-between',
-        height: 70,
-        paddingTop: 10
+        height: 80,
+        paddingTop: 20
     },
     headerBackBtn: {
-        width: height * 0.04,
-        height: height * 0.04,
+        width: height * 0.038,
+        height: height * 0.038,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: Colors.WHITE,

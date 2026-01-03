@@ -7,6 +7,7 @@ import OrderSummaryModal from './OrderSummaryModal';
 import OrderPlacedModal from '../../components/Modal/OrderPlacedModal';
 import OrderTrackModal from '../../components/Modal/OrderTrackModal';
 import { Colors } from '../../themes/Colors';
+import BackHeader from '../../components/Header/BackHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -34,13 +35,12 @@ const OrderPaymentScreen = ({ navigation }) => {
         style={{ flex: 1 }}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-            <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>CHECKOUT</Text>
-          <View style={{ width: 30 }} />
-        </View>
+        <BackHeader
+          navigation={navigation}
+          title="CHECKOUT"
+          rightIcon={require('../../assets/images/jnot.png')}
+          onRightPress={() => { }}
+        />
 
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
           {/* Green Banner */}
@@ -124,7 +124,7 @@ const OrderPaymentScreen = ({ navigation }) => {
                 <Text style={styles.cardNumber}>•••• •••• •••• 4553</Text>
               </View>
               <View>
-              <Image source={require('../../assets/images/icici.png')} style={styles.cardLogo} />
+                <Image source={require('../../assets/images/icici.png')} style={styles.cardLogo} />
               </View>
             </TouchableOpacity>
 
@@ -234,8 +234,8 @@ const styles = StyleSheet.create({
     padding: 10,
     marginHorizontal: 12,
     marginBottom: 12,
-    borderWidth:1,
-    borderColor:'#fff',
+    borderWidth: 1,
+    borderColor: '#fff',
 
     // iOS shadow
     shadowColor: '#000',
@@ -277,8 +277,8 @@ const styles = StyleSheet.create({
     padding: 10,
     marginHorizontal: 12,
     marginBottom: 12,
-    borderWidth:1,
-    borderColor:'#fff',
+    borderWidth: 1,
+    borderColor: '#fff',
 
     // iOS shadow
     shadowColor: '#000',
@@ -362,13 +362,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
   },
-    sectionLabel1: {
+  sectionLabel1: {
     fontSize: 14,
     color: '#212529',
     fontWeight: 'bold',
     flex: 1,
-    marginLeft:15,
-    marginBottom:10
+    marginLeft: 15,
+    marginBottom: 10
   },
   addCardText: {
     color: '#6574FF',
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   cardRow: {
     marginHorizontal: 12,
     marginBottom: 12,
-    gap:10
+    gap: 10
   },
   cardOption: {
     backgroundColor: '#f8f8f1ff',
@@ -386,10 +386,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    marginHorizontal:0,
+    marginHorizontal: 0,
     marginBottom: 5,
-    borderWidth:1,
-    borderColor:'#fff',
+    borderWidth: 1,
+    borderColor: '#fff',
 
     // iOS shadow
     shadowColor: '#000',
@@ -432,8 +432,8 @@ const styles = StyleSheet.create({
   cardLogo: {
     width: 45,
     height: 45,
-    left:110,
-    marginBottom:5
+    left: 110,
+    marginBottom: 5
   },
   couponBox: {
     backgroundColor: '#f8f8f1ff',
@@ -441,8 +441,8 @@ const styles = StyleSheet.create({
     padding: 10,
     marginHorizontal: 12,
     marginBottom: 12,
-    borderWidth:1.5,
-    borderColor:'#fff',
+    borderWidth: 1.5,
+    borderColor: '#fff',
 
     // iOS shadow
     shadowColor: '#000',
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
   couponIconBig: {
     width: 30,
     height: 35,
-    marginBottom:30
+    marginBottom: 30
   },
   couponTitle: {
     fontSize: 13,

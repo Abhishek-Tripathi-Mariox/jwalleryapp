@@ -14,6 +14,7 @@ import OrderTrackModal from '../../components/Modal/OrderTrackModal';
 import OrderCancelModal from '../../components/Modal/OrderCancelModal';
 import OrderCancellationModal from '../../components/Modal/OrderCancellationModal';
 import { Colors } from '../../themes/Colors';
+import BackHeader from '../../components/Header/BackHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -203,13 +204,10 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-          <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>ORDER</Text>
-        <View style={{ width: 30 }} />
-      </View>
+     <BackHeader
+          navigation={navigation}
+          title="ORDER"
+        />
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>

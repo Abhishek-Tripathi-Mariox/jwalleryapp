@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../themes/Colors';
+import BackHeader from '../../components/Header/BackHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -28,13 +29,10 @@ export default function SavedAddressScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-                   <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
-                 </TouchableOpacity>
-        <Text style={styles.headerTitle}>ADRESS</Text>
-        <View style={{ width: 30 }} />
-      </View>
+       <BackHeader
+        navigation={navigation}
+        title="ADDRESS"
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {addresses.map(addr => (
           <View key={addr.id} style={styles.addressCard}>
@@ -81,7 +79,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-    headerBackIcon: {
+  headerBackIcon: {
     width: 18,
     height: 18,
     tintColor: Colors.theme1,
@@ -110,8 +108,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    borderWidth:2,
-    borderColor:'#ffffffff'
+    borderWidth: 2,
+    borderColor: '#ffffffff'
     // elevation: 2,
   },
   addressRow: {
@@ -132,7 +130,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     marginLeft: 8,
-    backgroundColor:'#FFFDE9'
+    backgroundColor: '#FFFDE9'
   },
   changeText: {
     color: '#FFC700',
@@ -157,7 +155,7 @@ const styles = StyleSheet.create({
     width: width - 32,
     alignItems: 'center',
     marginTop: 18,
-    backgroundColor:'#FFFFFF80'
+    backgroundColor: '#FFFFFF80'
   },
   addAddressText: {
     color: '#333333',

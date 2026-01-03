@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Colors } from '../../themes/Colors';
+import BackHeader from '../../components/Header/BackHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -74,13 +75,10 @@ export default function WriteReviewScreen({ navigation }) {
       </Modal>
 
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-          <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>WRITE REVIEW</Text>
-        <View style={{ width: 30 }} />
-      </View>
+       <BackHeader
+          navigation={navigation}
+          title="WRITE REVIEW"
+        />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Product Card */}
@@ -204,7 +202,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#AC011D',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -399,7 +397,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sendBtn: {
-    backgroundColor: '#AC011D',
+    backgroundColor: Colors.theme1,
     borderRadius: 24,
     paddingVertical: 14,
     alignItems: 'center',
@@ -494,7 +492,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   rateUsBtn: {
-    backgroundColor: '#AC011D',
+    backgroundColor: Colors.theme1,
     borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 40,

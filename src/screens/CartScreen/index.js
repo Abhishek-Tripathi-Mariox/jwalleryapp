@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList } from 'react-native';
 import { AppIcons } from '../../constants/app.icon';
 import { AppImages } from '../../constants/app.image';
 import { Colors } from '../../themes/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import BackHeader from '../../components/Header/BackHeader';
 
 const cartItems = [
   {
@@ -79,15 +81,12 @@ function CartScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-          <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>CART</Text>
-        <TouchableOpacity style={styles.headerBellBtn}>
-          <Image source={require('../../assets/images/jnot.png')} style={styles.headerBellIcon} />
-        </TouchableOpacity>
-      </View>
+       <BackHeader
+        navigation={navigation}
+        title="CART"
+        rightIcon={require('../../assets/images/jnot.png')}
+        onRightPress={() => { }}
+      />
       {/* Cart List */}
       <FlatList
         data={items}

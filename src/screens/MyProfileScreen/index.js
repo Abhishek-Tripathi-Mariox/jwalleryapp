@@ -4,6 +4,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { Colors } from '../../themes/Colors';
+import BackHeader from '../../components/Header/BackHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -28,15 +29,12 @@ export default function MyProfileScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-            <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
-          </TouchableOpacity>
-        <Text style={styles.headerTitle}>PROFILE</Text>
-        <TouchableOpacity style={styles.headerBellBtn}>
-          <Image source={require('../../assets/images/jnot.png')} style={styles.headerBellIcon} />
-        </TouchableOpacity>
-      </View>
+      <BackHeader
+        navigation={navigation}
+        title="PROFILE"
+        rightIcon={require('../../assets/images/jnot.png')}
+        onRightPress={() => { }}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Cover and Avatar */}
         <View style={styles.coverContainer}>
@@ -110,7 +108,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-    headerBackIcon: {
+  headerBackIcon: {
     width: 18,
     height: 18,
     tintColor: Colors.theme1,
@@ -147,8 +145,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     overflow: 'hidden',
     alignItems: 'flex-start',
-    justifyContent:'center',
-    alignSelf:'center'
+    justifyContent: 'center',
+    alignSelf: 'center'
   },
   coverImage: {
     width: 350,
@@ -212,8 +210,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#cdc8c8ff',
-    paddingTop:25,
-    paddingBottom:12
+    paddingTop: 25,
+    paddingBottom: 12
 
   },
   menuIcon: {

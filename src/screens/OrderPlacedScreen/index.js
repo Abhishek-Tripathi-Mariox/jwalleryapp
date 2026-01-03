@@ -4,6 +4,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions } from 'rea
 import LinearGradient from 'react-native-linear-gradient';
 import { AppImages } from '../../constants/app.image';
 import { Colors } from '../../themes/Colors';
+import BackHeader from '../../components/Header/BackHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -17,15 +18,12 @@ const OrderPlacedScreen = ({ navigation }) => {
         style={{ flex: 1 }}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-            <Image source={require('../../assets/images/back.png')} style={styles.headerBackIcon} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>CHECKOUT</Text>
-          <TouchableOpacity style={styles.headerBellBtn}>
-            <Image source={require('../../assets/images/jnot.png')} style={styles.headerBellIcon} />
-          </TouchableOpacity>
-        </View>
+        <BackHeader
+          navigation={navigation}
+          title="CHECKOUT"
+          rightIcon={require('../../assets/images/jnot.png')}
+          onRightPress={() => { }}
+        />
 
         {/* Content */}
         <View style={{ flex: 1, paddingHorizontal: 18, paddingTop: 2 }}>
@@ -218,7 +216,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 18,
     marginBottom: 8,
-    paddingHorizontal:20
+    paddingHorizontal: 20
   },
   totalLabel: {
     fontSize: 15,
