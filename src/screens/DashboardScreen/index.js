@@ -44,25 +44,26 @@ const categories = [
   },
 ];
 
-const Dashboard = (props) => {
-  const [searchText, setSearchText] = useState('');
+
+// Accept navigation prop directly for React Navigation compatibility
+const Dashboard = ({ navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1, }}>
       <StatusBar backgroundColor={Colors.THEMECOLOR} barStyle="light-content" />
-        <View style={styles.topBarRow}>
-          <TouchableOpacity>
-            <Image source={AppImages.jmenu} style={styles.iconButton} />
+      <View style={styles.topBarRow}>
+        <TouchableOpacity>
+          <Image source={AppImages.jmenu} style={styles.iconButton} />
+        </TouchableOpacity>
+        <Image source={AppImages.jlogo} style={styles.logo} />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
+            <Image source={AppImages.jnotification} style={styles.notificationIcon} />
           </TouchableOpacity>
-          <Image source={AppImages.jlogo} style={styles.logo} />
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity>
-              <Image source={AppImages.jnotification} style={styles.notificationIcon} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Image source={AppImages.jbag} style={styles.cartIcon} />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity>
+            <Image source={AppImages.jbag} style={styles.cartIcon} />
+          </TouchableOpacity>
+        </View>
 
       </View>
 
@@ -74,7 +75,7 @@ const Dashboard = (props) => {
           end={{ x: 1, y: 1 }}>
           <View>
 
-            <Search /> 
+            <Search />
           </View>
           <ScrollView
             horizontal

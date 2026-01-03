@@ -33,7 +33,7 @@ export default function MyProfileScreen({ navigation }) {
         navigation={navigation}
         title="PROFILE"
         rightIcon={require('../../assets/images/jnot.png')}
-        onRightPress={() => { }}
+         onRightPress={() => navigation.navigate('Notification')}
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Cover and Avatar */}

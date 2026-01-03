@@ -7,34 +7,30 @@ export const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: Colors.WHITE,
     },
-   
+
     topBarRow: {
-         backgroundColor: Colors.THEMECOLOR,
+        backgroundColor: Colors.THEMECOLOR,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        height: 70
+        height: 80,
+        paddingTop: 20
     },
     logo: {
         resizeMode: 'contain',
+        left: 10
     },
     iconButton: {
-        width: 23,
-        height: 23,
         tintColor: Colors.WHITE,
         resizeMode: 'contain'
     },
     notificationIcon: {
-        width: 23,
-        height: 23,
         tintColor: Colors.WHITE,
         marginRight: 12,
-        resizeMode: 'contain'
+        resizeMode: 'contain',
     },
     cartIcon: {
-        width: 23,
-        height: 23,
         tintColor: Colors.WHITE,
         resizeMode: 'contain'
     },

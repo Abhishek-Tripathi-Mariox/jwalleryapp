@@ -82,7 +82,7 @@ export default function CheckoutScreen({ navigation }) {
         navigation={navigation}
         title="CHECKOUT"
         rightIcon={require('../../assets/images/jnot.png')}
-        onRightPress={() => { }}
+        onRightPress={() => navigation.navigate('Notification')}
       />
       {/* Cart List */}
       <FlatList

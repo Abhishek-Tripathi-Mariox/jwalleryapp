@@ -24,7 +24,7 @@ const AddShippingAddressScreen = ({ navigation }) => {
           navigation={navigation}
           title="ADD SHIPPING ADDRESS"
           rightIcon={require('../../assets/images/jnot.png')}
-          onRightPress={() => { }}
+          onRightPress={() => navigation.navigate('Notification')}
         />
 
         {/* Form */}

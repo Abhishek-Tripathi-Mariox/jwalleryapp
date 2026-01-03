@@ -75,10 +75,10 @@ export default function WriteReviewScreen({ navigation }) {
       </Modal>
 
       {/* Header */}
-       <BackHeader
-          navigation={navigation}
-          title="WRITE REVIEW"
-        />
+      <BackHeader
+        navigation={navigation}
+        title="WRITE REVIEW"
+      />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Product Card */}

@@ -39,7 +39,7 @@ const OrderPaymentScreen = ({ navigation }) => {
           navigation={navigation}
           title="CHECKOUT"
           rightIcon={require('../../assets/images/jnot.png')}
-          onRightPress={() => { }}
+         onRightPress={() => navigation.navigate('Notification')}
         />
 
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>

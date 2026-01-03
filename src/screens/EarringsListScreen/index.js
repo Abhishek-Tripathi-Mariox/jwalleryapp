@@ -37,7 +37,7 @@ const earringsData = [
     price: 'Rs.870',
     rating: 4.8,
   },
-    {
+  {
     id: '5',
     image: AppImages.jwel4,
     title: 'TIFFANY AND CO.',
@@ -45,7 +45,7 @@ const earringsData = [
     price: 'Rs.870',
     rating: 4.8,
   },
-    {
+  {
     id: '6',
     image: AppImages.jwel5,
     title: 'TIFFANY AND CO.',
@@ -131,7 +131,8 @@ export default function EarringsListScreen({ navigation }) {
             <Text style={styles.ratingStar}>★</Text>
             <Text style={styles.ratingText}>{item.rating} Ratings</Text>
           </View>
-          <TouchableOpacity style={styles.buyNowBtn}>
+          <TouchableOpacity style={styles.buyNowBtn}
+            onPress={() => navigation.navigate('Checkout')}>
             <Text style={styles.buyNowText}>Buy Now</Text>
           </TouchableOpacity>
         </View>
@@ -191,7 +192,7 @@ export default function EarringsListScreen({ navigation }) {
             onSubmitEditing={e => handleSearch(e.nativeEvent.text)}
           />
           {/* <TouchableOpacity onPress={handleVoiceSearch}> */}
-            <Image source={require('../../assets/images/mm.png')} style={styles.voiceIcon} />
+          <Image source={require('../../assets/images/mm.png')} style={styles.voiceIcon} />
           {/* </TouchableOpacity> */}
           <TouchableOpacity onPress={handleImageSearch}>
             <Image source={require('../../assets/images/jj.png')} style={styles.cameraIcon} />
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
     height: 18,
     tintColor: Colors.theme1,
   },
-    headerTitle: {
+  headerTitle: {
     flex: 1,
     color: '#fff',
     fontSize: 22,
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     tintColor: '#fff',
   },
-   headerIcon1: {
+  headerIcon1: {
     width: 30,
     height: 30,
     marginLeft: 10,
@@ -343,7 +344,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.theme1,
     borderRadius: 20,
     padding: 3,
-    margin:2
+    margin: 2
 
   },
   filterIcon: {
@@ -366,7 +367,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 130,
     marginRight: 14,
-    resizeMode:'contain'
+    resizeMode: 'contain'
   },
   productInfo: {
     flex: 1,

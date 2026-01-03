@@ -85,7 +85,7 @@ function CartScreen({ navigation }) {
         navigation={navigation}
         title="CART"
         rightIcon={require('../../assets/images/jnot.png')}
-        onRightPress={() => { }}
+      onRightPress={() => navigation.navigate('Notification')}
       />
       {/* Cart List */}
       <FlatList

@@ -22,7 +22,7 @@ const OrderPlacedScreen = ({ navigation }) => {
           navigation={navigation}
           title="CHECKOUT"
           rightIcon={require('../../assets/images/jnot.png')}
-          onRightPress={() => { }}
+        onRightPress={() => navigation.navigate('Notification')}
         />
 
         {/* Content */}

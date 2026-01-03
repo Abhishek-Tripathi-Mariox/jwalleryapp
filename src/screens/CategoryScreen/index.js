@@ -68,12 +68,12 @@ export default function CategoryScreen({ navigation }) {
     if (categoryKey === 'earrings') {
       navigation.navigate('EarringsList', { category: categoryKey, categoryLabel });
     } else {
-      navigation.navigate('ProductList', { category: categoryKey, categoryLabel });
+      navigation.navigate('EarringsList', { category: categoryKey, categoryLabel });
     }
     if (categoryKey === 'necklaces') {
       navigation.navigate('NecklaceList', { category: categoryKey, categoryLabel });
     } else {
-      navigation.navigate('ProductList', { category: categoryKey, categoryLabel });
+      navigation.navigate('EarringsList', { category: categoryKey, categoryLabel });
     }
   };
 

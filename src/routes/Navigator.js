@@ -83,11 +83,16 @@ const Navigator = () => {
           component={AppScreens.DressDetailScreen}
           options={{ headerShown: false }}
         /> */}
-      <Stack.Screen
-        name="EarringsList"
-        component={AppScreens.EarringsListScreen}
-        options={{ headerShown: false }}
-      />
+       <Stack.Screen
+         name="EarringsList"
+         component={AppScreens.EarringsListScreen}
+         options={{ headerShown: false }}
+       />
+       <Stack.Screen
+         name="Notification"
+         component={AppScreens.NotificationScreen}
+         options={{ headerShown: false }}
+       />
       <Stack.Screen
         name="NecklaceList"
         component={AppScreens.NecklaceListScreen}
