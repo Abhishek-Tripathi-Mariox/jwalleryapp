@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { Colors } from '../../themes/Colors';
 
 export default function OrderTrackModal({ visible, onClose, onCancelOrder, navigation }) {
   return (
@@ -243,14 +244,14 @@ const styles = StyleSheet.create({
   cancelBtn: {
     width: '40%',
     borderWidth: 1,
-    borderColor: '#C8002F',
+    borderColor: Colors.theme1,
     borderRadius: 8,
     paddingVertical: 6,
     marginLeft: 8,
     alignItems: 'center',
   },
   cancelBtnText: {
-    color: '#C8002F',
+    color: Colors.theme1,
     fontWeight: 'bold',
     fontSize: 14,
   },

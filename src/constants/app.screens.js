@@ -2,7 +2,6 @@
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginOTPScreen';  // Import the actual component
 import MyBottomTabs from '../routes/MyBottomTabs';
-import AmountDtlsScreen from '../screens/AmountDtlsScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
 import SavedAddressScreen from '../screens/SavedAddressScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -28,7 +27,6 @@ export const AppScreens = {
   SplashScreen,
   LoginScreen,
   MyBottomTabs,
-  AmountDtlsScreen,
   MyProfileScreen,
   SavedAddressScreen,
   ProfileScreen,

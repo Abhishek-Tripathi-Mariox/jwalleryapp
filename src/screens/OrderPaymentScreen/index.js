@@ -6,6 +6,7 @@ import { AppImages } from '../../constants/app.image';
 import OrderSummaryModal from './OrderSummaryModal';
 import OrderPlacedModal from '../../components/Modal/OrderPlacedModal';
 import OrderTrackModal from '../../components/Modal/OrderTrackModal';
+import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   headerBackIcon: {
     width: 18,
     height: 18,
-    tintColor: '#A1011B',
+    tintColor: Colors.theme1,
   },
   headerTitle: {
     color: '#fff',
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     marginRight: 5,
-    tintColor: '#C8002F',
+    tintColor: Colors.theme1,
   },
   couponText: {
     fontSize: 14,
@@ -491,7 +492,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   payBottomBtn: {
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
     paddingVertical: 18,

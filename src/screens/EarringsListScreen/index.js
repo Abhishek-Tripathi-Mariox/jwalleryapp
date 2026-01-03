@@ -144,8 +144,8 @@ export default function EarringsListScreen({ navigation }) {
             }
             style={[
               styles.wishlistIcon,
-              isWishlisted && { tintColor: '#C8002F' },
-              !isWishlisted && { tintColor: '#C8002F' },
+              isWishlisted && { tintColor: Colors.theme1, },
+              !isWishlisted && { tintColor: Colors.theme1, },
             ]}
           />
         </TouchableOpacity>
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8E1',
   },
   header: {
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   backIcon: {
     width: 18,
     height: 18,
-    tintColor: Colors.maroon3,
+    tintColor: Colors.theme1,
   },
     headerTitle: {
     flex: 1,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   searchIcon: {
     width: 22,
     height: 22,
-    tintColor: '#C8002F',
+    tintColor: Colors.theme1,
     marginRight: 8,
   },
   searchInput: {
@@ -301,13 +301,13 @@ const styles = StyleSheet.create({
   voiceIcon: {
     width: 24,
     height: 24,
-    tintColor: '#C8002F',
+    tintColor: Colors.theme1,
     marginHorizontal: 0,
   },
   cameraIcon: {
     width: 27,
     height: 27,
-    tintColor: '#C8002F',
+    tintColor: Colors.theme1,
     marginRight: 10,
   },
   categoryRow: {
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterBtn: {
-    backgroundColor: '#db1143ff',
+    backgroundColor: Colors.theme1,
     borderRadius: 20,
     paddingHorizontal: 18,
     paddingVertical: 6,
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   iconBtn: {
-    backgroundColor: '#db1143ff',
+    backgroundColor: Colors.theme1,
     borderRadius: 20,
     padding: 3,
     margin:2
@@ -358,25 +358,15 @@ const styles = StyleSheet.create({
   },
   productCard: {
     flexDirection: 'row',
-    // backgroundColor: '#d31313ff',
     marginHorizontal: 16,
     marginBottom: 18,
-    // borderRadius: 16,
-    // elevation: 2,
-    // shadowColor: '#C8002F',
-    // shadowOpacity: 0.08,
-    // shadowRadius: 8,
-    // shadowOffset: { width: 0, height: 2 },
-    // padding: 12,
     alignItems: 'center',
   },
   productImage: {
     width: 100,
     height: 130,
-    // borderRadius: 12,
     marginRight: 14,
     resizeMode:'contain'
-    // backgroundColor: '#F8F8F8',
   },
   productInfo: {
     flex: 1,
@@ -433,6 +423,6 @@ const styles = StyleSheet.create({
   wishlistIcon: {
     width: 28,
     height: 28,
-    tintColor: '#C8002F',
+    tintColor: Colors.theme1,
   },
 });

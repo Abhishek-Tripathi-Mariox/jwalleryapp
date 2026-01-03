@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, TouchableOpacity, Image, StyleSheet, TextInput, Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
   headerBackIcon: {
     width: 18,
     height: 18,
-    tintColor: '#A1011B',
+    tintColor: Colors.theme1,
   },
   headerTitle: {
     color: '#fff',
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   addNowBtn: {
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     paddingVertical: 18,
     justifyContent: 'center',
     alignItems: 'center',

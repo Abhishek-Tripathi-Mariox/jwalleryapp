@@ -10,6 +10,7 @@ import {
   Platform,
   Modal,
 } from 'react-native';
+import { Colors } from '../../themes/Colors';
 
 export default function AddCardScreen({ navigation }) {
   const [cardNumber, setCardNumber] = useState('');
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalBtn: {
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
     borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 40,

@@ -151,8 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8E1',
   },
   header: {
-
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -171,7 +170,7 @@ const styles = StyleSheet.create({
   backIcon: {
     width: 18,
     height: 18,
-    tintColor: Colors.maroon3,
+    tintColor: Colors.theme1,
   },
 
   headerTitle: {
@@ -212,7 +211,7 @@ const styles = StyleSheet.create({
   searchIcon: {
     width: 22,
     height: 22,
-    tintColor: '#C8002F',
+    tintColor: Colors.theme1,
     marginRight: 8,
   },
   searchInput: {
@@ -223,13 +222,13 @@ const styles = StyleSheet.create({
   voiceIcon: {
     width: 24,
     height: 24,
-    tintColor: '#C8002F',
+    tintColor: Colors.theme1,
     marginHorizontal: 0,
   },
   cameraIcon: {
     width: 27,
     height: 27,
-    tintColor: '#C8002F',
+    tintColor: Colors.theme1,
     marginRight: 10,
   },
   categoriesGrid: {

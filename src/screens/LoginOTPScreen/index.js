@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_BASE_URL } from '../../constants/api';
 import { setTokenStorage } from '../../utils/tokenStorage';
 import { showToast } from '../../utils/toast';
+import { Colors } from '../../themes/Colors';
 
 const LoginScreen = (props) => {
   const navigation = props.navigation
@@ -143,7 +144,7 @@ const LoginScreen = (props) => {
               ))}
             </View>
             <TouchableOpacity>
-              <Text style={{ padding: 5, paddingTop: 10, color: '#5A5A5A', fontSize: 15, textAlign: 'right' }}>Didn’t receive code? <Text style={{ color: '#8A0017', fontWeight: '700' }}>Resend again</Text></Text>
+              <Text style={{ padding: 5, paddingTop: 10, color: '#5A5A5A', fontSize: 15, textAlign: 'right' }}>Didn’t receive code? <Text style={{ color: Colors.theme1, fontWeight: '700' }}>Resend again</Text></Text>
             </TouchableOpacity>
 
 
@@ -160,7 +161,7 @@ const LoginScreen = (props) => {
               source={AppImages.jlogo1}
               style={styles.image}
             />
-            <Text style={styles.heading}>sign in</Text>
+            <Text style={styles.heading}>Sign in</Text>
 
             <TextInput
               style={styles.input}
@@ -187,20 +188,10 @@ const LoginScreen = (props) => {
             <TouchableOpacity
               onPress={handleSendOtp}
               activeOpacity={0.85}
-              style={{ width: '100%' }}
+              style={styles.button}
             >
-              <LinearGradient
-                colors={['#B4001E', '#8A0017']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.button}
-              >
-                <Text style={styles.text}>{loading ? 'Sending...' : 'Get OTP'}</Text>
-              </LinearGradient>
+              <Text style={styles.text}>{loading ? 'Sending...' : 'Get OTP'}</Text>
             </TouchableOpacity>
-
-
-
           </>
         }
 

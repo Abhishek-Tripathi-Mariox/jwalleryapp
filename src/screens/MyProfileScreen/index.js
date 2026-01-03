@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     headerBackIcon: {
     width: 18,
     height: 18,
-    tintColor: '#A1011B',
+    tintColor: Colors.theme1,
   },
   headerTitle: {
     color: '#fff',

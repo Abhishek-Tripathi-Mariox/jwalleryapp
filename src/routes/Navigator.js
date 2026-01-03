@@ -21,11 +21,7 @@ const Navigator = () => {
           component={AppScreens.LoginScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="AmountDtlsScreen"
-          component={AppScreens.AmountDtlsScreen}
-          options={{ headerShown: false }}
-        />
+     
         <Stack.Screen
           name="Home"
           component={AppScreens.MyBottomTabs}

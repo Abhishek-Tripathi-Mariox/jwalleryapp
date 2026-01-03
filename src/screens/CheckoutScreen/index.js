@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList } from 'react-native';
 import { AppImages } from '../../constants/app.image';
+import { Colors } from '../../themes/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const checkoutItems = [
   {
@@ -119,7 +121,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -138,7 +140,7 @@ const styles = StyleSheet.create({
   headerBackIcon: {
     width: 18,
     height: 18,
-    tintColor: '#A1011B',
+    tintColor: Colors.theme1,
   },
   headerTitle: {
     color: '#fff',
@@ -237,7 +239,7 @@ const styles = StyleSheet.create({
   promoIcon: {
     width: 22,
     height: 22,
-    tintColor: '#C8002F',
+    tintColor: Colors.theme1,
     marginRight: 8,
   },
   promoText: {
@@ -249,7 +251,7 @@ const styles = StyleSheet.create({
   checkoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     paddingVertical: 18,
     paddingHorizontal: 0,
     justifyContent: 'center',

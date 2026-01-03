@@ -9,6 +9,7 @@ import {
   Image
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { Colors } from '../../themes/Colors';
 
 const initialMessages = [
   { id: 1, text: 'Hello, good morning.', time: '10:41 pm', from: 'agent' },
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     paddingTop: 48,
     paddingBottom: 18,
     paddingHorizontal: 16,
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   userBubble: {
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
     alignSelf: 'flex-end',
   },
   agentBubble: {
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   sendBtn: {
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
     borderRadius: 24,
     padding: 10,
     alignItems: 'center',

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { Colors } from '../../themes/Colors';
 
 export default function ProductDetailScreen({ route, navigation }) {
   const { product } = route.params || {};
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
   },
   dotActive: {
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
   },
   infoSection: {
     marginHorizontal: 24,
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
   bottomBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
     paddingVertical: 18,
     paddingHorizontal: 18,
     borderTopLeftRadius: 18,
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
   },
   addToBasketBtn: {
     flex: 1,
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
     borderRadius: 8,
     paddingVertical: 7,
   },

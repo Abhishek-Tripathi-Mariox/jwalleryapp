@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8E1',
   },
   header: {
-    backgroundColor: '#C8002F',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   backIcon: {
     width: 18,
     height: 18,
-    tintColor: Colors.maroon3,
+    tintColor: Colors.theme1,
   },
   headerTitle: {
     flex: 1,

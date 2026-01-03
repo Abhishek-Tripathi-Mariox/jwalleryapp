@@ -7,20 +7,16 @@ export const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: Colors.WHITE,
     },
-    topBar: {
-        backgroundColor: Colors.THEMECOLOR,
-        paddingTop: 10,
-        paddingBottom: 10,
-    },
+   
     topBarRow: {
+         backgroundColor: Colors.THEMECOLOR,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
+        height: 70
     },
     logo: {
-        width: 150,
-        height: 45,
         resizeMode: 'contain',
     },
     iconButton: {
@@ -63,6 +59,7 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 15,
         alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor: Colors.theme1
     },
 
     goldPriceText: {

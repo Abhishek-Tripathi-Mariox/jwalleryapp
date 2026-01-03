@@ -4,8 +4,6 @@ import { Colors } from '../../themes/Colors';
 
 export const styles = StyleSheet.create({
   image: {
-    width: 235,
-    height: 55,
     alignSelf: 'center',
     resizeMode: 'contain',
   },
@@ -48,7 +46,7 @@ export const styles = StyleSheet.create({
     overflow: 'hidden', // important for rounded gradient
     marginTop: 18,
     marginBottom: 8,
-    backgroundColor:'#8A0017'
+    backgroundColor:'#940A57'
   },
 
   input: {
@@ -60,7 +58,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     fontSize: 16,
     marginVertical: height * 0.02,
-    color: Colors.GRAY10,
+    color: Colors.BLACK,
   },
   OTPInput: {
     width: height * 0.062,
@@ -96,7 +94,7 @@ export const styles = StyleSheet.create({
     // marginTop: height * 0.1,
     textAlign: 'center',
     fontFamily: 'Poppins-Semibold',
-    marginTop: 10
+    marginTop: 40
 
   },
   subHeading: {

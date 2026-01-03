@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  SafeAreaView,
 } from 'react-native';
 import { styles } from './styles';
 import { AppImages } from '../../constants/app.image';
@@ -14,6 +13,7 @@ import { AppIcons } from '../../constants/app.icon';
 import { Colors } from '../../themes/Colors';
 import Search from '../../components/Header/Search';
 import LinearGradient from 'react-native-linear-gradient';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const goldPrice = '₹ 7431 per gram (22K)';
 
@@ -50,7 +50,6 @@ const Dashboard = (props) => {
   return (
     <SafeAreaView style={{ flex: 1, }}>
       <StatusBar backgroundColor={Colors.THEMECOLOR} barStyle="light-content" />
-      <View style={styles.topBar}>
         <View style={styles.topBarRow}>
           <TouchableOpacity>
             <Image source={AppImages.jmenu} style={styles.iconButton} />
@@ -64,7 +63,6 @@ const Dashboard = (props) => {
               <Image source={AppImages.jbag} style={styles.cartIcon} />
             </TouchableOpacity>
           </View>
-        </View>
 
       </View>
 
@@ -87,30 +85,24 @@ const Dashboard = (props) => {
 
               {/* Pill 1 */}
               <View style={styles.goldPricePill}>
-                <LinearGradient
-                  colors={['#B4001E', '#8A0017']}
-                  start={{ x: 1, y: 1 }}
-                  end={{ x: 0, y: 1 }}
+                <View
                   style={styles.gradientBox}
                 >
                   <Text style={styles.goldPriceText}>
                     Live Gold Price: {goldPrice}
                   </Text>
-                </LinearGradient>
+                </View>
               </View>
 
               {/* Pill 2 */}
               <View style={styles.goldPricePill}>
-                <LinearGradient
-                  colors={['#B4001E', '#8A0017']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
+                <View
                   style={styles.gradientBox}
                 >
                   <Text style={styles.goldPriceText}>
                     Live Gold Price: {goldPrice}
                   </Text>
-                </LinearGradient>
+                </View>
               </View>
 
             </View>
@@ -118,7 +110,7 @@ const Dashboard = (props) => {
 
           <View style={styles.specialOffersContainer}>
             <Text style={styles.specialOffersTitle}>
-             Special Offers
+              Special Offers
             </Text>
             <View style={styles.specialOffersImageWrapper}>
               <Image

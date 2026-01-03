@@ -11,6 +11,7 @@ import {
   Modal,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { Colors } from '../../themes/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
   headerBackIcon: {
     width: 18,
     height: 18,
-    tintColor: '#A1011B',
+    tintColor: Colors.theme1,
   },
   headerTitle: {
     color: '#fff',

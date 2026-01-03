@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, SafeAreaView } from 'react-native';
 import { AppIcons } from '../../constants/app.icon';
 import { AppImages } from '../../constants/app.image';
+import { Colors } from '../../themes/Colors';
 
 const cartItems = [
   {
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
   headerBackIcon: {
     width: 18,
     height: 18,
-    tintColor: '#A1011B',
+    tintColor: Colors.theme1,
   },
   headerTitle: {
     color: '#fff',
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
   buyNowBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A1011B',
+    backgroundColor: Colors.theme1,
     paddingVertical: 18,
     paddingHorizontal: 0,
     justifyContent: 'center',
