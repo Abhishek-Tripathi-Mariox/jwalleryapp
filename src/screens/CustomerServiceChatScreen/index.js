@@ -111,8 +111,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '500',
     letterSpacing: 2,
   },
   chatContainer: {

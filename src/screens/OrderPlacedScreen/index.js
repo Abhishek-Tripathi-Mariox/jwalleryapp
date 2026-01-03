@@ -247,8 +247,8 @@ const styles = StyleSheet.create({
   },
   placeOrderText: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 18,
+    fontWeight: '500',
+    fontSize: 17,
     letterSpacing: 2,
   },
 });

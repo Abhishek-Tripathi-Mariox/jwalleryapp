@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   productTitle: {
-    fontWeight: 'bold',
+    fontWeight: '500',
     fontSize: 18,
     // letterSpacing: 2,
     color: '#000000',

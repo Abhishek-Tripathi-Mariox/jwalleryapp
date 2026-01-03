@@ -11,6 +11,7 @@ import {
   Modal,
 } from 'react-native';
 import { Colors } from '../../themes/Colors';
+import BackHeader from '../../components/Header/BackHeader';
 
 export default function AddCardScreen({ navigation }) {
   const [cardNumber, setCardNumber] = useState('');
@@ -46,16 +47,11 @@ export default function AddCardScreen({ navigation }) {
           </View>
         </View>
       </Modal>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
-          <Image
-            source={require('../../assets/images/back.png')}
-            style={styles.headerBackIcon}
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>NEW CARD</Text>
-        <View style={{ width: 30 }} />
-      </View>
+
+      <BackHeader
+        navigation={navigation}
+        title="NEW CARD"
+      />
       <View style={styles.container}>
         <Text style={styles.title}>Add Debit or Credit Card</Text>
         <Text style={styles.label}>Card Number</Text>
@@ -191,10 +187,10 @@ const styles = StyleSheet.create({
     height: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    position:'absolute',
-    right:10,
-    borderWidth:1,
-    borderColor:'#A7A5AF',
+    position: 'absolute',
+    right: 10,
+    borderWidth: 1,
+    borderColor: '#A7A5AF',
   },
   cvcInfoText: {
     color: '#A7A5AF',
