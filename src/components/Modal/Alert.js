@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-    StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -12,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
-const Alert = ({ modalAlert, setModalAlert }) => {
+const Alert = ({ modalAlert, setModalAlert, title, message }) => {
     return (
         <SafeAreaView>
             <Modal
@@ -23,10 +22,10 @@ const Alert = ({ modalAlert, setModalAlert }) => {
             >
                 <View style={styles.modalBackground}>
                     <View style={styles.modalContent}>
-                        <Ionicons name={"list"} size={32} color={'#000'} />
+                        <Ionicons name={"information-circle-outline"} size={32} color={Colors.THEMECOLOR} />
 
-                        <Text style={[styles.modalText, { fontSize: 22, marginTop: 10 }]}>Today Missing Job <Text style={{ color: 'orange' }}>3</Text></Text>
-                        <Text style={styles.modalText}><Text style={{ color: 'orange', fontSize: 22 }}>29:53</Text> minutes to expire</Text>
+                        {title ? <Text style={[styles.modalText, { fontSize: 22, marginTop: 10 }]}>{title}</Text> : null}
+                        {message ? <Text style={styles.modalText}>{message}</Text> : null}
 
                         <TouchableOpacity
                             onPress={() => setModalAlert(false)}

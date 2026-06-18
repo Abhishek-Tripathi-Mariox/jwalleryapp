@@ -1,132 +1,174 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView, ActivityIndicator, Dimensions, Alert } from 'react-native';
 import { Colors } from '../../themes/Colors';
 import { AppImages } from '../../constants/app.image';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import Feather from 'react-native-vector-icons/Feather';
+import { fetchProductsByCategory, searchProducts, toggleWishlist as toggleWishlistAPI, fetchCategories, addToCart } from '../../utils/api';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCart } from '../../utils/CartContext';
 
-const necklaceData = [
-  {
-    id: '1',
-    image: AppImages.jwel,
-    title: 'Tiffany and Co.',
-    subtitle: 'floral rise necklace',
-    price: 'Rs.720',
-    colors: ['silver', 'gray', 'yellow'],
-  },
-  {
-    id: '2',
-    image: AppImages.jwel1,
-    title: 'Tiffany and Co.',
-    subtitle: 'floral rise necklace',
-    price: 'Rs.920',
-    colors: ['silver', 'gray', 'yellow'],
-  },
-  {
-    id: '3',
-    image: AppImages.jwel2,
-    title: 'Tiffany and Co.',
-    subtitle: 'floral rise necklace',
-    price: 'Rs.440',
-    colors: ['silver', 'gray', 'yellow'],
-  },
-  {
-    id: '4',
-    image: AppImages.jwel3,
-    title: 'Tiffany and Co.',
-    subtitle: 'floral rise necklace',
-    price: 'Rs.870',
-    colors: ['silver', 'gray', 'yellow'],
-  },
-    {
-    id: '5',
-    image: AppImages.jwel4,
-    title: 'Tiffany and Co.',
-    subtitle: 'floral rise necklace',
-    price: 'Rs.440',
-    colors: ['silver', 'gray', 'yellow'],
-  },
-  {
-    id: '6',
-    image: AppImages.jwel5,
-    title: 'Tiffany and Co.',
-    subtitle: 'floral rise necklace',
-    price: 'Rs.870',
-    colors: ['silver', 'gray', 'yellow'],
-  },
-];
-
-const filterChips = ['Women', 'Necklace', 'Diamond'];
-
-export default function NecklaceListScreen({ navigation }) {
+export default function NecklaceListScreen({ navigation, route }) {
+  const { categoryId, categoryLabel, category, filters } = route.params || {};
+  const [filterChips, setFilterChips] = useState([]);
+  const [activeChips, setActiveChips] = useState(filters || [categoryLabel].filter(Boolean));
   const [wishlist, setWishlist] = useState({});
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { refreshCart } = useCart();
 
-  const toggleWishlist = (id) => {
-    setWishlist((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const handleAddToCart = async (product) => {
+    try {
+      const res = await addToCart(product._id, 1);
+      if (res?.code === 1) {
+        await refreshCart();
+        Alert.alert('Added to Cart', `${product.productName} added to cart!`);
+      } else {
+        Alert.alert('Error', res?.message || 'Failed to add to cart');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Failed to add to cart');
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      let res;
+      if (categoryId) {
+        res = await fetchProductsByCategory(categoryId);
+      } else {
+        res = await searchProducts(category || 'necklace');
+      }
+      if (res?.code === 1 && res.data) {
+        const list = res.data.products || res.data || [];
+        setProducts(Array.isArray(list) ? list : []);
+      }
+    } catch (e) {
+      console.log('Products load error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadFilterChips = async () => {
+    try {
+      const res = await fetchCategories();
+      if (res?.code === 1 && res.data) {
+        const cats = Array.isArray(res.data) ? res.data : res.data.categories || [];
+        setFilterChips(cats.map(c => c.categoryName || c.name).filter(Boolean));
+      }
+    } catch (e) {
+      console.log('Filter chips load error:', e);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      loadProducts();
+      loadFilterChips();
+    }, [categoryId])
+  );
+
+  const handleToggleWishlist = async (productId) => {
+    try {
+      await toggleWishlistAPI(productId);
+      setWishlist(prev => ({ ...prev, [productId]: !prev[productId] }));
+    } catch (e) {
+      console.log('Toggle wishlist error:', e);
+    }
   };
 
   const renderItem = ({ item }) => {
-    const isWishlisted = wishlist[item.id];
+    const isWishlisted = wishlist[item._id];
+    const imageUrl = item.productImages?.[0]?.url || (typeof item.image === 'string' ? item.image : item.image?.url);
+    const originalPrice = item.price || 0;
+    const discountPrice = item.discountPrice || originalPrice;
+    const discount = originalPrice > discountPrice ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100) : 0;
+
     return (
       <TouchableOpacity
         style={styles.productCard}
-        onPress={() => navigation.navigate('ProductDetail', { product: item })}
+        onPress={() => navigation.navigate('ProductDetail', { productId: item._id, product: item })}
         activeOpacity={0.85}
       >
-        <Image source={item.image} style={styles.productImage} />
-        <TouchableOpacity style={styles.wishlistBtn} onPress={() => toggleWishlist(item.id)}>
-          <Image
-            source={
-              isWishlisted
-                ? require('../../assets/images/redheart.png') // Use a filled heart icon if available
-                : require('../../assets/images/redfill.png') // Use an outlined heart icon
-            }
-            style={[
-              styles.wishlistIcon,
-              isWishlisted && { tintColor: '#DD8560' },
-              !isWishlisted && { tintColor: '#DD8560' },
-            ]}
-          />
-        </TouchableOpacity>
-        <Text style={styles.productTitle}>{item.title}</Text>
-        <Text style={styles.productSubtitle}>{item.subtitle}</Text>
-        <Text style={styles.productPrice}>{item.price}</Text>
+        <View style={styles.productImageWrap}>
+          {imageUrl ? (
+            <Image source={{ uri: imageUrl }} style={styles.productImage} />
+          ) : (
+            <View style={[styles.productImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+              <Text style={{ color: '#999', fontSize: 12 }}>No Image</Text>
+            </View>
+          )}
+          {discount > 0 && (
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountText}>{discount}% OFF</Text>
+            </View>
+          )}
+          <TouchableOpacity
+            style={styles.wishlistBtn}
+            onPress={(e) => { e.stopPropagation(); handleToggleWishlist(item._id); }}
+          >
+            <AntDesign
+              name={isWishlisted ? "heart" : "hearto"}
+              size={18}
+              color={isWishlisted ? "#FF4444" : "#666"}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.productInfo}>
+          {item.brand && (
+            <Text style={styles.productBrand} numberOfLines={1}>{item.brand}</Text>
+          )}
+          <Text style={styles.productName} numberOfLines={2}>{item.productName}</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.productPrice}>₹{discountPrice.toLocaleString('en-IN')}</Text>
+            {discount > 0 && (
+              <Text style={styles.originalPrice}>₹{originalPrice.toLocaleString('en-IN')}</Text>
+            )}
+          </View>
+          {item.averageRating > 0 && (
+            <View style={styles.ratingRow}>
+              <AntDesign name="star" size={12} color="#FFD700" />
+              <Text style={styles.ratingText}>{item.averageRating?.toFixed(1) || item.rating || 0}</Text>
+            </View>
+          )}
+          <TouchableOpacity style={styles.addToCartBtn} onPress={(e) => { e.stopPropagation(); handleAddToCart(item); }}>
+            <Feather name="shopping-cart" size={14} color="#fff" />
+            <Text style={styles.addToCartText}>Add</Text>
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
     );
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header Bar */}
       <View style={styles.header}>
-        <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginTop: -10
-        }}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backIconContainer}
-          >
-            <Image
-              source={require('../../assets/images/back.png')}
-              style={styles.backIcon}
-            />
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backIconContainer}
+        >
+          <Image
+            source={require('../../assets/images/back.png')}
+            style={styles.backIcon}
+          />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{categoryLabel || 'Necklace'}</Text>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
+            <Image source={AppImages.jnotification} style={styles.headerIcon} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Necklace</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity>
-              <Image source={require('../../assets/images/jnot.png')} style={styles.headerIcon} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Image source={require('../../assets/images/jbag1.png')} style={styles.headerIcon1} />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+            <Image source={AppImages.jbag} style={styles.headerIcon1} />
+          </TouchableOpacity>
         </View>
-        {/* Category Title and Filters */}
+      </View>
+      {/* Category Title and Filters */}
+      <View style={styles.headerExtras}>
         <View style={styles.categoryRow}>
-          <Text style={styles.necklaceCount}>52 NECKLACE</Text>
+          <Text style={styles.necklaceCount}>{products.length} {(categoryLabel || 'NECKLACE').toUpperCase()}</Text>
           <View style={styles.filterRow}>
             <TouchableOpacity style={styles.filterBtn}>
               <Text style={styles.filterBtnText}>New</Text>
@@ -142,23 +184,31 @@ export default function NecklaceListScreen({ navigation }) {
       </View>
 
       {/* Filter Chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-        {filterChips.map((chip, idx) => (
-          <View key={chip} style={styles.chip}>
-            <Text style={styles.chipText}>{chip}</Text>
-            <Text style={styles.chipClose}>×</Text>
-          </View>
-        ))}
-      </ScrollView>
+      {activeChips.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+          {activeChips.map((chip, idx) => (
+            <View key={chip + idx} style={styles.chip}>
+              <Text style={styles.chipText}>{chip}</Text>
+              <Text style={styles.chipClose}>×</Text>
+            </View>
+          ))}
+        </ScrollView>
+      )}
       {/* Product Grid */}
-      <FlatList
-        data={necklaceData}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color={Colors.theme1} style={{ marginTop: 40 }} />
+      ) : (
+        <FlatList
+          data={products}
+          renderItem={renderItem}
+          keyExtractor={item => item._id}
+          numColumns={2}
+          columnWrapperStyle={styles.productRow}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 40, color: '#888' }}>No products found.</Text>}
+        />
+      )}
     </View>
   );
 }
@@ -166,21 +216,26 @@ export default function NecklaceListScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     backgroundColor: Colors.theme1,
-    paddingTop: 40,
-    paddingBottom: 16,
+    height: 60,
     paddingHorizontal: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerExtras: {
+    backgroundColor: Colors.theme1,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
   backIconContainer: {
     backgroundColor: '#fff',
-    height: 30,
-    width: 30,
-    borderRadius: 50,
+    height: 36,
+    width: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -192,24 +247,26 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     color: '#fff',
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '500',
-    marginLeft: 16,
+    letterSpacing: 2,
+    textAlign: 'center',
+    fontFamily: 'Poppins-Medium',
   },
   headerIcons: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   headerIcon: {
-    width: 28,
-    height: 28,
-    marginLeft: 16,
+    width: 24,
+    height: 24,
+    marginLeft: 12,
     tintColor: '#fff',
   },
   headerIcon1: {
-    width: 30,
-    height: 30,
-    marginLeft: 10,
+    width: 24,
+    height: 24,
+    marginLeft: 12,
     tintColor: '#fff',
   },
   categoryRow: {
@@ -230,7 +287,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterBtn: {
-    backgroundColor: '#db1143ff',
+    backgroundColor: 'Colors.theme1',
     borderRadius: 20,
     paddingHorizontal: 18,
     paddingVertical: 6,
@@ -242,7 +299,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   iconBtn: {
-    backgroundColor: '#db1143ff',
+    backgroundColor: 'Colors.theme1',
     borderRadius: 20,
     padding: 3,
     margin:2
@@ -281,49 +338,125 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   listContent: {
-    paddingHorizontal: 8,
-    paddingTop: 10,
     paddingBottom: 20,
   },
+  productRow: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
   productCard: {
-    flex: 1,
-    margin: 8,
+    width: (Dimensions.get('window').width - 48) / 2,
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+  },
+  productImageWrap: {
+    width: '100%',
+    height: (Dimensions.get('window').width - 48) / 2 * 1.1,
+    backgroundColor: '#F5F5F5',
+    position: 'relative',
   },
   productImage: {
-    width: 170,
-    height: 250,
-    marginBottom: 8,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  discountBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#FF4444',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  discountText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    fontFamily: 'Poppins-Bold',
   },
   wishlistBtn: {
     position: 'absolute',
-    right: 5,
-    zIndex: 2,
-    padding: 4,
-    bottom:90
+    top: 8,
+    right: 8,
+    backgroundColor: '#fff',
+    padding: 6,
+    borderRadius: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
   },
-  wishlistIcon: {
-    width: 28,
-    height: 28,
-    tintColor: '#DD8560',
+  productInfo: {
+    padding: 10,
   },
-  productTitle: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    // letterSpacing: 1,
-    color: '#000000',
-    marginTop: 4,
+  productBrand: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: Colors.theme1,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+    fontFamily: 'Poppins-SemiBold',
   },
-  productSubtitle: {
-    fontSize: 15,
-    color: '#555555',
-    marginTop: 2,
-    textTransform: 'lowercase',
+  productName: {
+    fontSize: 13,
+    color: '#333',
+    fontWeight: '500',
+    lineHeight: 18,
+    marginBottom: 4,
+    minHeight: 36,
+    fontFamily: 'Poppins-Medium',
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginBottom: 4,
   },
   productPrice: {
-    color: '#DD8560',
+    fontSize: 16,
     fontWeight: 'bold',
-    fontSize: 15,
-    marginTop: 2,
-    marginBottom: 4,
+    color: '#DD8560',
+    fontFamily: 'Poppins-SemiBold',
+  },
+  originalPrice: {
+    fontSize: 12,
+    color: '#999',
+    textDecorationLine: 'line-through',
+    marginLeft: 6,
+    fontFamily: 'Poppins-Regular',
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  ratingText: {
+    fontSize: 11,
+    color: '#666',
+    marginLeft: 3,
+    fontWeight: '500',
+  },
+  addToCartBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.theme1,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  addToCartText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 5,
   },
 });

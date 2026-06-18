@@ -1,78 +1,92 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, ActivityIndicator, Alert } from 'react-native';
 import BackHeader from '../../components/Header/BackHeader';
 import { AppImages } from '../../constants/app.image';
 import { Colors } from '../../themes/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const checkoutItems = [
-  {
-    id: '1',
-    name: 'GIVA',
-    subtitle: 'silver layered drop necklace',
-    price: 500.5,
-    image: AppImages.jwel,
-    qty: 1,
-  },
-  {
-    id: '2',
-    name: 'FOREVERMARK',
-    subtitle: 'Locke and Key',
-    price: 910,
-    image: AppImages.jwel1,
-    qty: 1,
-  },
-  {
-    id: '3',
-    name: 'GIVA',
-    subtitle: 'silver layered drop necklace',
-    price: 500.5,
-    image: AppImages.jwel2,
-    qty: 1,
-  },
-  {
-    id: '4',
-    name: 'FOREVERMARK',
-    subtitle: 'Locke and Key',
-    price: 910,
-    image: AppImages.jwel3,
-    qty: 1,
-  },
-];
+import { fetchCart, updateCartItem, placeOrder } from '../../utils/api';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCart } from '../../utils/CartContext';
 
 function CheckoutItem({ item, onQtyChange }) {
+  const product = item.productId || item;
+  const imageUrl = product.productImages?.[0]?.url || item.productImage;
+  const currentQty = item.quantity || item.qty || 1;
+
   return (
     <View style={styles.cartItem}>
-      <Image source={item.image} style={styles.cartItemImage} />
+      {imageUrl ? (
+        <Image source={{ uri: imageUrl }} style={styles.cartItemImage} />
+      ) : (
+        <View style={[styles.cartItemImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+          <Text style={{ color: '#999', fontSize: 10 }}>No Image</Text>
+        </View>
+      )}
       <View style={{ flex: 1 }}>
-        <Text style={styles.cartItemName}>{item.name}</Text>
-        <Text style={styles.cartItemSubtitle}>{item.subtitle}</Text>
+        <Text style={styles.cartItemName}>{product.brand || product.productName || item.name}</Text>
+        <Text style={styles.cartItemSubtitle}>{product.productName || item.subtitle}</Text>
         <View style={styles.qtyRow}>
-          <TouchableOpacity onPress={() => onQtyChange(item.id, -1)} style={styles.qtyBtn}>
+          <TouchableOpacity 
+            onPress={() => currentQty > 1 && onQtyChange(item._id || item.id, -1)} 
+            style={[styles.qtyBtn, currentQty <= 1 && { opacity: 0.4 }]}
+            disabled={currentQty <= 1}
+          >
             <Text style={styles.qtyBtnText}>−</Text>
           </TouchableOpacity>
-          <Text style={styles.qtyText}>{item.qty}</Text>
-          <TouchableOpacity onPress={() => onQtyChange(item.id, 1)} style={styles.qtyBtn}>
+          <Text style={styles.qtyText}>{currentQty}</Text>
+          <TouchableOpacity onPress={() => onQtyChange(item._id || item.id, 1)} style={styles.qtyBtn}>
             <Text style={styles.qtyBtnText}>+</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.cartItemPrice}>Rs.{item.price}</Text>
+        <Text style={styles.cartItemPrice}>₹{product.discountPrice || product.price || item.price}</Text>
       </View>
     </View>
   );
 }
 
 export default function CheckoutScreen({ navigation }) {
-  const [items, setItems] = useState(checkoutItems);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { refreshCart } = useCart();
 
-  const handleQtyChange = (id, delta) => {
-    setItems(prev =>
-      prev.map(item =>
-        item.id === id
-          ? { ...item, qty: Math.max(1, item.qty + delta) }
-          : item
-      )
-    );
+  const loadCart = async () => {
+    try {
+      const res = await fetchCart();
+      if (res?.code === 1 && res.data) {
+        const list = res.data.cart?.items || res.data.items || res.data || [];
+        setItems(Array.isArray(list) ? list : []);
+      }
+    } catch (e) {
+      console.log('Checkout load error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      loadCart();
+    }, [])
+  );
+
+  const handleQtyChange = async (id, delta) => {
+    const item = items.find(i => (i._id || i.id) === id);
+    if (!item) return;
+    const currentQty = item.quantity || item.qty || 1;
+    const newQty = Math.max(1, currentQty + delta);
+    if (newQty === currentQty) return; // Don't update if no change
+    try {
+      await updateCartItem(id, newQty);
+      setItems(prev => prev.map(i => (i._id || i.id) === id ? { ...i, quantity: newQty, qty: newQty } : i));
+      await refreshCart(); // Update cart badge count
+    } catch (e) {
+      console.log('Update qty error:', e);
+    }
+  };
+
+  const handleCheckout = async () => {
+    navigation.navigate('OrderPlaced');
   };
 
   return (
@@ -81,19 +95,24 @@ export default function CheckoutScreen({ navigation }) {
       <BackHeader
         navigation={navigation}
         title="CHECKOUT"
-        rightIcon={require('../../assets/images/jnot.png')}
+        rightIcon={AppImages.jnotification}
         onRightPress={() => navigation.navigate('Notification')}
       />
       {/* Cart List */}
-      <FlatList
-        data={items}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <CheckoutItem item={item} onQtyChange={handleQtyChange} />
-        )}
-        contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 8, paddingBottom: 8 }}
-        showsVerticalScrollIndicator={false}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color={Colors.theme1} style={{ marginTop: 40 }} />
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={item => item._id || item.id || String(Math.random())}
+          renderItem={({ item }) => (
+            <CheckoutItem item={item} onQtyChange={handleQtyChange} />
+          )}
+          contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 8, paddingBottom: 8 }}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 40, color: '#888' }}>Your cart is empty.</Text>}
+        />
+      )}
       {/* Promo Code */}
       <View style={styles.promoRow}>
         <Image source={require('../../assets/images/discount.png')} style={styles.promoIcon} />
@@ -102,7 +121,7 @@ export default function CheckoutScreen({ navigation }) {
       {/* Checkout Button */}
       <TouchableOpacity
         style={styles.checkoutBtn}
-        onPress={() => navigation.navigate('OrderPlaced')}
+        onPress={handleCheckout}
       >
         <Image source={require('../../assets/images/jbag1.png')} style={styles.checkoutIcon} />
         <Text style={styles.checkoutBtnText}>CHECKOUT</Text>
@@ -114,7 +133,7 @@ export default function CheckoutScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#FFFFFF',
   },
   cartItem: {
     flexDirection: 'row',

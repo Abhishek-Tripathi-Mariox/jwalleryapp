@@ -1,71 +1,76 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../themes/Colors';
 import { AppImages } from '../../constants/app.image';
-
-// Dummy wishlist data (can be replaced with real data)
-const wishlistData = [
-    {
-        id: '1',
-        image: AppImages.jwel,
-        title: 'TIFFANY AND CO.',
-        subtitle: 'Floral Rise Necklace',
-        price: 'Rs.730',
-        rating: 4.8,
-    },
-    {
-        id: '2',
-        image: AppImages.jwel1,
-        title: 'TIFFANY AND CO.',
-        subtitle: 'Floral Rise Necklace',
-        price: 'Rs.920',
-        rating: 4.8,
-    },
-    {
-        id: '3',
-        image: AppImages.jwel2,
-        title: 'TIFFANY AND CO.',
-        subtitle: 'Floral Rise Necklace',
-        price: 'Rs.440',
-        rating: 4.8,
-    },
-];
+import { fetchWishlist, removeFromWishlist } from '../../utils/api';
+import { useFocusEffect } from '@react-navigation/native';
+import BackHeader from '../../components/Header/BackHeader';
 
 export default function WishlistScreen({ navigation }) {
-    const [wishlist, setWishlist] = useState({});
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const toggleWishlist = (id) => {
-        setWishlist((prev) => ({
-            ...prev,
-            [id]: !prev[id],
-        }));
+    const loadWishlist = async () => {
+        try {
+            const res = await fetchWishlist();
+            if (res?.code === 1 && res.data) {
+                const list = res.data.wishlist || res.data.items || res.data || [];
+                setItems(Array.isArray(list) ? list : []);
+            }
+        } catch (e) {
+            console.log('Wishlist load error:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            setLoading(true);
+            loadWishlist();
+        }, [])
+    );
+
+    const handleRemove = async (productId) => {
+        try {
+            await removeFromWishlist(productId);
+            setItems(prev => prev.filter(i => (i.productId?._id || i.productId || i._id) !== productId));
+        } catch (e) {
+            console.log('Remove wishlist error:', e);
+        }
     };
 
     const renderItem = ({ item }) => {
-        const isWishlisted = wishlist[item.id] !== false; // default true
+        const product = item.productId || item;
+        const imageUrl = product.productImages?.[0]?.url;
+        const price = product.discountPrice || product.price || 0;
+
         return (
             <View style={styles.productCard}>
-                <Image source={item.image} style={styles.productImage} />
+                {imageUrl ? (
+                    <Image source={{ uri: imageUrl }} style={styles.productImage} />
+                ) : (
+                    <View style={[styles.productImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+                        <Text style={{ color: '#999', fontSize: 12 }}>No Image</Text>
+                    </View>
+                )}
                 <View style={styles.productInfo}>
-                    <Text style={styles.productTitle}>{item.title}</Text>
-                    <Text style={styles.productSubtitle}>{item.subtitle}</Text>
-                    <Text style={styles.productPrice}>{item.price}</Text>
+                    <Text style={styles.productTitle}>{product.brand || product.productName}</Text>
+                    <Text style={styles.productSubtitle}>{product.productName}</Text>
+                    <Text style={styles.productPrice}>₹{price}</Text>
                     <View style={styles.ratingRow}>
                         <Text style={styles.ratingStar}>★</Text>
-                        <Text style={styles.ratingText}>{item.rating} Ratings</Text>
+                        <Text style={styles.ratingText}>{product.rating || 0} Ratings</Text>
                     </View>
                     <TouchableOpacity style={styles.buyNowBtn}
-                        onPress={() => navigation.navigate('ProductDetailScreen', { product: item })}>
+                        onPress={() => navigation.navigate('ProductDetailScreen', { productId: product._id, product })}>
                         <Text style={styles.buyNowText}>View Details</Text>
                     </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.wishlistBtn} onPress={() => toggleWishlist(item.id)}>
+                <TouchableOpacity style={styles.wishlistBtn} onPress={() => handleRemove(product._id)}>
                     <Image
-                        source={
-                            isWishlisted
-                                ? require('../../assets/images/redheart.png')
-                                : require('../../assets/images/redfill.png')
-                        }
+                        source={require('../../assets/images/redheart.png')}
                         style={styles.wishlistIcon}
                     />
                 </TouchableOpacity>
@@ -74,45 +79,34 @@ export default function WishlistScreen({ navigation }) {
     };
 
     return (
-        <View style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    style={styles.backIconContainer}
-                >
-                    <Image
-                        source={require('../../assets/images/back.png')}
-                        style={styles.backIcon}
-                    />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Wishlist</Text>
-                <View style={styles.headerIcons}>
-                    <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
-                        <Image source={require('../../assets/images/jnot.png')} style={styles.headerIcon} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
-                        <Image source={require('../../assets/images/jbag1.png')} style={styles.headerIcon1} />
-                    </TouchableOpacity>
-                </View>
-            </View>
-            {/* Wishlist List */}
-            <FlatList
-                data={wishlistData.filter(item => wishlist[item.id] !== false)}
-                renderItem={renderItem}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-                ListEmptyComponent={<Text style={styles.emptyText}>No items in wishlist.</Text>}
+        <SafeAreaView style={styles.container}>
+            <BackHeader
+                navigation={navigation}
+                title="WISHLIST"
+                rightIcon={AppImages.jnotification}
+                onRightPress={() => navigation.navigate('Notification')}
             />
-        </View>
+            {/* Wishlist List */}
+            {loading ? (
+                <ActivityIndicator size="large" color={Colors.theme1} style={{ marginTop: 40 }} />
+            ) : (
+                <FlatList
+                    data={items}
+                    renderItem={renderItem}
+                    keyExtractor={item => (item.productId?._id || item._id || String(Math.random()))}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                    ListEmptyComponent={<Text style={styles.emptyText}>No items in wishlist.</Text>}
+                />
+            )}
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF8E1',
+        backgroundColor: '#FFFFFF',
     },
     header: {
         backgroundColor: Colors.theme1,
@@ -239,6 +233,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#888',
         fontSize: 16,
-        marginTop: 40,
+        marginTop: 60,
     },
 });

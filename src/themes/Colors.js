@@ -1,58 +1,27 @@
 export const Colors = {
-    // BLACK: "#000000",
-    // BLACK: "#202020",
-    // BLACK: "#404040",
-    // BLACK: "#606060",
-    // BLACK: "#808080",
-    // BLACK: "#1B1B1B",
-
-    // // Charcoal
-    // BLACK: "#1C2429",
-    // BLACK: "#36454F",
-    // BLACK: "#506675",
-    // BLACK: "#6B879A",
-    // BLACK: "#91A6B4",
-
-    // BLACK: "#363B33",
-    // BLACK: "#555D50",
-    // BLACK: "#747F6D",
-    // BLACK: "#949E8E",
-    // BLACK: "#B5BCB1",
-
-    // BLACK: "#16161D",
-    // BLACK: "#353545",
-    // BLACK: "#3B3C51",
-    // BLACK: "#444560",
-    // BLACK: "#545675",
-    // BLACK: "#696D8E",
-    // BLACK: "#888BA8",
-    // BLACK: "#B2B3C7",
-    // BLACK: "#D6D6E1",
-    // BLACK: "#ECECF2",
-    // BLACK: "#F6F6F9",
-
-
-    // BLACK: "#000000",
-    // BLACK: "#0f0f14",
-    // BLACK: "#16161d",
-    // BLACK: "#2d2d33",
-    // BLACK: "#44444a",
-    // BLACK: "#5b5b60",
-    // BLACK: "#737377",
-    // BLACK: "#8a8a8e",
-    // BLACK: "#a1a1a4",
-    // BLACK: "#b9b9bb",
-    // BLACK: "#d0d0d1",
-    // BLACK: "#e7e7e8",
-    // BLACK: "#ffffff",
-
-    THEMECOLOR: '#940A57',//'#e2508b', //'#CE1D5A',
+    // Brand
+    THEMECOLOR: '#940A57',
     LIGHT_THEME: "#fcedef",
+    theme1: "#940A57",
+    theme2: "#FFF8E1",
+
+    // Backgrounds
     MAINBG: '#ECECF2',
     MAINBG2: '#edf7fe',
     MAINBG3: '#daeefe',
+    jbackground: '#FFF6C9',
+
+    // Neutrals
     WHITE: '#ffffff',
+    WHITE1: 'rgba(255, 255, 255, 1)',
     BLACK: "#000000",
+    BLACK1: "rgba(42, 42, 42, 1)",
+    BLACK2: 'rgba(16, 17, 27, 1)',
+    BLACK3: 'rgba(48, 48, 48, 1)',
+    BLACK4: 'rgba(10, 19, 15, 1)',
+    BLACK5: '#2A2A2A',
+
+    // Grays
     DARK_GRAY: "#44444a",
     DARK_GRAY2: '#5b5b60',
     LIGHT_GRAY: "#B2B3C7",
@@ -60,11 +29,6 @@ export const Colors = {
     GRAY2: "#8a8a8e",
     GRAY3: '#44444a',
     GRAY4: "#5b5b60",
-    BLACK1: "rgba(42, 42, 42, 1)",
-    BLACK2: 'rgba(16, 17, 27, 1)',
-    BLACK3: 'rgba(48, 48, 48, 1)',
-    BLACK4: 'rgba(10, 19, 15, 1)',
-    BLACK5: '#2A2A2A',
     GRAY5: 'rgba(184, 184, 184, 1)',
     GRAY6: 'rgba(160, 160, 160, 1)',
     GRAY7: 'rgba(178, 185, 193, 1)',
@@ -73,12 +37,8 @@ export const Colors = {
     GRAY10: '#D0D0D0',
     GRAY11: '#B8B8B8',
     GRAY12: '#A0A0A0',
-    theme1: "#940A57",
-    theme2: "#FFF8E1",
+
+    // Accent
     themeborder: 'rgba(239, 54, 37, 1)',
-    WHITE1: 'rgba(255, 255, 255, 1)',
     RED1: 'rgba(242, 32, 79, 1)',
-    jbackground: '#FFF6C9',
-
-
 }

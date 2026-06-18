@@ -1,38 +1,36 @@
-import React from 'react';
-import { View, Text, FlatList, Image, StyleSheet, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
 import { Colors } from '../../themes/Colors';
 import { AppImages } from '../../constants/app.image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackHeader from '../../components/Header/BackHeader';
-
-const notifications = [
-  {
-    id: '1',
-    type: 'order',
-    title: 'Order Shipped',
-    message: 'Your order #1234 has been shipped!',
-    icon: AppImages.jbag,
-    time: '2h ago',
-  },
-  {
-    id: '2',
-    type: 'offer',
-    title: 'Special Offer',
-    message: 'Get 20% off on your next purchase!',
-    icon: AppImages.discount,
-    time: '5h ago',
-  },
-  {
-    id: '3',
-    type: 'alert',
-    title: 'Account Update',
-    message: 'Your profile was updated successfully.',
-    icon: AppImages.jprofile,
-    time: '1d ago',
-  },
-];
+import { request } from '../../utils/api';
 
 const NotificationScreen = ({ navigation }) => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const loadNotifications = async () => {
+    setLoading(true);
+    try {
+      // Fetch from backend when notifications API is available
+      const res = await request('/user/notifications');
+      if (res?.code === 1 && Array.isArray(res.data)) {
+        setNotifications(res.data);
+      } else {
+        setNotifications([]);
+      }
+    } catch (e) {
+      console.log('Notifications load error:', e);
+      setNotifications([]);
+    } finally {
+      setLoading(false);
+    }
+  };
   const renderItem = ({ item }) => (
     <View style={styles.notificationCard}>
       <View style={{ backgroundColor: Colors.GRAY9, height: 50, width: 50, borderRadius: 50, justifyContent: 'center' }}>
@@ -53,12 +51,22 @@ const NotificationScreen = ({ navigation }) => {
         navigation={navigation}
         title="NOTIFICATION"
       />
-      <FlatList
-        data={notifications}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color={Colors.THEMECOLOR} style={{ marginTop: 40 }} />
+      ) : notifications.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
+          <Text style={{ fontSize: 40, marginBottom: 12 }}>🔔</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 6 }}>No notifications yet</Text>
+          <Text style={{ fontSize: 14, color: Colors.GRAY2, textAlign: 'center' }}>We'll notify you when there are updates on your orders or offers</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={notifications}
+          keyExtractor={item => item._id || item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -66,7 +74,7 @@ const NotificationScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.jbackground,
+    backgroundColor: Colors.WHITE,
   },
   header: {
     backgroundColor: Colors.THEMECOLOR,

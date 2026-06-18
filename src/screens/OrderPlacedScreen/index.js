@@ -1,14 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { AppImages } from '../../constants/app.image';
 import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
+import { fetchAddresses, fetchCart } from '../../utils/api';
 
 const { width } = Dimensions.get('window');
 
-const OrderPlacedScreen = ({ navigation }) => {
+const OrderPlacedScreen = ({ navigation, route }) => {
+  const [address, setAddress] = useState(null);
+  const [total, setTotal] = useState(0);
+  const [shippingMethod, setShippingMethod] = useState(route.params?.shippingMethod || null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [addrRes, cartRes] = await Promise.all([
+        fetchAddresses(),
+        fetchCart(),
+      ]);
+      if (addrRes?.code === 1 && addrRes.data) {
+        const addresses = Array.isArray(addrRes.data) ? addrRes.data : addrRes.data.addresses || [];
+        if (addresses.length > 0) {
+          setAddress(addresses.find(a => a.isDefault || a.isSelected) || addresses[0]);
+        }
+      }
+      if (cartRes?.code === 1 && cartRes.data) {
+        setTotal(cartRes.data.totalPrice || cartRes.data.total || 0);
+      }
+    } catch (e) {
+      console.log('OrderPlaced data error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={Colors.theme1} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient
@@ -21,7 +61,7 @@ const OrderPlacedScreen = ({ navigation }) => {
         <BackHeader
           navigation={navigation}
           title="CHECKOUT"
-          rightIcon={require('../../assets/images/jnot.png')}
+          rightIcon={AppImages.jnotification}
         onRightPress={() => navigation.navigate('Notification')}
         />
 
@@ -30,9 +70,17 @@ const OrderPlacedScreen = ({ navigation }) => {
           {/* Shipping Address */}
           <Text style={styles.sectionLabel}>SHIPPING ADDRESS</Text>
           <View style={{ marginBottom: 12 }}>
-            <Text style={styles.addressName}>Ryan Quinn</Text>
-            <Text style={styles.addressText}>106 Yemen Stree, Yemen town{'\n'}Yemen, NH 11523</Text>
-            <Text style={styles.addressText}>(112) 453-1617289</Text>
+            {address ? (
+              <>
+                <Text style={styles.addressName}>{address.name || address.fullName || ''}</Text>
+                <Text style={styles.addressText}>
+                  {[address.address || address.houseNo, address.apartment, address.city, address.state, address.pinCode || address.pincode].filter(Boolean).join(', ')}
+                </Text>
+                <Text style={styles.addressText}>{address.phone || ''}</Text>
+              </>
+            ) : (
+              <Text style={styles.addressText}>No address added</Text>
+            )}
             <TouchableOpacity
               style={styles.addAddressRow}
               onPress={() => navigation.navigate('AddShippingAddress')}
@@ -47,8 +95,8 @@ const OrderPlacedScreen = ({ navigation }) => {
           {/* Shipping Method */}
           <Text style={styles.sectionLabel}>SHIPPING METHOD</Text>
           <View style={styles.selectRow}>
-            <Text style={styles.selectText}>Pickup at store</Text>
-            <Text style={styles.selectFree}>FREE</Text>
+            <Text style={styles.selectText}>{shippingMethod?.name || 'Standard delivery'}</Text>
+            <Text style={styles.selectFree}>{shippingMethod?.price ? `₹${shippingMethod.price}` : 'FREE'}</Text>
             <Image source={require('../../assets/images/downar.png')} style={styles.selectArrow} />
           </View>
 
@@ -64,7 +112,7 @@ const OrderPlacedScreen = ({ navigation }) => {
         {/* Total */}
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>TOTAL</Text>
-          <Text style={styles.totalValue}>$1410.5</Text>
+          <Text style={styles.totalValue}>₹{total.toLocaleString('en-IN')}</Text>
         </View>
         {/* Place Order Button */}
         <TouchableOpacity

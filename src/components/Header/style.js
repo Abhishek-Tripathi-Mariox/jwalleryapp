@@ -13,7 +13,8 @@ export const styles = StyleSheet.create({
         color: Colors.GRAY3,
         fontSize: 18,
         fontWeight: '500',
-        paddingLeft: width * 0.04
+        paddingLeft: width * 0.04,
+        fontFamily: 'Poppins-Medium',
     },
     headerCont: {
         // backgroundColor: Colors.THEMECOLOR,
@@ -27,7 +28,8 @@ export const styles = StyleSheet.create({
         color: Colors.WHITE,
         fontSize: 17,
         fontWeight: '500',
-        paddingLeft: width * 0.03
+        paddingLeft: width * 0.03,
+        fontFamily: 'Poppins-Medium',
     },
     profileIcon: {
         height: height * 0.055,
@@ -62,26 +64,24 @@ export const styles = StyleSheet.create({
         color: Colors.GRAY4,
         fontSize: 16,
         fontWeight: '400',
-        left: width * 0.025
+        left: width * 0.025,
+        fontFamily: 'Poppins-Regular',
     },
     headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: Colors.theme1,
         paddingHorizontal: 16,
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
         justifyContent: 'space-between',
-        height: 80,
-        paddingTop: 20
+        height: 60,
     },
     headerBackBtn: {
-        width: height * 0.038,
-        height: height * 0.038,
+        width: 36,
+        height: 36,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: Colors.WHITE,
-        borderRadius: 50,
+        borderRadius: 18,
     },
     headerTitle: {
         color: '#fff',
@@ -90,10 +90,11 @@ export const styles = StyleSheet.create({
         letterSpacing: 2,
         flex: 1,
         textAlign: 'center',
+        fontFamily: 'Poppins-Medium',
     },
     headerRightBtn: {
-        width: height * 0.05,
-        height: height * 0.05,
+        width: 36,
+        height: 36,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -102,5 +103,15 @@ export const styles = StyleSheet.create({
         width: 22,
         height: 22,
         tintColor: '#fff',
+    },
+    headerLogoContainer: {
+        width: 36,
+        height: 36,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerLogo: {
+        width: 32,
+        height: 32,
     },
 });

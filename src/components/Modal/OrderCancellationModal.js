@@ -4,7 +4,7 @@ import { Image } from 'react-native-svg';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { AppImages } from '../../constants/app.image';
 
-const reasons = [
+const DEFAULT_REASONS = [
   'Change of mind',
   'Delay in delivery',
   'Price concerns',
@@ -12,7 +12,8 @@ const reasons = [
   'Accidental order placement',
 ];
 
-export default function OrderCancellationModal({ visible, onClose }) {
+export default function OrderCancellationModal({ visible, onClose, onSubmit, reasons: propReasons, orderId }) {
+  const reasons = propReasons && propReasons.length > 0 ? propReasons : DEFAULT_REASONS;
   const [selectedReason, setSelectedReason] = useState(reasons[0]);
   const [feedback, setFeedback] = useState('');
 
@@ -62,7 +63,12 @@ export default function OrderCancellationModal({ visible, onClose }) {
             numberOfLines={3}
           />
 
-          <TouchableOpacity style={styles.submitBtn}>
+          <TouchableOpacity style={styles.submitBtn} onPress={() => {
+            if (onSubmit) {
+              onSubmit({ reason: selectedReason, feedback, orderId });
+            }
+            onClose();
+          }}>
             <Text style={styles.submitBtnText}>Submit</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelLink} onPress={onClose}>

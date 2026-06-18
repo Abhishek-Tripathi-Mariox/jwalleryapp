@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Text,
   TouchableOpacity,
-  View, TextInput, Image
+  View, TextInput, Image,
+  KeyboardAvoidingView, ScrollView, Platform, Keyboard
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -12,16 +13,30 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_BASE_URL } from '../../constants/api';
 import { setTokenStorage } from '../../utils/tokenStorage';
 import { showToast } from '../../utils/toast';
+import { fetchAndStoreAppConfig } from '../../utils/appConfig';
 import { Colors } from '../../themes/Colors';
+import { useLogos } from '../../utils/LogoContext';
 
 const LoginScreen = (props) => {
   const navigation = props.navigation
+  const { logos } = useLogos();
+  const loginLogoUrl = logos.mobile_splash?.imageUrl || logos.primary?.imageUrl;
   const [OTPView, setOTPView] = useState(false)
   const [mobileNum, setMobileNum] = useState('')
   const [txnId, setTxnId] = useState('');
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const inputs = useRef([]);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   // Function to send OTP
   const handleSendOtp = async () => {
@@ -83,9 +98,11 @@ const LoginScreen = (props) => {
       if (data.code === 1) {
         if (data.data && data.data.token) {
           await setTokenStorage(data.data.token);
+          // Fetch and store app config keys (Razorpay, Google Maps, Firebase)
+          await fetchAndStoreAppConfig();
         }
         showToast(data.message || 'OTP verified successfully.', 'success');
-        navigation.navigate('Home')
+        navigation.navigate('MainTabs')
       } else {
         showToast(data.message || 'Incorrect OTP, try again!', 'error');
       }
@@ -113,96 +130,100 @@ const LoginScreen = (props) => {
     }
   };
 
-
-
   return (
-    <SafeAreaView
-      style={styles.mainContainer}>
-      <View style={styles.mainCard}>
-        {OTPView ?
-          <>
-            {/* <Image
-              source={AppImages.LOGO}
-              style={styles.image}
-            /> */}
-            <Text style={styles.heading}>Phone verification</Text>
-            <Text style={styles.subHeading}>We've sent a 6-digit verification code to your mobile numberor email. please enter the code below to verify your identity.</Text>
+    <SafeAreaView style={styles.mainContainer} edges={['bottom']}>
+      <LinearGradient
+        colors={['#FFFFFF', '#FFF6C9']}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.backgroundGradient}
+      >
+       <KeyboardAvoidingView
+         style={{ flex: 1 }}
+         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+       >
+       <ScrollView
+         contentContainerStyle={{ flexGrow: 1 }}
+         keyboardShouldPersistTaps="handled"
+         showsVerticalScrollIndicator={false}
+       >
+        {/* Header Banner */}
+        <View style={[styles.headerBanner, keyboardVisible && styles.headerBannerCompact]}>
+          <Image
+            source={loginLogoUrl ? { uri: loginLogoUrl } : AppImages.jlogo1}
+            style={[styles.image, keyboardVisible && styles.imageCompact]}
+          />
+        </View>
 
-            <View style={styles.container}>
-              {otp.map((digit, index) => (
-                <TextInput
-                  key={index}
-                  ref={(ref) => (inputs.current[index] = ref)}
-                  style={styles.OTPInput}
-                  value={digit}
-                  onChangeText={(text) => handleChangeText(text, index)}
-                  onKeyPress={(e) => handleKeyPress(e, index)}
-                  keyboardType="number-pad"
-                  placeholderTextColor={'gray'}
-                  maxLength={1}
-                />
-              ))}
-            </View>
-            <TouchableOpacity>
-              <Text style={{ padding: 5, paddingTop: 10, color: '#5A5A5A', fontSize: 15, textAlign: 'right' }}>Didn’t receive code? <Text style={{ color: Colors.theme1, fontWeight: '700' }}>Resend again</Text></Text>
-            </TouchableOpacity>
+        {/* Content */}
+        <View style={styles.contentArea}>
+          {OTPView ? (
+            <>
+              <Text style={styles.heading}>Phone verification</Text>
+              <Text style={styles.subHeading}>
+                We've sent a 6-digit verification code to your mobile number. Please enter the code below to verify your identity.
+              </Text>
 
+              <View style={styles.container}>
+                {otp.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    ref={(ref) => (inputs.current[index] = ref)}
+                    style={styles.OTPInput}
+                    value={digit}
+                    onChangeText={(text) => handleChangeText(text, index)}
+                    onKeyPress={(e) => handleKeyPress(e, index)}
+                    keyboardType="number-pad"
+                    placeholderTextColor={'gray'}
+                    maxLength={1}
+                  />
+                ))}
+              </View>
+              <TouchableOpacity>
+                <Text style={{ padding: 5, paddingTop: 10, color: '#5A5A5A', fontSize: 15, textAlign: 'right' }}>
+                  Didn't receive code? <Text style={{ color: Colors.theme1, fontWeight: '700' }}>Resend again</Text>
+                </Text>
+              </TouchableOpacity>
 
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleVerifyOtp}>
+                <Text style={styles.text}>Verify</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={styles.heading}>Sign in</Text>
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleVerifyOtp}>
-              <Text style={styles.text}>Verify</Text>
-            </TouchableOpacity>
-          </>
-          :
-          <>
-            <Image
-              source={AppImages.jlogo1}
-              style={styles.image}
-            />
-            <Text style={styles.heading}>Sign in</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Email or Phone Number"
-              placeholderTextColor={'gray'}
-              keyboardType='number-pad'
-              maxLength={10}
-              val={mobileNum}
-              onChangeText={(val) => setMobileNum(val)}
-            />
-
-            {/* <TouchableOpacity
-              style={styles.checkboxContainer}
-              onPress={() => setIsChecked(!isChecked)}
-            >
-              <Icon
-                name={isChecked ? 'check-box' : 'check-box-outline-blank'}
-                size={28}
-                color="black"
+              <TextInput
+                style={styles.input}
+                placeholder="Email or Phone Number"
+                placeholderTextColor={'#D0D0D0'}
+                keyboardType='number-pad'
+                maxLength={10}
+                value={mobileNum}
+                onChangeText={(val) => setMobileNum(val)}
               />
-              <Text style={styles.label}>By Signing up I agree to the terms of use and privacy policy</Text>
-            </TouchableOpacity> */}
 
-            <TouchableOpacity
-              onPress={handleSendOtp}
-              activeOpacity={0.85}
-              style={styles.button}
-            >
-              <Text style={styles.text}>{loading ? 'Sending...' : 'Get OTP'}</Text>
-            </TouchableOpacity>
-          </>
-        }
+              <TouchableOpacity
+                onPress={handleSendOtp}
+                activeOpacity={0.85}
+                style={styles.button}
+              >
+                <Text style={styles.text}>{loading ? 'Sending...' : 'Get OTP'}</Text>
+              </TouchableOpacity>
+            </>
+          )}
 
-        <Text style={styles.termsText}>
-          By continuing you agree to our{' '}
-          <Text style={styles.linkText}>Terms of Services</Text> and{' '}
-          <Text style={styles.linkText}>Privacy Policy</Text>
-        </Text>
-      </View>
-
-      {!OTPView == <Text style={{ color: '#000', fontSize: 20, fontWeight: '400', position: 'absolute', bottom: 30, left: 340 }}>Skip</Text>}
+          <Text style={styles.termsText}>
+            By continuing you agree to our{' '}
+            <Text style={styles.linkText}>Terms of Services</Text> and{' '}
+            <Text style={styles.linkText}>Privacy Policy</Text>
+          </Text>
+        </View>
+       </ScrollView>
+       </KeyboardAvoidingView>
+      </LinearGradient>
     </SafeAreaView>
   );
 }

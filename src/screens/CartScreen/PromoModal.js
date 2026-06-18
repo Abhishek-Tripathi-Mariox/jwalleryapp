@@ -1,44 +1,55 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput, FlatList, ActivityIndicator } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import AppliedCouponModal from './AppliedCouponModal';
 import { Colors } from '../../themes/Colors';
+import { fetchCoupons, applyCoupon } from '../../utils/api';
 
 const THEME_COLOR = Colors.theme1;
 
-const offers = [
-  {
-    id: '1',
-    code: 'CITINEW',
-    description: 'Get unlimited 25% discount on your first order with ICICI Bank Credit & Debit Cards',
-    condition: 'On orders above 299/-',
-  },
-  {
-    id: '2',
-    code: 'CITINEW',
-    description: 'Get unlimited 25% discount on your first order with ICICI Bank Credit & Debit Cards',
-    condition: 'On orders above 299/-',
-  },
-  {
-    id: '3',
-    code: 'CITINEW',
-    description: 'Get unlimited 25% discount on your first order with ICICI Bank Credit & Debit Cards',
-    condition: 'On orders above 299/-',
-  },
-  {
-    id: '4',
-    code: 'CITINEW',
-    description: 'Get unlimited 25% discount on your first order with ICICI Bank Credit & Debit Cards',
-    condition: 'On orders above 299/-',
-  },
-];
-
-const PromoModal = ({ visible, onClose }) => {
+const PromoModal = ({ visible, onClose, onCouponApplied }) => {
   const [promo, setPromo] = useState('');
   const [appliedVisible, setAppliedVisible] = useState(false);
+  const [offers, setOffers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [appliedCode, setAppliedCode] = useState('');
+  const [appliedAmount, setAppliedAmount] = useState(0);
 
-  const handleApply = () => {
-    setAppliedVisible(true);
+  useEffect(() => {
+    if (visible) {
+      loadCoupons();
+    }
+  }, [visible]);
+
+  const loadCoupons = async () => {
+    setLoading(true);
+    try {
+      const res = await fetchCoupons();
+      if (res?.code === 1 && res.data) {
+        const coupons = Array.isArray(res.data) ? res.data : res.data.coupons || [];
+        setOffers(coupons);
+      }
+    } catch (e) {
+      console.log('Coupons load error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApply = async (code) => {
+    const couponCode = code || promo;
+    if (!couponCode.trim()) return;
+    try {
+      const res = await applyCoupon(couponCode);
+      if (res?.code === 1) {
+        setAppliedCode(couponCode);
+        setAppliedAmount(res.data?.discount || 0);
+        setAppliedVisible(true);
+        if (onCouponApplied) onCouponApplied(res.data);
+      }
+    } catch (e) {
+      console.log('Apply coupon error:', e);
+    }
   };
 
   const handleAppliedClose = () => {
@@ -72,40 +83,46 @@ const PromoModal = ({ visible, onClose }) => {
                 value={promo}
                 onChangeText={setPromo}
               />
-              <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
+              <TouchableOpacity style={styles.applyBtn} onPress={() => handleApply()}>
                 <Text style={styles.applyBtnText}>Apply</Text>
               </TouchableOpacity>
             </View>
             {/* Offers */}
             <Text style={styles.availableOffersTitle}>Available Offers</Text>
-            <FlatList
-              data={offers}
-              keyExtractor={item => item.id}
-              renderItem={({ item }) => (
-                <View style={styles.offerCard}>
-                  <Text style={styles.offerDesc}>{item.description}</Text>
-                  <Text style={styles.offerCond}>{item.condition}</Text>
-                  <View style={styles.offerRow}>
-                    <View style={styles.codeBox}>
-                      <Text style={styles.codeText}>{item.code}</Text>
+            {loading ? (
+              <ActivityIndicator size="large" color={THEME_COLOR} style={{ marginTop: 20 }} />
+            ) : offers.length === 0 ? (
+              <Text style={{ textAlign: 'center', color: '#999', marginTop: 20 }}>No offers available</Text>
+            ) : (
+              <FlatList
+                data={offers}
+                keyExtractor={item => item._id || item.id || String(Math.random())}
+                renderItem={({ item }) => (
+                  <View style={styles.offerCard}>
+                    <Text style={styles.offerDesc}>{item.description}</Text>
+                    <Text style={styles.offerCond}>{item.minOrderAmount ? `On orders above ₹${item.minOrderAmount}/-` : ''}</Text>
+                    <View style={styles.offerRow}>
+                      <View style={styles.codeBox}>
+                        <Text style={styles.codeText}>{item.code}</Text>
+                      </View>
+                      <TouchableOpacity onPress={() => handleApply(item.code)}>
+                        <Text style={styles.offerApply}>Apply</Text>
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity onPress={handleApply}>
-                      <Text style={styles.offerApply}>Apply</Text>
-                    </TouchableOpacity>
                   </View>
-                </View>
-              )}
-              contentContainerStyle={{ paddingBottom: 16 }}
-              showsVerticalScrollIndicator={false}
-            />
+                )}
+                contentContainerStyle={{ paddingBottom: 16 }}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
           </View>
         </View>
       </Modal>
       <AppliedCouponModal
         visible={appliedVisible}
         onClose={handleAppliedClose}
-        code="CITINEW"
-        amount={100}
+        code={appliedCode}
+        amount={appliedAmount}
       />
     </>
   );

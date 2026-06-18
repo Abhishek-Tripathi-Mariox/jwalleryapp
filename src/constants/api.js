@@ -1,1 +1,2 @@
-export const API_BASE_URL = 'http://103.194.228.68:9001/v1/api';
+export const API_BASE_URL = 'https://adminswarnaz.com/v1/api';
+export const APP_NAME = 'Swarnaz';

@@ -1,82 +1,110 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList } from 'react-native';
-import { AppIcons } from '../../constants/app.icon';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, ActivityIndicator } from 'react-native';
 import { AppImages } from '../../constants/app.image';
 import { Colors } from '../../themes/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackHeader from '../../components/Header/BackHeader';
+import { fetchCart, updateCartItem, removeFromCart } from '../../utils/api';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCart } from '../../utils/CartContext';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const cartItems = [
-  {
-    id: '1',
-    name: 'GIVA',
-    subtitle: 'silver layered drop necklace',
-    price: 500.5,
-    image: AppImages.jwel,
-    qty: 1,
-  },
-  {
-    id: '2',
-    name: 'FOREVERMARK',
-    subtitle: 'Locke and Key',
-    price: 910,
-    image: AppImages.jwel1,
-    qty: 1,
-  },
-  {
-    id: '3',
-    name: 'GIVA',
-    subtitle: 'silver layered drop necklace',
-    price: 500.5,
-    image: AppImages.jwel2,
-    qty: 1,
-  },
-  {
-    id: '4',
-    name: 'FOREVERMARK',
-    subtitle: 'Locke and Key',
-    price: 910,
-    image: AppImages.jwel3,
-    qty: 1,
-  },
-];
-
-function CartItem({ item, onQtyChange }) {
+function CartItem({ item, onQtyChange, onRemove }) {
+  const prod = item.productId || {};
+  const imageUrl = item.productImage || prod.productImages?.[0]?.url;
   return (
     <View style={styles.cartItem}>
-      <Image source={item.image} style={styles.cartItemImage} />
+      {imageUrl ? (
+        <Image source={{ uri: imageUrl }} style={styles.cartItemImage} />
+      ) : (
+        <View style={[styles.cartItemImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+          <Text style={{ color: '#999', fontSize: 10 }}>No Image</Text>
+        </View>
+      )}
       <View style={{ flex: 1 }}>
-        <Text style={styles.cartItemName}>{item.name}</Text>
-        <Text style={styles.cartItemSubtitle}>{item.subtitle}</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Text style={[styles.cartItemName, { flex: 1 }]}>{item.productName || prod.productName || 'Product'}</Text>
+          <TouchableOpacity onPress={() => onRemove(item._id)} style={styles.deleteBtn}>
+            <Icon name="delete-outline" size={20} color="#999" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.cartItemSubtitle}>
+          {[item.size, item.color].filter(Boolean).join(' | ')}
+        </Text>
         <View style={styles.qtyRow}>
-          <TouchableOpacity onPress={() => onQtyChange(item.id, -1)} style={styles.qtyBtn}>
+          <TouchableOpacity 
+            onPress={() => item.quantity > 1 && onQtyChange(item._id, item.quantity - 1)} 
+            style={[styles.qtyBtn, item.quantity <= 1 && { opacity: 0.4 }]}
+            disabled={item.quantity <= 1}
+          >
             <Text style={styles.qtyBtnText}>−</Text>
           </TouchableOpacity>
-          <Text style={styles.qtyText}>{item.qty}</Text>
-          <TouchableOpacity onPress={() => onQtyChange(item.id, 1)} style={styles.qtyBtn}>
+          <Text style={styles.qtyText}>{item.quantity}</Text>
+          <TouchableOpacity onPress={() => onQtyChange(item._id, item.quantity + 1)} style={styles.qtyBtn}>
             <Text style={styles.qtyBtnText}>+</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.cartItemPrice}>Rs.{item.price}</Text>
+        <Text style={styles.cartItemPrice}>₹{item.unitPrice || prod.discountPrice || prod.price || 0}</Text>
       </View>
     </View>
   );
 }
 
 function CartScreen({ navigation }) {
-  const [items, setItems] = useState(cartItems);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { refreshCart } = useCart();
 
-  const handleQtyChange = (id, delta) => {
-    setItems(prev =>
-      prev.map(item =>
-        item.id === id
-          ? { ...item, qty: Math.max(1, item.qty + delta) }
-          : item
-      )
-    );
+  const loadCart = async () => {
+    try {
+      const res = await fetchCart();
+      if (res?.code === 1 && res.data) {
+        const cartItems = res.data.items || res.data.cart?.items || res.data || [];
+        setItems(Array.isArray(cartItems) ? cartItems : []);
+      }
+    } catch (e) {
+      console.log('Cart load error:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const subTotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      loadCart();
+    }, [])
+  );
+
+  const handleQtyChange = async (itemId, newQty) => {
+    try {
+      await updateCartItem(itemId, newQty);
+      setItems(prev =>
+        prev.map(item =>
+          item._id === itemId ? { ...item, quantity: newQty } : item
+        )
+      );
+      await refreshCart(); // Update cart badge count
+    } catch (e) {
+      console.log('Qty update error:', e);
+    }
+  };
+
+  const handleRemove = async (itemId) => {
+    try {
+      await removeFromCart(itemId);
+      setItems(prev => prev.filter(item => item._id !== itemId));
+      await refreshCart(); // Update cart badge count
+    } catch (e) {
+      console.log('Remove error:', e);
+    }
+  };
+
+  const subTotal = items.reduce((sum, item) => {
+    const prod = item.productId || {};
+    const price = item.unitPrice || prod.discountPrice || prod.price || 0;
+    return sum + price * (item.quantity || 1);
+  }, 0);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -84,32 +112,51 @@ function CartScreen({ navigation }) {
        <BackHeader
         navigation={navigation}
         title="CART"
-        rightIcon={require('../../assets/images/jnot.png')}
-      onRightPress={() => navigation.navigate('Notification')}
+        showBack={false}
+        showLogo={true}
+        rightIcon={AppImages.jnotification}
+        onRightPress={() => navigation.navigate('Notification')}
       />
       {/* Cart List */}
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={Colors.theme1} />
+        </View>
+      ) : (
       <FlatList
         data={items}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item._id || item.id}
         renderItem={({ item }) => (
-          <CartItem item={item} onQtyChange={handleQtyChange} />
+          <CartItem item={item} onQtyChange={handleQtyChange} onRemove={handleRemove} />
         )}
         contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 8, paddingBottom: 8 }}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={{ alignItems: 'center', marginTop: 60 }}>
+            <Image source={require('../../assets/images/jcart.png')} style={{ width: 80, height: 80, tintColor: '#ccc', marginBottom: 16 }} />
+            <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 6 }}>Your cart is empty</Text>
+            <Text style={{ fontSize: 14, color: '#888' }}>Browse products and add items to your cart</Text>
+          </View>
+        }
       />
+      )}
       {/* Subtotal */}
       <View style={styles.subtotalRow}>
         <Text style={styles.subtotalLabel}>SUB TOTAL</Text>
-        <Text style={styles.subtotalValue}>₹{subTotal.toFixed(1)}</Text>
+        <Text style={styles.subtotalValue}>₹{subTotal.toLocaleString('en-IN')}</Text>
       </View>
       {/* Buy Now Button */}
-      <TouchableOpacity
-        style={styles.buyNowBtn}
-        onPress={() => navigation.navigate('Checkout')}
-      >
-        <Image source={require('../../assets/images/jbag1.png')} style={styles.buyNowIcon} />
-        <Text style={styles.buyNowText}>BUY NOW</Text>
-      </TouchableOpacity>
+      <View style={styles.buyNowContainer}>
+        <TouchableOpacity
+          style={styles.buyNowBtn}
+          onPress={() => navigation.navigate('Checkout')}
+          activeOpacity={0.85}
+        >
+          <Icon name="shopping-outline" size={22} color="#fff" />
+          <Text style={styles.buyNowText}>PROCEED TO CHECKOUT</Text>
+          <Icon name="chevron-right" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -117,7 +164,7 @@ function CartScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -250,26 +297,36 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: 1,
   },
+  buyNowContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#fff',
+  },
   buyNowBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.theme1,
-    paddingVertical: 18,
-    paddingHorizontal: 0,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
     justifyContent: 'center',
-    marginTop: 8,
-  },
-  buyNowIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#fff',
-    marginRight: 12,
+    borderRadius: 30,
+    shadowColor: Colors.theme1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buyNowText: {
     color: '#fff',
-    fontWeight: '500',
-    fontSize: 17,
-    letterSpacing: 2,
+    fontWeight: '600',
+    fontSize: 15,
+    letterSpacing: 1.5,
+    marginHorizontal: 10,
+    fontFamily: 'Poppins-SemiBold',
+  },
+  deleteBtn: {
+    padding: 6,
+    marginTop: 4,
   },
 });
 

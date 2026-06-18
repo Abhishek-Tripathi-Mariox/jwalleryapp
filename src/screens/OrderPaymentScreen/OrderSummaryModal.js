@@ -2,43 +2,7 @@ import React from 'react';
 import { Modal, View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { AppImages } from '../../constants/app.image';
 
-const orderItems = [
-  {
-    id: 1,
-    name: 'Love & Money Attractor Brac...',
-    price: '₹ 499',
-    oldPrice: '₹5,397',
-    qty: 1,
-    image: require('../../assets/images/jearing.png'),
-  },
-  {
-    id: 2,
-    name: 'Love & Money Attractor Brac...',
-    price: '₹ 499',
-    oldPrice: '₹5,397',
-    qty: 1,
-    image: require('../../assets/images/jearing.png'),
-  },
-  {
-    id: 3,
-    name: 'Love & Money Attractor Brac...',
-    price: '₹ 499',
-    oldPrice: '₹5,397',
-    qty: 1,
-    image: require('../../assets/images/jearing.png'),
-  },
-  {
-    id: 4,
-    name: 'Nepal Origin 5 Mukhi Rudraksha Bead - Free',
-    price: 'FREE Gift',
-    oldPrice: '',
-    qty: 1,
-    image: require('../../assets/images/jearing.png'),
-    isGift: true,
-  },
-];
-
-const OrderSummaryModal = ({ visible, onClose }) => (
+const OrderSummaryModal = ({ visible, onClose, items = [] }) => (
   <Modal
     visible={visible}
     animationType="slide"
@@ -55,21 +19,42 @@ const OrderSummaryModal = ({ visible, onClose }) => (
         </View>
         <View style={styles.sectionDivider1} />
         <ScrollView>
-          {orderItems.map(item => (
-            <View key={item.id} style={styles.itemRow}>
-              <Image source={AppImages.jwel1} style={styles.itemImage} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                  <Text style={item.isGift ? styles.giftPrice : styles.itemPrice}>{item.price}</Text>
-                  {item.oldPrice ? (
-                    <Text style={styles.itemOldPrice}> {item.oldPrice}</Text>
-                  ) : null}
+          {items.length === 0 ? (
+            <Text style={{ textAlign: 'center', color: '#999', marginTop: 20 }}>No items</Text>
+          ) : (
+            items.map((item, index) => {
+              const imageUrl = item.productImages?.[0]?.url || item.image;
+              const name = item.productName || item.name || 'Product';
+              const price = item.discountPrice || item.price || 0;
+              const originalPrice = item.originalPrice || item.mrp || '';
+              const qty = item.quantity || item.qty || 1;
+              const isGift = item.isGift || false;
+
+              return (
+                <View key={item._id || item.id || index} style={styles.itemRow}>
+                  {imageUrl ? (
+                    <Image source={{ uri: imageUrl }} style={styles.itemImage} />
+                  ) : (
+                    <View style={[styles.itemImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+                      <Text style={{ color: '#999', fontSize: 8 }}>No Image</Text>
+                    </View>
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.itemName} numberOfLines={1}>{name}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                      <Text style={isGift ? styles.giftPrice : styles.itemPrice}>
+                        {isGift ? 'FREE Gift' : `₹ ${price}`}
+                      </Text>
+                      {originalPrice ? (
+                        <Text style={styles.itemOldPrice}> ₹{originalPrice}</Text>
+                      ) : null}
+                    </View>
+                    <Text style={styles.qtyText}>Quantity: {qty}</Text>
+                  </View>
                 </View>
-                <Text style={styles.qtyText}>Quantity: {item.qty}</Text>
-              </View>
-            </View>
-          ))}
+              );
+            })
+          )}
         </ScrollView>
       </View>
     </View>

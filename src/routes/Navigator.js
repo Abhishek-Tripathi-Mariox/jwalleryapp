@@ -4,13 +4,15 @@ import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AppScreens } from '../constants/app.screens';
+import { CartProvider } from '../utils/CartContext';
 
 const Stack = createNativeStackNavigator();
 
 const Navigator = () => {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName={'Splash'}>
+    <CartProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName={'Splash'}>
         <Stack.Screen
           name="Splash"
           component={AppScreens.SplashScreen}
@@ -22,7 +24,7 @@ const Navigator = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Home"
+          name="MainTabs"
           component={AppScreens.MyBottomTabs}
           options={{ headerShown: false }}
         />
@@ -126,8 +128,9 @@ const Navigator = () => {
           component={AppScreens.PaymentMethodScreen}
           options={{ headerShown: false }}
         />
-      </Stack.Navigator>
-    </NavigationContainer>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </CartProvider>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,31 +9,71 @@ import {
   TextInput,
   Dimensions,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
+import { fetchProductDetails, fetchProductReviews } from '../../utils/api';
 
 const { width } = Dimensions.get('window');
 
-const product = {
-  name: 'Love & Money Attractor Bracelet',
-  price: 499,
-  oldPrice: 5397,
-  image: require('../../assets/images/jpinkear.jpg'),
-  reviews: 381,
-  rating: 4.7,
-  ratingsBreakdown: [2500, 1500, 500, 200, 0],
-};
-
-const bestSellers = [
-  { id: 1, image: require('../../assets/images/jpinkear.jpg') },
-  { id: 2, image: require('../../assets/images/jpinkear.jpg') },
-  { id: 3, image: require('../../assets/images/jpinkear.jpg') },
-];
-
-export default function WriteReviewScreen({ navigation }) {
+export default function WriteReviewScreen({ navigation, route }) {
+  const { product: routeProduct, productId } = route?.params || {};
   const [modalVisible, setModalVisible] = useState(false);
+  const [product, setProduct] = useState(routeProduct || null);
+  const [reviews, setReviews] = useState([]);
+  const [ratingsBreakdown, setRatingsBreakdown] = useState([0, 0, 0, 0, 0]);
+  const [loading, setLoading] = useState(!routeProduct);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      if (productId && !routeProduct) {
+        const res = await fetchProductDetails(productId);
+        if (res?.code === 1 && res.data) {
+          setProduct(res.data.product || res.data);
+        }
+      }
+      const id = productId || routeProduct?._id;
+      if (id) {
+        const revRes = await fetchProductReviews(id);
+        if (revRes?.code === 1 && revRes.data) {
+          const revList = revRes.data.reviews || revRes.data || [];
+          setReviews(Array.isArray(revList) ? revList : []);
+          if (revRes.data.ratingsBreakdown) {
+            setRatingsBreakdown(revRes.data.ratingsBreakdown);
+          }
+        }
+      }
+    } catch (e) {
+      console.log('WriteReview data error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={Colors.theme1} />
+      </View>
+    );
+  }
+
+  const displayProduct = {
+    name: product?.productName || product?.name || 'Product',
+    price: product?.discountPrice || product?.price || 0,
+    oldPrice: product?.originalPrice || product?.mrp || 0,
+    image: product?.productImages?.[0]?.url ? { uri: product.productImages[0].url } : require('../../assets/images/jpinkear.jpg'),
+    reviews: reviews.length || product?.reviewCount || 0,
+    rating: product?.avgRating || product?.rating || 0,
+  };
 
   return (
     <View style={styles.container}>
@@ -80,21 +120,25 @@ export default function WriteReviewScreen({ navigation }) {
         title="WRITE REVIEW"
       />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
         {/* Product Card */}
         <View style={styles.productCard}>
-          <Image source={product.image} style={styles.productImage} />
+          <Image source={displayProduct.image} style={styles.productImage} />
           <View style={{ flex: 1 }}>
             <Text style={styles.productName} numberOfLines={1}>
-              {product.name}
+              {displayProduct.name}
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-              <Text style={styles.productPrice}>₹ {product.price}</Text>
-              <Text style={styles.productOldPrice}>₹{product.oldPrice}</Text>
+              <Text style={styles.productPrice}>₹ {displayProduct.price}</Text>
+              {displayProduct.oldPrice ? <Text style={styles.productOldPrice}>₹{displayProduct.oldPrice}</Text> : null}
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
               <AntDesign name="star" size={14} color="#FFC107" />
-              <Text style={styles.reviewText}>({product.reviews} Reviews)</Text>
+              <Text style={styles.reviewText}>({displayProduct.reviews} Reviews)</Text>
             </View>
           </View>
         </View>
@@ -109,7 +153,7 @@ export default function WriteReviewScreen({ navigation }) {
             </TouchableOpacity>
           </View>
           <View style={styles.ratingRow}>
-            <Text style={styles.ratingValue}>{product.rating} <Text style={styles.ratingOutOf}>/ 5</Text></Text>
+            <Text style={styles.ratingValue}>{displayProduct.rating} <Text style={styles.ratingOutOf}>/ 5</Text></Text>
             <AntDesign name="star" size={18} color="#FACC6A" style={{ marginLeft: 2 }} />
           </View>
           <View style={styles.ratingBars}>
@@ -121,7 +165,7 @@ export default function WriteReviewScreen({ navigation }) {
                     style={[
                       styles.ratingBarFill,
                       {
-                        width: `${(product.ratingsBreakdown[5 - star] / 2500) * 100}%`,
+                        width: `${(ratingsBreakdown[5 - star] / (Math.max(...ratingsBreakdown, 1))) * 100}%`,
                         backgroundColor:
                           star === 5
                             ? '#37B99E'
@@ -137,7 +181,7 @@ export default function WriteReviewScreen({ navigation }) {
                   />
                 </View>
                 <Text style={styles.ratingBarCount}>
-                  {product.ratingsBreakdown[5 - star]}
+                  {ratingsBreakdown[5 - star]}
                 </Text>
               </View>
             ))}
@@ -181,15 +225,10 @@ export default function WriteReviewScreen({ navigation }) {
               <AntDesign name="down" size={14} color="#1D262D" />
             </TouchableOpacity>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {bestSellers.map((item) => (
-              <View key={item.id} style={styles.bestSellerCard}>
-                <Image source={item.image} style={styles.bestSellerImage} />
-              </View>
-            ))}
-          </ScrollView>
+          <Text style={{ textAlign: 'center', color: '#999', marginTop: 10 }}>Coming soon</Text>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -197,7 +236,7 @@ export default function WriteReviewScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -277,13 +316,13 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   section: {
-    backgroundColor: '#fffff80',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     marginHorizontal: 0,
     marginTop: 18,
     padding: 24,
   },
   section1: {
-    backgroundColor: '#ffffff80',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     marginHorizontal: 20,
     marginTop: 28,
     padding: 24,

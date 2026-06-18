@@ -1,29 +1,59 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Colors } from '../../themes/Colors';
-
-// Dummy user data (replace with real user data as needed)
-const user = {
-  avatar: require('../../assets/images/jwel3.jpg'),
-  name: 'Josephine Jackson',
-  phone: '+91 6267266688',
-  email: 'josephine.jackson@email.com',
-  location: 'Brooklyn, NYC',
-};
-
+import { request } from '../../utils/api';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { API_BASE_URL } from '../../constants/api';
+import { getTokenStorage } from '../../utils/tokenStorage';
 
 export default function ProfileDetailScreen({ navigation }) {
   const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    name: user.name,
-    phone: user.phone,
-    email: user.email,
+    name: '',
+    phone: '',
+    email: '',
+    gender: '',
     address: '',
     pin: '',
     city: '',
     country: '',
   });
-  const [avatar, setAvatar] = useState(user.avatar);
+  const [originalForm, setOriginalForm] = useState(null);
+  const [avatar, setAvatar] = useState(require('../../assets/images/jwel3.jpg'));
+  const [newAvatarUri, setNewAvatarUri] = useState(null);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const res = await request('GET', '/user/profile');
+      if (res?.code === 1 && res.data) {
+        const u = res.data.user || res.data;
+        const formData = {
+          name: u.fullName || u.name || '',
+          phone: u.mobileNumber || u.phone || '',
+          email: u.email || '',
+          gender: u.gender || '',
+          address: u.address || '',
+          pin: u.pincode || u.pin || '',
+          city: u.city || '',
+          country: u.country || 'India',
+        };
+        setForm(formData);
+        setOriginalForm(formData);
+        if (u.profileImages || u.profileImage) setAvatar({ uri: u.profileImages || u.profileImage });
+      }
+    } catch (e) {
+      console.log('Profile load error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (key, value) => {
     setForm({ ...form, [key]: value });
@@ -31,33 +61,118 @@ export default function ProfileDetailScreen({ navigation }) {
 
   const handleEdit = () => setEditMode(true);
   const handleCancel = () => {
-    setForm({
-      name: user.name,
-      phone: user.phone,
-      email: user.email,
-      address: '',
-      pin: '',
-      city: '',
-      country: '',
+    if (originalForm) setForm(originalForm);
+    setNewAvatarUri(null);
+    setEditMode(false);
+  };
+
+  const handlePickImage = () => {
+    launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.8,
+      maxWidth: 500,
+      maxHeight: 500,
+    }, (response) => {
+      if (response.didCancel) return;
+      if (response.errorCode) {
+        Alert.alert('Error', response.errorMessage || 'Failed to pick image');
+        return;
+      }
+      if (response.assets && response.assets[0]) {
+        const asset = response.assets[0];
+        setNewAvatarUri(asset.uri);
+        setAvatar({ uri: asset.uri });
+      }
     });
-    setEditMode(false);
   };
-  const handleSave = () => {
-    // Here you would typically update the user profile via API
-    setEditMode(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      // If new avatar selected, upload with FormData
+      if (newAvatarUri) {
+        const token = await getTokenStorage();
+        const formData = new FormData();
+        formData.append('name', form.name);
+        formData.append('fullName', form.name);
+        formData.append('email', form.email);
+        formData.append('gender', form.gender);
+        formData.append('address', form.address);
+        formData.append('pincode', form.pin);
+        formData.append('city', form.city);
+        formData.append('country', form.country);
+        formData.append('profileImages', {
+          uri: newAvatarUri,
+          type: 'image/jpeg',
+          name: 'profile.jpg',
+        });
+
+        const res = await fetch(`${API_BASE_URL}/user/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+        const data = await res.json();
+        if (data?.code === 1) {
+          setOriginalForm(form);
+          setNewAvatarUri(null);
+          setEditMode(false);
+          Alert.alert('Success', 'Profile updated successfully');
+        } else {
+          Alert.alert('Error', data?.message || 'Failed to update profile');
+        }
+      } else {
+        // No new image, just update text fields
+        const res = await request('PUT', '/user/profile', {
+          name: form.name,
+          fullName: form.name,
+          email: form.email,
+          gender: form.gender,
+          address: form.address,
+          pincode: form.pin,
+          city: form.city,
+          country: form.country,
+        });
+        if (res?.code === 1) {
+          setOriginalForm(form);
+          setEditMode(false);
+          Alert.alert('Success', 'Profile updated successfully');
+        } else {
+          Alert.alert('Error', res?.message || 'Failed to update profile');
+        }
+      }
+    } catch (e) {
+      console.log('Profile save error:', e);
+      Alert.alert('Error', 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={Colors.theme1} />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backIconContainer}>
-          <Image source={require('../../assets/images/back.png')} style={styles.backIcon} />
+          <AntDesign name="arrowleft" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile Details</Text>
+        <Text style={styles.headerTitle}>PROFILE DETAILS</Text>
+        <View style={{ width: 36 }} />
       </View>
       {/* User Info - Scrollable */}
       <ScrollView
@@ -69,7 +184,7 @@ export default function ProfileDetailScreen({ navigation }) {
           <View style={styles.avatarWrapper}>
             <Image source={avatar} style={styles.avatar} />
             {editMode && (
-              <TouchableOpacity style={styles.avatarEditBtn}>
+              <TouchableOpacity style={styles.avatarEditBtn} onPress={handlePickImage}>
                 <Image source={require('../../assets/images/jcam.png')} style={styles.avatarEditIcon} />
               </TouchableOpacity>
             )}
@@ -108,6 +223,25 @@ export default function ProfileDetailScreen({ navigation }) {
               placeholder="Email"
               placeholderTextColor="#bbb"
             />
+          </View>
+          <View style={styles.formGroupFull}>
+            <Text style={styles.infoLabel}>Gender</Text>
+            <View style={styles.genderRow}>
+              {['Male', 'Female', 'Other'].map((g) => (
+                <TouchableOpacity
+                  key={g}
+                  style={[
+                    styles.genderChip,
+                    form.gender === g && styles.genderChipActive,
+                    !editMode && styles.disabledInput,
+                  ]}
+                  onPress={() => editMode && handleChange('gender', g)}
+                  activeOpacity={editMode ? 0.7 : 1}
+                >
+                  <Text style={[styles.genderChipText, form.gender === g && styles.genderChipTextActive]}>{g}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
           <View style={styles.formGroupFull}>
             <Text style={styles.infoLabel}>Address</Text>
@@ -163,10 +297,18 @@ export default function ProfileDetailScreen({ navigation }) {
             </TouchableOpacity>
           ) : (
             <View style={styles.editActionsRow}>
-              <TouchableOpacity style={[styles.actionBtn, styles.saveBtn]} onPress={handleSave}>
-                <Text style={styles.actionText}>Save</Text>
+              <TouchableOpacity 
+                style={[styles.actionBtn, styles.saveBtn, saving && { opacity: 0.6 }]} 
+                onPress={handleSave}
+                disabled={saving}
+              >
+                <Text style={styles.actionText}>{saving ? 'Saving...' : 'Save'}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtn, styles.cancelBtn]} onPress={handleCancel}>
+              <TouchableOpacity 
+                style={[styles.actionBtn, styles.cancelBtn]} 
+                onPress={handleCancel}
+                disabled={saving}
+              >
                 <Text style={styles.actionTextCancel}>Cancel</Text>
               </TouchableOpacity>
             </View>
@@ -180,37 +322,32 @@ export default function ProfileDetailScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     backgroundColor: Colors.theme1,
-    paddingTop: 40,
-    paddingBottom: 16,
+    height: 60,
     paddingHorizontal: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   backIconContainer: {
     backgroundColor: '#fff',
-    height: 30,
-    width: 30,
-    borderRadius: 50,
+    height: 36,
+    width: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  backIcon: {
-    width: 18,
-    height: 18,
-    tintColor: Colors.theme1,
   },
   headerTitle: {
     flex: 1,
     color: '#fff',
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '500',
-    marginLeft: 16,
+    letterSpacing: 2,
+    textAlign: 'center',
+    fontFamily: 'Poppins-Medium',
   },
   profileSection: {
     alignItems: 'center',
@@ -302,6 +439,32 @@ const styles = StyleSheet.create({
     color: Colors.GRAY6,
     borderColor: Colors.GRAY10,
   },
+  genderRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  genderChip: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.GRAY10,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  genderChipActive: {
+    backgroundColor: Colors.theme1,
+    borderColor: Colors.theme1,
+  },
+  genderChipText: {
+    fontSize: 15,
+    color: '#555',
+    fontWeight: '500',
+  },
+  genderChipTextActive: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   editBtn: {
     marginTop: 24,
     backgroundColor: Colors.theme1,
@@ -360,5 +523,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
+    paddingBottom: 30,
   },
 });

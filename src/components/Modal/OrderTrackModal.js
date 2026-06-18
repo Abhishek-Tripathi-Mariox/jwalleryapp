@@ -3,7 +3,16 @@ import { Modal, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-na
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Colors } from '../../themes/Colors';
 
-export default function OrderTrackModal({ visible, onClose, onCancelOrder, navigation }) {
+export default function OrderTrackModal({ visible, onClose, onCancelOrder, navigation, order }) {
+  const trackingSteps = order?.trackingSteps || [
+    { label: 'Packing', description: '', completed: false },
+    { label: 'Picked', description: '', completed: false },
+    { label: 'In Transit', description: '', completed: false },
+    { label: 'Delivered', description: '', completed: false },
+  ];
+  const currentStatus = order?.status || '';
+  const deliveryPerson = order?.deliveryPerson || null;
+
   return (
     <Modal
       visible={visible}
@@ -21,53 +30,36 @@ export default function OrderTrackModal({ visible, onClose, onCancelOrder, navig
 
           {/* Status Steps */}
           <View style={styles.statusContainer}>
-            <View style={styles.statusStep}>
-              <View style={styles.statusCircleActive} />
-              <View style={styles.statusTextContainer}>
-                <Text style={styles.statusLabelActive}>Packing</Text>
-                <Text style={styles.statusDesc}>Suite 756 031 Ines Riverway, Rhiannonchester</Text>
-              </View>
-            </View>
-            <View style={styles.statusLine} />
-            <View style={styles.statusStep}>
-              <View style={styles.statusCircle} />
-              <View style={styles.statusTextContainer}>
-                <Text style={styles.statusLabel}>Picked</Text>
-                <Text style={styles.statusDesc}>3 / 621 Juvenal Ridge, Port Vestachester</Text>
-              </View>
-            </View>
-            <View style={styles.statusLine} />
-            <View style={styles.statusStep}>
-              <View style={styles.statusCircle} />
-              <View style={styles.statusTextContainer}>
-                <Text style={styles.statusLabel}>In Transit</Text>
-                <Text style={styles.statusDesc}>0 / 77 Purdy Crescent, West Arthur</Text>
-              </View>
-            </View>
-            <View style={styles.statusLine} />
-            <View style={styles.statusStep}>
-              <View style={styles.statusCircle} />
-              <View style={styles.statusTextContainer}>
-                <Text style={styles.statusLabel}>Delivered</Text>
-                <Text style={styles.statusDesc}>Level 5 05 Favian Parkway, East Macie</Text>
-              </View>
-            </View>
+            {trackingSteps.map((step, index) => (
+              <React.Fragment key={index}>
+                {index > 0 && <View style={styles.statusLine} />}
+                <View style={styles.statusStep}>
+                  <View style={step.completed ? styles.statusCircleActive : styles.statusCircle} />
+                  <View style={styles.statusTextContainer}>
+                    <Text style={step.completed ? styles.statusLabelActive : styles.statusLabel}>{step.label}</Text>
+                    {step.description ? <Text style={styles.statusDesc}>{step.description}</Text> : null}
+                  </View>
+                </View>
+              </React.Fragment>
+            ))}
           </View>
 
           {/* Delivery Guy */}
-          <View style={styles.deliveryGuyContainer}>
-            <Image
-              source={require('../../assets/images/profile.jpeg')}
-              style={styles.deliveryGuyImage}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.deliveryGuyName}>Jacob Jones</Text>
-              <Text style={styles.deliveryGuyRole}>Delivery Guy</Text>
+          {deliveryPerson ? (
+            <View style={styles.deliveryGuyContainer}>
+              <Image
+                source={deliveryPerson.image ? { uri: deliveryPerson.image } : require('../../assets/images/profile.jpeg')}
+                style={styles.deliveryGuyImage}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.deliveryGuyName}>{deliveryPerson.name || 'Delivery Partner'}</Text>
+                <Text style={styles.deliveryGuyRole}>Delivery Guy</Text>
+              </View>
+              <TouchableOpacity style={styles.phoneBtn}>
+                <AntDesign name="phone" size={24} color="#868686" />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.phoneBtn}>
-              <AntDesign name="phone" size={24} color="#868686" />
-            </TouchableOpacity>
-          </View>
+          ) : null}
 
           {/* Action Buttons */}
           <View style={styles.actionRow}>

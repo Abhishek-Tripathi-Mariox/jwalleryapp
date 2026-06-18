@@ -1,14 +1,56 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, TouchableOpacity, Image, StyleSheet, TextInput, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, TextInput, Dimensions, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
+import KeyboardAware from '../../components/KeyboardAware';
+import { addAddress } from '../../utils/api';
+import { AppImages } from '../../constants/app.image';
 
 const { width } = Dimensions.get('window');
 
 const AddShippingAddressScreen = ({ navigation }) => {
   const [selectedType, setSelectedType] = useState('Home');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [zipCode, setZipCode] = useState('');
+  const [phone, setPhone] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!firstName.trim() || !address.trim() || !city.trim() || !state.trim() || !zipCode.trim() || !phone.trim()) {
+      Alert.alert('Error', 'Please fill all required fields');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await addAddress({
+        fullName: `${firstName} ${lastName}`.trim(),
+        address: address,
+        houseNo: address,
+        city,
+        state,
+        pinCode: parseInt(zipCode) || 0,
+        phone,
+        addressType: selectedType,
+      });
+      if (res?.code === 1) {
+        Alert.alert('Success', 'Address added successfully');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', res?.message || 'Failed to add address');
+      }
+    } catch (e) {
+      console.log('Add address error:', e);
+      Alert.alert('Error', 'Something went wrong');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -23,28 +65,29 @@ const AddShippingAddressScreen = ({ navigation }) => {
         <BackHeader
           navigation={navigation}
           title="ADD SHIPPING ADDRESS"
-          rightIcon={require('../../assets/images/jnot.png')}
+          rightIcon={AppImages.jnotification}
           onRightPress={() => navigation.navigate('Notification')}
         />
 
         {/* Form */}
-        <View style={{ flex: 1, paddingHorizontal: 18, paddingTop: 18 }}>
+        <KeyboardAware contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 18 }}>
+          <View>
           <View style={styles.row}>
-            <TextInput placeholder="First name" style={styles.inputHalf} placeholderTextColor="#979797" />
-            <TextInput placeholder="Last name" style={styles.inputHalf} placeholderTextColor="#979797" />
+            <TextInput placeholder="First name" style={styles.inputHalf} placeholderTextColor="#979797" value={firstName} onChangeText={setFirstName} />
+            <TextInput placeholder="Last name" style={styles.inputHalf} placeholderTextColor="#979797" value={lastName} onChangeText={setLastName} />
           </View>
           <View style={styles.row}>
-            <TextInput placeholder="Address" style={styles.input} placeholderTextColor="#979797" />
+            <TextInput placeholder="Address" style={styles.input} placeholderTextColor="#979797" value={address} onChangeText={setAddress} />
           </View>
           <View style={styles.row}>
-            <TextInput placeholder="City" style={styles.input} placeholderTextColor="#979797" />
+            <TextInput placeholder="City" style={styles.input} placeholderTextColor="#979797" value={city} onChangeText={setCity} />
           </View>
           <View style={styles.row}>
-            <TextInput placeholder="State" style={styles.inputHalf} placeholderTextColor="#979797" />
-            <TextInput placeholder="ZIP code" style={styles.inputHalf} placeholderTextColor="#979797" />
+            <TextInput placeholder="State" style={styles.inputHalf} placeholderTextColor="#979797" value={state} onChangeText={setState} />
+            <TextInput placeholder="ZIP code" style={styles.inputHalf} placeholderTextColor="#979797" value={zipCode} onChangeText={setZipCode} keyboardType="numeric" />
           </View>
           <View style={styles.row}>
-            <TextInput placeholder="Phone number" style={styles.input} placeholderTextColor="#979797" />
+            <TextInput placeholder="Phone number" style={styles.input} placeholderTextColor="#979797" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
           </View>
 
           <Text style={styles.saveAsLabel}>Save Address As</Text>
@@ -70,10 +113,11 @@ const AddShippingAddressScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Add Now Button */}
-        <TouchableOpacity style={styles.addNowBtn}>
-          <Text style={styles.addNowText}>ADD NOW</Text>
-        </TouchableOpacity>
+          {/* Add Now Button */}
+          <TouchableOpacity style={[styles.addNowBtn, submitting && { opacity: 0.6 }]} onPress={handleSubmit} disabled={submitting}>
+            <Text style={styles.addNowText}>{submitting ? 'SAVING...' : 'ADD NOW'}</Text>
+          </TouchableOpacity>
+        </KeyboardAware>
       </LinearGradient>
     </SafeAreaView>
   );

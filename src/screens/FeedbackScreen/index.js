@@ -3,27 +3,62 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, Image,
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../themes/Colors';
+import { APP_NAME } from '../../constants/api';
+import BackHeader from '../../components/Header/BackHeader';
+import { submitContact, fetchProfile } from '../../utils/api';
+import { showToast } from '../../utils/toast';
+import KeyboardAware from '../../components/KeyboardAware';
 
 const { width } = Dimensions.get('window');
 const THEME_COLOR = Colors.theme1;
+const MAX_CHARS = 200;
 
 const FeedbackScreen = ({ navigation }) => {
-  const [rating, setRating] = useState(4);
+  const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSendFeedback = async () => {
+    if (rating === 0) {
+      showToast('Please select a star rating.', 'error');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      // Pull the logged-in user's details so the feedback is attributable.
+      const profileRes = await fetchProfile();
+      const user = profileRes?.data || {};
+      const validEmail = user.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email);
+      const body = {
+        fullName: user.fullName || '',
+        email: validEmail ? user.email : `feedback+${user.mobileNumber || 'user'}@swarnaz.app`,
+        countryCode: user.countryCode || '+91',
+        mobileNumber: user.mobileNumber || '',
+        interest: 'feedback',
+        message: `Rating: ${rating}/5\n${feedback || '(no comment)'}`,
+        consent: true,
+      };
+      const res = await submitContact(body);
+      if (res?.code === 1) {
+        setModalVisible(true);
+        setRating(0);
+        setFeedback('');
+      } else {
+        showToast(res?.message || 'Could not send feedback. Please try again.', 'error');
+      }
+    } catch (err) {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <AntDesign name="arrowleft" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Share your feedback</Text>
-        <View style={{ width: 24 }} />
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.question}>What is your opinion of ShopNear?</Text>
+      <BackHeader navigation={navigation} title="FEEDBACK" />
+      <KeyboardAware contentContainerStyle={{ alignItems: 'center', paddingTop: 24 }}>
+        <Text style={styles.question}>What is your opinion of {APP_NAME}?</Text>
         <View style={styles.starsRow}>
           {[1,2,3,4,5].map(i => (
             <TouchableOpacity key={i} onPress={() => setRating(i)}>
@@ -42,11 +77,11 @@ const FeedbackScreen = ({ navigation }) => {
             placeholder="Would you like to write anything about this product?"
             placeholderTextColor="#b0b0b0"
             multiline
-            maxLength={200}
+            maxLength={MAX_CHARS}
             value={feedback}
             onChangeText={setFeedback}
           />
-          <Text style={styles.charCount}>50 characters</Text>
+          <Text style={styles.charCount}>{feedback.length}/{MAX_CHARS} characters</Text>
         </View>
         <View style={styles.imageRow}>
           <TouchableOpacity style={styles.imageBox}>
@@ -56,10 +91,10 @@ const FeedbackScreen = ({ navigation }) => {
             <Feather name="camera" size={32} color="#b0b0b0" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.sendButton} onPress={() => setModalVisible(true)}>
-          <Text style={styles.sendButtonText}>Send feedback</Text>
+        <TouchableOpacity style={styles.sendButton} onPress={handleSendFeedback} disabled={submitting}>
+          <Text style={styles.sendButtonText}>{submitting ? 'Sending...' : 'Send feedback'}</Text>
         </TouchableOpacity>
-      </View>
+      </KeyboardAware>
       <Modal
         visible={modalVisible}
         transparent
@@ -89,25 +124,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: THEME_COLOR,
-    paddingHorizontal: 16,
-    paddingTop: 40,
-    paddingBottom: 18,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    elevation: 4,
-  },
-  headerTitle: {
-    flex: 1,
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginLeft: 16,
-    textAlign: 'center',
   },
   content: {
     flex: 1,

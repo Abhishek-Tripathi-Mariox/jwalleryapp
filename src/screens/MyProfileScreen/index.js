@@ -1,20 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
+import { request } from '../../utils/api';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppImages } from '../../constants/app.image';
 
 const { width } = Dimensions.get('window');
-
-const user = {
-  avatar: require('../../assets/images/jwel3.jpg'),
-  cover: require('../../assets/images/jwel3.jpg'), //back
-  name: 'Josephine Jackson',
-  phone: '+91 6267266688',
-  location: 'Brooklyn, NYC',
-};
 
 const menu = [
   { key: 'profile', label: 'Profile Details', icon: <Feather name="user" size={21} color="#000000" /> },
@@ -26,20 +22,69 @@ const menu = [
 ];
 
 export default function MyProfileScreen({ navigation }) {
+  const [user, setUser] = useState({
+    name: '',
+    phone: '',
+    location: '',
+  });
+  const [loading, setLoading] = useState(true);
+
+  const loadProfile = async () => {
+    try {
+      const res = await request('GET', '/user/profile');
+      if (res?.code === 1 && res.data) {
+        const u = res.data.user || res.data;
+        setUser({
+          name: u.fullName || u.name || 'User',
+          phone: u.mobileNumber || u.phone || '',
+          location: u.city || (typeof u.location === 'string' ? u.location : ''),
+          avatar: u.profileImages || u.profileImage || u.avatar,
+          cover: u.coverImage,
+        });
+      }
+    } catch (e) {
+      console.log('Profile load error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      loadProfile();
+    }, [])
+  );
+
+  const handleSignOut = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    } catch (e) {
+      console.log('Sign out error:', e);
+    }
+  };
+
+  const avatarSource = user.avatar ? { uri: user.avatar } : require('../../assets/images/jwel3.jpg');
   return (
     <View style={styles.container}>
       {/* Header */}
       <BackHeader
         navigation={navigation}
         title="PROFILE"
-        rightIcon={require('../../assets/images/jnot.png')}
+        showBack={false}
+        showLogo={true}
+        rightIcon={AppImages.jnotification}
         onRightPress={() => navigation.navigate('Notification')}
       />
+      {loading ? (
+        <ActivityIndicator size="large" color={Colors.theme1} style={{ marginTop: 40 }} />
+      ) : (
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Cover and Avatar */}
         <View style={styles.coverContainer}>
-          <Image source={user.cover} style={styles.coverImage} />
-          <Image source={user.avatar} style={styles.avatar} />
+          <Image source={avatarSource} style={styles.avatar} />
           <View style={styles.profileInfo}>
             <Text style={styles.name}>{user.name}</Text>
             <View style={styles.row}>
@@ -76,10 +121,11 @@ export default function MyProfileScreen({ navigation }) {
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity style={styles.signOutBtn}>
+        <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
       </ScrollView>
+      )}
     </View>
   );
 }
@@ -87,7 +133,7 @@ export default function MyProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -139,32 +185,24 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   coverContainer: {
-    marginTop: 15,
-    marginBottom: 5,
-    marginHorizontal: 5,
+    marginTop: 18,
+    marginBottom: 8,
+    marginHorizontal: 16,
     backgroundColor: 'transparent',
-    overflow: 'hidden',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    alignSelf: 'center'
-  },
-  coverImage: {
-    width: 350,
-    height: 120,
-    resizeMode: 'cover',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   avatar: {
-    width: 100,
-    height: 100,
-    position: 'absolute',
-    top: 90,
-    left: 12,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#eee',
+    marginRight: 14,
   },
   profileInfo: {
-    marginTop: 5,
-    marginLeft: 130,
-    marginBottom: 8,
+    flex: 1,
   },
   name: {
     fontSize: 16,
@@ -188,9 +226,8 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   editBtn: {
-    position: 'absolute',
-    right: 12,
-    top: 127,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   editText: {
     color: Colors.theme1,

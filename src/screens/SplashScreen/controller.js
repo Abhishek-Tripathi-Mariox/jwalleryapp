@@ -1,17 +1,15 @@
 import { getTokenStorage } from '../../utils/tokenStorage';
+import { requestAllPermissions } from '../../utils/permissions';
 
-const TimeOut = (props) => {
+const TimeOut = async (props) => {
     const { navigation } = props;
-    const timer = setTimeout(async () => {
-        const token = await getTokenStorage();
-        if (token) {
-            navigation.navigate('Home');
-        } else {
-            navigation.navigate('Login');
-        }
-    }, 3000);
-
-    return () => clearTimeout(timer);
+    await requestAllPermissions();
+    const token = await getTokenStorage();
+    if (token) {
+        navigation.replace('MainTabs');
+    } else {
+        navigation.replace('Login');
+    }
 };
 
 export { TimeOut };

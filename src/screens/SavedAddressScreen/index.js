@@ -1,61 +1,76 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
+import { request } from '../../utils/api';
+import { useFocusEffect } from '@react-navigation/native';
+import AddressModal from './AddressModal';
 
 const { width } = Dimensions.get('window');
 
-
-const initialAddresses = [
-  {
-    id: '1',
-    label: 'Deliver to Mithu (Home)',
-    address: '32 main, mangal bazar rd, noida, uttar pradesh, 201309',
-    phone: '+91 8178496252',
-    email: 'mithukumar08907@gmail.com',
-    type: 'Home',
-  },
-  {
-    id: '2',
-    label: 'Deliver to Mithu(Work)',
-    address: '32 main, mangal bazar rd, noida, uttar pradesh, 201309',
-    phone: '+91 8178496252',
-    email: 'mithukumar08907@gmail.com',
-    type: 'Work',
-  },
-];
-
 export default function SavedAddressScreen({ navigation }) {
-  const [addresses, setAddresses] = useState(initialAddresses);
+  const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
 
-  const handleAddAddress = (addressData) => {
-    const composedAddress = `${addressData.houseNo}, ${addressData.apartment}, ${addressData.city}, ${addressData.state}, ${addressData.pincode}`;
-    if (editIndex !== null) {
-      // Edit existing address
-      setAddresses(prev => prev.map((addr, idx) => idx === editIndex ? {
-        ...addr,
-        label: `Deliver to ${addressData.fullName} (${addressData.addressType})`,
-        address: composedAddress,
-        phone: '',
-        email: addressData.email,
-        type: addressData.addressType,
-      } : addr));
-    } else {
-      // Add new address
-      setAddresses(prev => [
-        ...prev,
-        {
-          id: (prev.length + 1).toString(),
-          label: `Deliver to ${addressData.fullName} (${addressData.addressType})`,
-          address: composedAddress,
-          phone: '',
-          email: addressData.email,
-          type: addressData.addressType,
-        },
-      ]);
+  const loadAddresses = async () => {
+    try {
+      const res = await request('GET', '/user/address');
+      if (res?.code === 1 && res.data) {
+        const list = res.data.addresses || res.data || [];
+        setAddresses(Array.isArray(list) ? list : []);
+      }
+    } catch (e) {
+      console.log('Address load error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      loadAddresses();
+    }, [])
+  );
+
+  const handleAddAddress = async (addressData) => {
+    try {
+      const fullAddress = [addressData.houseNo, addressData.apartment, addressData.city, addressData.state]
+        .filter(Boolean)
+        .join(', ');
+      
+      const body = {
+        houseNo: addressData.houseNo || '',
+        apartment: addressData.apartment || '',
+        address: fullAddress || addressData.houseNo || '',
+        city: addressData.city || '',
+        state: addressData.state || '',
+        pinCode: parseInt(addressData.pincode || addressData.pinCode) || 0,
+        fullName: addressData.fullName || '',
+        email: addressData.email || '',
+        addressType: addressData.addressType || 'Home',
+      };
+
+      let res;
+      if (editIndex !== null && addresses[editIndex]) {
+        // Edit address - update existing
+        const addrId = addresses[editIndex]._id;
+        res = await request('PUT', `/user/address/${addrId}`, body);
+      } else {
+        res = await request('POST', '/user/address', body);
+      }
+      
+      if (res?.code === 1) {
+        loadAddresses();
+      } else {
+        Alert.alert('Error', res?.message || 'Failed to save address');
+      }
+    } catch (e) {
+      console.log('Address save error:', e);
+      Alert.alert('Error', 'Failed to save address');
     }
     setModalVisible(false);
     setEditIndex(null);
@@ -66,17 +81,15 @@ export default function SavedAddressScreen({ navigation }) {
     if (editIndex === null) return undefined;
     const addr = addresses[editIndex];
     if (!addr) return undefined;
-    // Try to parse address fields from string
-    const [houseNo = '', apartment = '', city = '', state = '', pincode = ''] = (addr.address || '').split(',').map(s => s.trim());
     return {
-      pincode,
-      city,
-      state,
-      houseNo,
-      apartment,
-      fullName: addr.label.replace(/^Deliver to | \(.*\)$/g, ''),
-      email: addr.email,
-      addressType: addr.type,
+      pincode: addr.pinCode || addr.pincode || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      houseNo: addr.houseNo || '',
+      apartment: addr.apartment || '',
+      fullName: addr.fullName || '',
+      email: addr.email || '',
+      addressType: addr.addressType || addr.type || 'Home',
     };
   };
 
@@ -87,24 +100,32 @@ export default function SavedAddressScreen({ navigation }) {
         navigation={navigation}
         title="ADDRESS"
       />
+      {loading ? (
+        <ActivityIndicator size="large" color={Colors.theme1} style={{ marginTop: 40 }} />
+      ) : (
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {addresses.map((addr, idx) => (
-          <View key={addr.id} style={styles.addressCard}>
-            <View style={styles.addressRow}>
-              <Feather name="map-pin" size={18} color="#101820" style={{ marginRight: 8 }} />
-              <Text style={styles.addressLabel}>{addr.label}</Text>
-              <TouchableOpacity style={styles.changeBtn} onPress={() => { setEditIndex(idx); setModalVisible(true); }}>
-                <Text style={styles.changeText}>Change</Text>
-              </TouchableOpacity>
+        {addresses.map((addr, idx) => {
+          const label = addr.fullName ? `Deliver to ${addr.fullName} (${addr.addressType || 'Home'})` : (addr.label || 'Address');
+          const addressText = addr.houseNo ? `${addr.houseNo}, ${addr.apartment || ''}, ${addr.city || ''}, ${addr.state || ''}, ${addr.pinCode || addr.pincode || ''}` : (addr.address || '');
+          return (
+            <View key={addr._id || addr.id || idx} style={styles.addressCard}>
+              <View style={styles.addressRow}>
+                <Feather name="map-pin" size={18} color="#101820" style={{ marginRight: 8 }} />
+                <Text style={styles.addressLabel}>{label}</Text>
+                <TouchableOpacity style={styles.changeBtn} onPress={() => { setEditIndex(idx); setModalVisible(true); }}>
+                  <Text style={styles.changeText}>Change</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.addressText}>{addressText}</Text>
+              <Text style={styles.addressMeta}>{addr.phone || ''}   |   {addr.email || ''}</Text>
             </View>
-            <Text style={styles.addressText}>{addr.address}</Text>
-            <Text style={styles.addressMeta}>{addr.phone}   |   {addr.email}</Text>
-          </View>
-        ))}
+          );
+        })}
         <TouchableOpacity style={styles.addAddressBtn} onPress={() => { setEditIndex(null); setModalVisible(true); }}>
           <Text style={styles.addAddressText}>+ Add Address</Text>
         </TouchableOpacity>
       </ScrollView>
+      )}
       <AddressModal
         visible={modalVisible}
         onClose={() => { setModalVisible(false); setEditIndex(null); }}
@@ -118,7 +139,7 @@ export default function SavedAddressScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -224,4 +245,3 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 });
-import AddressModal from './AddressModal';

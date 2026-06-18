@@ -7,9 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const { width } = Dimensions.get('window');
 
 const AddressModal = ({ visible, onClose, onSave, initialValues }) => {
-  const [pincode, setPincode] = useState(initialValues?.pincode || '201309');
-  const [city, setCity] = useState(initialValues?.city || 'Ghaziabad');
-  const [state, setState] = useState(initialValues?.state || 'Uttar Pradesh');
+  const [pincode, setPincode] = useState(initialValues?.pincode || '');
+  const [city, setCity] = useState(initialValues?.city || '');
+  const [state, setState] = useState(initialValues?.state || '');
   const [houseNo, setHouseNo] = useState(initialValues?.houseNo || '');
   const [apartment, setApartment] = useState(initialValues?.apartment || '');
   const [fullName, setFullName] = useState(initialValues?.fullName || '');
@@ -20,7 +20,7 @@ const AddressModal = ({ visible, onClose, onSave, initialValues }) => {
   React.useEffect(() => {
     setPincode(initialValues?.pincode || '');
     setCity(initialValues?.city || '');
-    setState(initialValues?.state || 'Uttar Pradesh');
+    setState(initialValues?.state || '');
     setHouseNo(initialValues?.houseNo || '');
     setApartment(initialValues?.apartment || '');
     setFullName(initialValues?.fullName || '');

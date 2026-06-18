@@ -2,14 +2,11 @@ import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import OrderSummaryModal from '../OrderPaymentScreen/OrderSummaryModal';
 import BackHeader from '../../components/Header/BackHeader';
-
+import { Colors } from '../../themes/Colors';
+import { AppImages } from '../../constants/app.image';
 
 const PaymentMethodScreen = ({ navigation }) => {
-  const [selectedCard, setSelectedCard] = useState('HDFC');
-  const [summaryVisible, setSummaryVisible] = useState(false);
-
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient
@@ -22,44 +19,23 @@ const PaymentMethodScreen = ({ navigation }) => {
         <BackHeader
           navigation={navigation}
           title="MANAGE PAYMENT"
-          rightIcon={require('../../assets/images/jnot.png')}
+          rightIcon={AppImages.jnotification}
           onRightPress={() => navigation.navigate('Notification')}
         />
 
         <ScrollView style={{ flex: 1 }}>
           {/* Payment Methods */}
           <View style={styles.sectionRow}>
-            <Text style={styles.sectionLabel}>Frequent Methods</Text>
+            <Text style={styles.sectionLabel}>Payment Methods</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AddCard')}>
               <Text style={styles.addCardText}>Add New Card</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.cardRow}>
-            <TouchableOpacity style={styles.cardOption} onPress={() => setSelectedCard('HDFC')}>
-              <View style={selectedCard === 'HDFC' ? styles.radioSelected : styles.radioUnselected} />
-              <View>
-                <Text style={styles.cardText}>HDFC Bank</Text>
-                <Text style={styles.cardNumber}>•••• •••• •••• 8743</Text>
-              </View>
-              <View>
-                <Image source={require('../../assets/images/visalogo.png')} style={styles.cardLogo} />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.cardOption} onPress={() => setSelectedCard('ICICI')}>
-              <View style={selectedCard === 'ICICI' ? styles.radioSelected : styles.radioUnselected} />
-              <View>
-                <Text style={styles.cardText}>ICICI Bank</Text>
-                <Text style={styles.cardNumber}>•••• •••• •••• 4553</Text>
-              </View>
-              <View>
-                <Image source={require('../../assets/images/icici.png')} style={styles.cardLogo} />
-              </View>
-            </TouchableOpacity>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 40 }}>
+            <Text style={{ color: '#999', fontSize: 15 }}>No saved payment methods</Text>
+            <Text style={{ color: '#999', fontSize: 13, marginTop: 4 }}>Add a card to get started</Text>
           </View>
         </ScrollView>
-
-        <OrderSummaryModal visible={summaryVisible} onClose={() => setSummaryVisible(false)} />
       </LinearGradient>
     </SafeAreaView>
   );

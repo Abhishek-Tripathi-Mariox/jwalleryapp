@@ -22,22 +22,26 @@ export default function OrderCancelModal({ visible, onClose, order, onCancelOrde
           {/* Order Info */}
           <View style={styles.orderInfoRow}>
             <Image
-              source={order?.image || require('../../assets/images/jwel1.jpg')}
+              source={order?.image ? { uri: order.image } : require('../../assets/images/jwel1.jpg')}
               style={styles.productImage}
             />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.productName} numberOfLines={1}>
-                {order?.name || 'Love & Money Attractor Brac...'}
+                {order?.name || order?.productName || 'Product'}
               </Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                <Text style={styles.productPrice}>₹ {order?.price || '499'}</Text>
-                <Text style={styles.productMRP}>₹5,397</Text>
+                <Text style={styles.productPrice}>₹ {order?.price || order?.discountPrice || 0}</Text>
+                {order?.mrp || order?.originalPrice ? (
+                  <Text style={styles.productMRP}>₹{order?.mrp || order?.originalPrice}</Text>
+                ) : null}
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                <AntDesign name="star" size={14} color="#FFC107" />
-                <Text style={styles.ratingText}>4.8</Text>
-                <Text style={styles.reviewText}>(381 Reviews)</Text>
-              </View>
+              {order?.rating ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                  <AntDesign name="star" size={14} color="#FFC107" />
+                  <Text style={styles.ratingText}>{order.rating}</Text>
+                  {order?.reviewCount ? <Text style={styles.reviewText}>({order.reviewCount} Reviews)</Text> : null}
+                </View>
+              ) : null}
             </View>
           </View>
 
@@ -46,10 +50,12 @@ export default function OrderCancelModal({ visible, onClose, order, onCancelOrde
           {/* Savings and Message */}
           <View style={{ alignSelf: 'center', justifyContent: 'center', }}>
 
-            <View style={styles.savingsRow}>
-              <Image source={require('../../assets/images/discount.png')} style={styles.promoIcon} />
-              <Text style={styles.savingsText}>You saved 4000 on this product</Text>
-            </View>
+            {order?.savings ? (
+              <View style={styles.savingsRow}>
+                <Image source={require('../../assets/images/discount.png')} style={styles.promoIcon} />
+                <Text style={styles.savingsText}>You saved {order.savings} on this product</Text>
+              </View>
+            ) : null}
             <Text style={styles.cancelMsg}>
               if you cancel now, you may not be able to avail this deal again.
               {"\n"}Do you still want to cancel?

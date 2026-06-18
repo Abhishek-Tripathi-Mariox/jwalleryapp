@@ -3,62 +3,81 @@ const { width, height } = Dimensions.get('window')
 import { Colors } from '../../themes/Colors';
 
 export const styles = StyleSheet.create({
-  image: {
-    alignSelf: 'center',
-    resizeMode: 'contain',
-  },
   mainContainer: {
     flex: 1,
-    backgroundColor: Colors.jbackground,
-    justifyContent: 'center',
+    backgroundColor: Colors.WHITE,
   },
-  mainCard: {
+  backgroundGradient: {
+    flex: 1,
+  },
+  headerBanner: {
     width: '100%',
-    // height: 'auto',
-    // elevation: 10,
-    // backgroundColor: Colors.WHITE,
-    alignSelf: 'center',
-    // borderRadius: 20,
-    padding: height * 0.035,
-    paddingVertical: height * 0.045
+    height: 289,
+    backgroundColor: '#940A57',
+    borderBottomLeftRadius: 33,
+    borderBottomRightRadius: 33,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  Btn: {
-    paddingVertical: 15,
-    borderRadius: 30,
-    marginTop: height * 0.06,
-    height: height * 0.09,
+  headerBannerCompact: {
+    height: 150,
   },
-  text: {
-    fontSize: 17,
-    color: '#ffffff',
-    fontWeight: '700',
-    fontFamily: 'Poppins-Bold',
+  image: {
+    width: 320,
+    height: 210,
+    resizeMode: 'contain',
+  },
+  imageCompact: {
+    width: 180,
+    height: 110,
+  },
+  contentArea: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  heading: {
+    color: '#2A2A2A',
+    fontSize: 24,
+    fontWeight: '600',
     textAlign: 'center',
-    letterSpacing: 0.5,
+    fontFamily: 'Poppins-SemiBold',
+    marginTop: 25,
+    marginBottom: 20,
   },
-
+  subHeading: {
+    color: Colors.GRAY12,
+    fontSize: 16,
+    paddingVertical: 7,
+    fontFamily: 'Poppins-Regular',
+    fontWeight: '400',
+    textAlign: 'center',
+  },
+  input: {
+    height: 60,
+    borderColor: '#B8B8B8',
+    borderWidth: 1,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    fontSize: 16,
+    fontFamily: 'Poppins-Medium',
+    fontWeight: '500',
+    color: Colors.BLACK,
+  },
   button: {
-    height: 50,
+    height: 54,
     width: '100%',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden', // important for rounded gradient
-    marginTop: 18,
-    marginBottom: 8,
-    backgroundColor:'#940A57'
+    marginTop: 30,
+    backgroundColor: '#940A57',
   },
-
-  input: {
-    height: 50,
-    borderColor: Colors.GRAY11,
-    borderWidth: 1,
-    paddingHorizontal: 18,
-    marginBottom: 16,
-    borderRadius: 8,
+  text: {
     fontSize: 16,
-    marginVertical: height * 0.02,
-    color: Colors.BLACK,
+    color: '#FFFFFF',
+    fontWeight: '500',
+    fontFamily: 'Poppins-Medium',
+    textAlign: 'center',
   },
   OTPInput: {
     width: height * 0.062,
@@ -70,49 +89,24 @@ export const styles = StyleSheet.create({
     marginHorizontal: 2,
     borderRadius: 7,
     marginTop: height * 0.02,
-    color: '#000'
+    color: '#000',
   },
   container: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  label: {
-    marginLeft: 8,
-    fontSize: 16,
-  },
-  heading: {
-    color: Colors.BLACK5,
-    fontSize: 24,
-    fontWeight: 'bold',
-    paddingVertical: height * 0.005,
-    // marginTop: height * 0.1,
-    textAlign: 'center',
-    fontFamily: 'Poppins-Semibold',
-    marginTop: 40
-
-  },
-  subHeading: {
-    color: Colors.GRAY12,
-    fontSize: 16,
-    paddingVertical: 7,
-    fontFamily: 'Poppind-regular',
-    fontWeight: '400',
-    textAlign: 'center'
-  },
   termsText: {
-    color: '#000000ff',
-    fontSize: 14.5,
+    color: '#A6A6A6',
+    fontSize: 13,
+    lineHeight: 19,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: 20,
+    fontFamily: 'Poppins-Regular',
+    fontWeight: '400',
   },
   linkText: {
-    color: '#123cc6ff',
+    color: '#123CC6',
     textDecorationLine: 'underline',
   },
 });

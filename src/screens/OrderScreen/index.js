@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { AppImages } from '../../constants/app.image';
@@ -15,101 +16,12 @@ import OrderCancelModal from '../../components/Modal/OrderCancelModal';
 import OrderCancellationModal from '../../components/Modal/OrderCancellationModal';
 import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
+import { fetchOrders, cancelOrder, reorder } from '../../utils/api';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
 const TABS = ['Ongoing', 'Complete', 'Review'];
-
-const ongoingOrders = [
-  {
-    id: 1,
-    name: 'Love & Money Attractor Bracelet',
-    price: 499,
-    image: AppImages.jwel1,
-  },
-  {
-    id: 2,
-    name: 'Love & Money Attractor Bracelet',
-    price: 499,
-    image: AppImages.jwel1,
-  },
-  {
-    id: 3,
-    name: 'Love & Money Attractor Bracelet',
-    price: 499,
-    image: AppImages.jwel1,
-  },
-  {
-    id: 4,
-    name: 'Love & Money Attractor Bracelet',
-    price: 499,
-    image: AppImages.jwel1,
-  },
-  {
-    id: 5,
-    name: 'Love & Money Attractor Bracelet',
-    price: 499,
-    image: AppImages.jwel1,
-  },
-];
-
-const completedOrders = [
-  {
-    id: 1,
-    name: 'Love & Money Attractor Bracelet',
-    price: 499,
-    image: AppImages.jwel1,
-    deliveredOn: 'may 06 2025',
-  },
-  {
-    id: 2,
-    name: 'Love & Money Attractor Bracelet',
-    price: 499,
-    image: AppImages.jwel1,
-    deliveredOn: 'may 06 2025',
-  },
-  {
-    id: 3,
-    name: 'Love & Money Attractor Bracelet',
-    price: 499,
-    image: AppImages.jwel1,
-    deliveredOn: 'may 06 2025',
-  },
-  {
-    id: 4,
-    name: 'Love & Money Attractor Bracelet',
-    price: 499,
-    image: AppImages.jwel1,
-    deliveredOn: 'may 06 2025',
-  },
-];
-
-const reviewOrders = [
-  {
-    id: 1,
-    name: 'Love & Money Attractor Bracelet',
-    image: AppImages.jwel1,
-    deliveredOn: 'may 06 2025',
-  },
-  {
-    id: 2,
-    name: 'Love & Money Attractor Bracelet',
-    image: AppImages.jwel1,
-    deliveredOn: 'may 06 2025',
-  },
-  {
-    id: 3,
-    name: 'Love & Money Attractor Bracelet',
-    image: AppImages.jwel1,
-    deliveredOn: 'may 06 2025',
-  },
-  {
-    id: 4,
-    name: 'Love & Money Attractor Bracelet',
-    image: AppImages.jwel1,
-    deliveredOn: 'may 06 2025',
-  },
-];
 
 export default function OrderScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState(0);
@@ -117,28 +29,85 @@ export default function OrderScreen({ navigation }) {
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [cancellationModalVisible, setCancellationModalVisible] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  let ordersToShow = ongoingOrders;
-  if (activeTab === 1) {
-    ordersToShow = completedOrders;
-  } else if (activeTab === 2) {
-    ordersToShow = reviewOrders;
-  }
+  const statusMap = ['pending,confirmed,shipped', 'delivered', 'delivered'];
 
-function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCancelModalVisible, navigation) {
+  const loadOrders = async (tabIdx) => {
+    setLoading(true);
+    try {
+      const res = await fetchOrders(statusMap[tabIdx]);
+      if (res?.code === 1 && res.data) {
+        const list = res.data.orders || res.data || [];
+        setOrders(Array.isArray(list) ? list : []);
+      } else {
+        setOrders([]);
+      }
+    } catch (e) {
+      console.log('Orders load error:', e);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadOrders(activeTab);
+    }, [activeTab])
+  );
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      await cancelOrder(orderId);
+      setCancelModalVisible(false);
+      setCancellationModalVisible(true);
+      loadOrders(activeTab);
+    } catch (e) {
+      console.log('Cancel order error:', e);
+    }
+  };
+
+  const handleReorder = async (orderId) => {
+    try {
+      await reorder(orderId);
+      loadOrders(activeTab);
+    } catch (e) {
+      console.log('Reorder error:', e);
+    }
+  };
+
+function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCancelModalVisible, navigation, handleReorder) {
+  const firstItem = order.products?.[0] || order;
+  const product = firstItem.productId || firstItem;
+  const imageUrl = product.productImages?.[0]?.url || firstItem.productImage;
+  const name = product.productName || firstItem.productName || 'Order Item';
+  const price = order.grandTotal || firstItem.unitPrice || firstItem.totalPrice || 0;
+  const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '';
+
+  const renderImage = (style) => imageUrl ? (
+    <Image source={{ uri: imageUrl }} style={style} />
+  ) : (
+    <View style={[style, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+      <Text style={{ color: '#999', fontSize: 10 }}>No Image</Text>
+    </View>
+  );
+
   if (tab === 0) {
     // Ongoing
     return (
-      <View key={order.id} style={styles.orderCard}>
-        <Image source={order.image} style={styles.orderImage} />
+      <View key={order._id} style={styles.orderCard}>
+        {renderImage(styles.orderImage)}
         <View style={styles.orderInfo}>
           <Text style={styles.orderName} numberOfLines={1}>
-            {order.name}
+            {name}
           </Text>
-          <Text style={styles.orderPrice}>₹ {order.price}</Text>
+          <Text style={styles.orderPrice}>₹ {price}</Text>
           <TouchableOpacity
             style={styles.trackBtn}
             onPress={() => {
+              setSelectedOrder(order);
               setTrackModalVisible(true);
             }}
           >
@@ -150,15 +119,15 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
   } else if (tab === 1) {
     // Completed
     return (
-      <View key={order.id} style={styles.orderCard}>
-        <Image source={order.image} style={styles.orderImage1} />
+      <View key={order._id} style={styles.orderCard}>
+        {renderImage(styles.orderImage1)}
         <View style={styles.orderInfo}>
           <Text style={styles.orderName} numberOfLines={1}>
-            {order.name}
+            {name}
           </Text>
-          <Text style={styles.orderPrice}>₹ {order.price}</Text>
+          <Text style={styles.orderPrice}>₹ {price}</Text>
           <Text style={styles.deliveredText}>
-            Delivered on {order.deliveredOn}
+            Delivered on {deliveredDate}
           </Text>
           <TouchableOpacity
             style={styles.cancelBtn}
@@ -169,7 +138,7 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
           >
             <Text style={styles.cancelBtnText}>Cancel Order</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.orderAgainBtn}>
+          <TouchableOpacity style={styles.orderAgainBtn} onPress={() => handleReorder(order._id)}>
             <Text style={styles.orderAgainBtnText}>Order Again</Text>
           </TouchableOpacity>
         </View>
@@ -178,18 +147,18 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
   } else if (tab === 2) {
     // Review
     return (
-      <View key={order.id} style={styles.orderCard}>
-        <Image source={order.image} style={styles.orderImage} />
+      <View key={order._id} style={styles.orderCard}>
+        {renderImage(styles.orderImage)}
         <View style={styles.orderInfo}>
           <Text style={styles.orderName} numberOfLines={1}>
-            {order.name}
+            {name}
           </Text>
           <Text style={styles.deliveredText}>
-            Delivered on {order.deliveredOn}
+            Delivered on {deliveredDate}
           </Text>
           <TouchableOpacity
             style={styles.reviewBtn}
-            onPress={() => navigation.navigate('WriteReviewScreen')}
+            onPress={() => navigation.navigate('WriteReviewScreen', { orderId: order._id, product })}
           >
             <Text style={styles.reviewBtnText}>Write a Review</Text>
           </TouchableOpacity>
@@ -200,7 +169,6 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
   return null;
 }
 
-  console.log('OrderScreen render');
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -237,14 +205,21 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
 
       {/* Order List */}
       <ScrollView contentContainerStyle={styles.orderList}>
-        {ordersToShow.map(order =>
-          renderCard(
-            order,
-            activeTab,
-            setTrackModalVisible,
-            setSelectedOrder,
-            setCancelModalVisible,
-            navigation
+        {loading ? (
+          <ActivityIndicator size="large" color={Colors.theme1} style={{ marginTop: 40 }} />
+        ) : orders.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 40, color: '#888' }}>No orders found.</Text>
+        ) : (
+          orders.map(order =>
+            renderCard(
+              order,
+              activeTab,
+              setTrackModalVisible,
+              setSelectedOrder,
+              setCancelModalVisible,
+              navigation,
+              handleReorder
+            )
           )
         )}
       </ScrollView>
@@ -259,7 +234,6 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
         }}
         navigation={navigation}
       />
-      {trackModalVisible && console.log('OrderTrackModal visible')}
       {/* Cancel Order Modal */}
       <OrderCancelModal
         visible={cancelModalVisible}
@@ -275,7 +249,6 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
         visible={cancellationModalVisible}
         onClose={() => setCancellationModalVisible(false)}
       />
-      {cancelModalVisible && console.log('OrderCancelModal visible')}
     </View>
   );
 }
@@ -283,7 +256,7 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
