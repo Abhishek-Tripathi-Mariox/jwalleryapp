@@ -11,7 +11,7 @@ const INACTIVE = '#9aa0a6';
 const tabs = [
   { name: 'Home', label: 'Home' },
   { name: 'Categories', label: 'Categories' },
-  { name: 'Gifts', label: 'Gift <1999' },
+  { name: 'Gifts', label: 'Explore' },
   { name: 'Stores', label: 'Store' },
   { name: 'Profile', label: 'Profile' },
 ];

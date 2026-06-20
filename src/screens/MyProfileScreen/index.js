@@ -9,6 +9,7 @@ import { request } from '../../utils/api';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppImages } from '../../constants/app.image';
+import LanguageAlert from '../../components/Modal/LanguageAlert';
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +19,7 @@ const menu = [
   { key: 'wishlist', label: 'Wishlist', icon: <AntDesign name="hearto" size={21} color="#000000" /> },
   { key: 'orders', label: 'Orders', icon: <MaterialIcons name="receipt-long" size={21} color="#000000" /> },
   { key: 'payment', label: 'Payment Methods', icon: <Feather name="credit-card" size={21} color="#000000" /> },
+  { key: 'language', label: 'Language', icon: <Feather name="globe" size={21} color="#000000" /> },
   { key: 'contact', label: 'Contact Us', icon: <Feather name="phone" size={21} color="#000000" /> },
 ];
 
@@ -26,8 +28,10 @@ export default function MyProfileScreen({ navigation }) {
     name: '',
     phone: '',
     location: '',
+    loyaltyPoints: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [langModal, setLangModal] = useState(false);
 
   const loadProfile = async () => {
     try {
@@ -40,6 +44,7 @@ export default function MyProfileScreen({ navigation }) {
           location: u.city || (typeof u.location === 'string' ? u.location : ''),
           avatar: u.profileImages || u.profileImage || u.avatar,
           cover: u.coverImage,
+          loyaltyPoints: u.loyaltyPoints || 0,
         });
       }
     } catch (e) {
@@ -100,6 +105,15 @@ export default function MyProfileScreen({ navigation }) {
             <Text style={styles.editText}>Edit</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Loyalty points */}
+        <View style={styles.loyaltyCard}>
+          <View style={styles.loyaltyLeft}>
+            <AntDesign name="star" size={20} color="#E0A100" />
+            <Text style={styles.loyaltyLabel}>Loyalty Points</Text>
+          </View>
+          <Text style={styles.loyaltyValue}>{user.loyaltyPoints || 0}</Text>
+        </View>
         {/* Menu List */}
         <View style={styles.menuList}>
           {menu.map((item, idx) => (
@@ -113,6 +127,7 @@ export default function MyProfileScreen({ navigation }) {
                 if (item.key === 'wishlist') navigation.navigate('Wishlist');
                 if (item.key === 'orders') navigation.navigate('OrderScreen');
                 if (item.key === 'payment') navigation.navigate('PaymentMethod');
+                if (item.key === 'language') setLangModal(true);
                 if (item.key === 'contact') navigation.navigate('CustomerServiceChat');
               }}
             >
@@ -126,6 +141,7 @@ export default function MyProfileScreen({ navigation }) {
         </TouchableOpacity>
       </ScrollView>
       )}
+      <LanguageAlert modalAlert={langModal} setModalAlert={setLangModal} />
     </View>
   );
 }
@@ -191,6 +207,34 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  loyaltyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    marginBottom: 10,
+    backgroundColor: '#FFF6DA',
+    borderWidth: 1,
+    borderColor: '#F0DFA8',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  loyaltyLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  loyaltyLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#7A5A00',
+  },
+  loyaltyValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#930e6e',
   },
   avatar: {
     width: 80,

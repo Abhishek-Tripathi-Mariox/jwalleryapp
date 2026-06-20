@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, Image, ScrollView, TouchableOpacity, StatusBar,
   ActivityIndicator, TextInput, Animated, Dimensions, Alert, RefreshControl, Modal, Linking,
+  PermissionsAndroid, Platform,
 } from 'react-native';
 import Video from 'react-native-video';
 import { styles } from './styles';
@@ -20,6 +21,7 @@ import {
 } from '../../utils/api';
 import { useLogo } from '../../utils/LogoContext';
 import { resizedImage } from '../../utils/imageProxy';
+import { useTranslation } from 'react-i18next';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -44,10 +46,13 @@ const EmptySection = ({ message }) => (
 );
 
 const Dashboard = ({ navigation }) => {
+  const { t } = useTranslation();
   const primaryLogoUrl = useLogo('primary');
   const [categories, setCategories] = useState([]);
   const [goldPrice24K, setGoldPrice24K] = useState(null);
   const [goldPrice22K, setGoldPrice22K] = useState(null);
+  const [goldPrice18K, setGoldPrice18K] = useState(null);
+  const [goldUpdatedAt, setGoldUpdatedAt] = useState(null);
   const [silverPrice, setSilverPrice] = useState(null);
   const [newArrivals, setNewArrivals] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -78,6 +83,9 @@ const Dashboard = ({ navigation }) => {
   const [videoModalVisible, setVideoModalVisible] = useState(false);
   const [activeVideoUrl, setActiveVideoUrl] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
+
+  // Voice search state
+  const [voiceListening, setVoiceListening] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -146,10 +154,14 @@ const Dashboard = ({ navigation }) => {
         if (Array.isArray(prices)) {
           const p24 = prices.find(p => p.purity === '24K');
           const p22 = prices.find(p => p.purity === '22K');
+          const p18 = prices.find(p => p.purity === '18K');
           const pSilver = prices.find(p => p.type === 'silver' || p.purity === 'Silver');
           if (p24) setGoldPrice24K(p24.rate);
           if (p22) setGoldPrice22K(p22.rate);
+          if (p18) setGoldPrice18K(p18.rate);
           if (pSilver) setSilverPrice(pSilver.rate);
+          const upd = p24?.lastUpdated || p22?.lastUpdated || p18?.lastUpdated;
+          if (upd) setGoldUpdatedAt(upd);
         } else {
           if (prices['24K']) setGoldPrice24K(prices['24K']);
           if (prices['22K']) setGoldPrice22K(prices['22K']);
@@ -229,6 +241,10 @@ const Dashboard = ({ navigation }) => {
     navigation.navigate('NecklaceList', { categoryId: cat._id, categoryLabel: cat.name });
   };
 
+  const handleVoiceSearch = () => {
+    Alert.alert('Voice Search', 'Voice search will be available soon.');
+  };
+
   // Banner tap: play video, else open the banner's link / target product.
   const handleBannerPress = (banner, mediaUrl) => {
     if (isVideoUrl(mediaUrl)) {
@@ -298,7 +314,7 @@ const Dashboard = ({ navigation }) => {
   const renderSpecialOffers = () => (
     <View>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionHeaderTitle}>Special Offers</Text>
+        <Text style={styles.sectionHeaderTitle}>{t('home.specialOffers')}</Text>
       </View>
       {banners.length > 0 ? (
         <ScrollView
@@ -355,7 +371,7 @@ const Dashboard = ({ navigation }) => {
   const renderShopByCategory = () => (
     <View>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionHeaderTitle}>Shop By Category</Text>
+        <Text style={styles.sectionHeaderTitle}>{t('home.shopByCategory')}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Category')}>
           <Text style={styles.seeAllText}>See all</Text>
         </TouchableOpacity>
@@ -385,7 +401,7 @@ const Dashboard = ({ navigation }) => {
   const renderNewArrivals = () => (
     <View>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionHeaderTitle}>Best for Gifting</Text>
+        <Text style={styles.sectionHeaderTitle}>{t('home.bestForGifting')}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Category')}>
           <Text style={styles.seeAllText}>See All</Text>
         </TouchableOpacity>
@@ -538,7 +554,7 @@ const Dashboard = ({ navigation }) => {
     return (
       <View style={styles.collectionsSection}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderTitle}>Swarnaz Collection</Text>
+          <Text style={styles.sectionHeaderTitle}>{t('home.swarnazCollection')}</Text>
         </View>
         <Text style={styles.sectionSubtitle}>Explore Our Newly Launched Collection</Text>
         <View style={styles.collectionsGrid}>
@@ -569,7 +585,7 @@ const Dashboard = ({ navigation }) => {
   const renderFindYourMatch = () => (
     <View>
       <View style={styles.sectionDivider}>
-        <Text style={styles.sectionHeaderTitle}>Light weight Jewellery</Text>
+        <Text style={styles.sectionHeaderTitle}>{t('home.lightWeight')}</Text>
       </View>
       {categories.length > 0 ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shopByCatScroll}>
@@ -598,7 +614,7 @@ const Dashboard = ({ navigation }) => {
     return (
       <View>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderTitle}>Trending Now</Text>
+          <Text style={styles.sectionHeaderTitle}>{t('home.trendingNow')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Category')}>
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
@@ -636,32 +652,32 @@ const Dashboard = ({ navigation }) => {
   // ════════════════════════════════════════════════════════
   const renderAssurance = () => (
     <View style={styles.assuranceSection}>
-      <Text style={styles.assuranceTitle}>Assurance</Text>
-      <Text style={styles.assuranceSubtitle}>Crafted By Experts, Cherished By You</Text>
+      <Text style={styles.assuranceTitle}>{t('home.assurance')}</Text>
+      <Text style={styles.assuranceSubtitle}>{t('home.assuranceSubtitle')}</Text>
       <View style={styles.assuranceRow}>
         <View style={styles.assuranceItem}>
           <View style={styles.assuranceIconCircle}>
             <FontAwesome name="diamond" size={22} color="#fff" />
           </View>
-          <Text style={styles.assuranceLabel}>925 Fine{'\n'}Silver</Text>
+          <Text style={styles.assuranceLabel}>10% purity{'\n'}of 24k Gold</Text>
         </View>
         <View style={styles.assuranceItem}>
           <View style={styles.assuranceIconCircle}>
             <Ionicons name="shield-checkmark-outline" size={24} color="#fff" />
           </View>
-          <Text style={styles.assuranceLabel}>6-Month{'\n'}Warranty</Text>
+          <Text style={styles.assuranceLabel}>2 years{'\n'}warranty</Text>
         </View>
         <View style={styles.assuranceItem}>
           <View style={styles.assuranceIconCircle}>
             <Ionicons name="infinite" size={24} color="#fff" />
           </View>
-          <Text style={styles.assuranceLabel}>Lifetime{'\n'}Plating</Text>
+          <Text style={styles.assuranceLabel}>Premiere{'\n'}Design</Text>
         </View>
         <View style={styles.assuranceItem}>
           <View style={styles.assuranceIconCircle}>
             <Ionicons name="arrow-undo-outline" size={24} color="#fff" />
           </View>
-          <Text style={styles.assuranceLabel}>Easy 15 Days{'\n'}Return</Text>
+          <Text style={styles.assuranceLabel}>easy 3-5{'\n'}Days return</Text>
         </View>
       </View>
     </View>
@@ -706,24 +722,55 @@ const Dashboard = ({ navigation }) => {
     );
   };
 
-  // ── Gold Ticker ──────────────────────────────────────
+  // ── Live Gold Rate card (Today's Gold Rate — 24K / 22K / 18K) ──
+  const goldTimeAgo = () => {
+    if (!goldUpdatedAt) return '';
+    const diffMs = Date.now() - new Date(goldUpdatedAt).getTime();
+    const mins = Math.max(0, Math.floor(diffMs / 60000));
+    if (mins < 1) return 'Updated just now';
+    if (mins < 60) return `Updated ${mins} min ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `Updated ${hrs} hr ago`;
+    return `Updated ${Math.floor(hrs / 24)} day ago`;
+  };
+
   const renderGoldTicker = () => {
-    if (!goldPrice22K && !goldPrice24K && !silverPrice) return null;
-    const pills = [];
-    if (goldPrice22K) pills.push({ text: `Live Gold: ₹${formatPrice(goldPrice22K)}/g (22K)`, type: 'gold' });
-    if (goldPrice24K) pills.push({ text: `Live Gold: ₹${formatPrice(goldPrice24K)}/g (24K)`, type: 'gold' });
-    if (silverPrice) pills.push({ text: `Live Silver: ₹${formatPrice(silverPrice)}/g`, type: 'silver' });
-    const allPills = [...pills, ...pills];
+    const rates = [
+      { label: '24K', value: goldPrice24K },
+      { label: '22K', value: goldPrice22K },
+      { label: '18K', value: goldPrice18K },
+    ].filter(r => r.value);
+    if (rates.length === 0) return null;
 
     return (
-      <View style={styles.tickerContainer}>
-        <Animated.View style={[styles.tickerContent, { transform: [{ translateX: tickerAnim }] }]}>
-          {allPills.map((pill, idx) => (
-            <View key={idx} style={pill.type === 'gold' ? styles.goldPill : styles.silverPill}>
-              <Text style={pill.type === 'gold' ? styles.goldPillText : styles.silverPillText}>{pill.text}</Text>
+      <View style={styles.goldCard}>
+        <View style={styles.goldCardHeader}>
+          <View style={styles.goldTitleWrap}>
+            <Text style={styles.goldCardTitle}>{t('home.todaysGoldRate')}</Text>
+            <AntDesign name="caretup" size={12} color="#1DA851" style={{ marginLeft: 6 }} />
+            <AntDesign name="caretdown" size={12} color="#E23B3B" style={{ marginLeft: 2 }} />
+          </View>
+          {goldUpdatedAt ? (
+            <View style={styles.goldUpdatedWrap}>
+              <Ionicons name="time-outline" size={13} color="#A98B3A" />
+              <Text style={styles.goldCardUpdated}> {goldTimeAgo()}</Text>
             </View>
-          ))}
-        </Animated.View>
+          ) : null}
+        </View>
+        <View style={styles.goldCardBody}>
+          <View style={styles.goldRatesRow}>
+            {rates.map((r, i) => (
+              <React.Fragment key={r.label}>
+                {i > 0 && <View style={styles.goldDivider} />}
+                <View style={styles.goldRateItem}>
+                  <Text style={styles.goldRatePurity}>{r.label}</Text>
+                  <Text style={styles.goldRateValue}>{formatPrice(r.value)}/gm</Text>
+                </View>
+              </React.Fragment>
+            ))}
+          </View>
+          <MaterialCommunityIcons name="gold" size={42} color="#E0A100" style={{ marginLeft: 8 }} />
+        </View>
       </View>
     );
   };
@@ -757,12 +804,12 @@ const Dashboard = ({ navigation }) => {
             <Ionicons name="call-outline" size={24} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => navigation.navigate('Notification')}
+            onPress={() => navigation.navigate('Wishlist')}
             style={styles.headerIconWrapper}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             activeOpacity={0.7}
           >
-            <Ionicons name="notifications-outline" size={24} color="#fff" />
+            <Ionicons name="heart-outline" size={24} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate('Cart')}
@@ -781,21 +828,23 @@ const Dashboard = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#930e6e']} tintColor="#930e6e" />}
       >
+        {/* Magenta top section: search + gold rate + categories */}
+        <View style={styles.topMagentaSection}>
         {/* Search Bar */}
         <View style={styles.searchBarContainer}>
           <View style={styles.searchBarInner}>
             <Image source={AppImages.jsearch} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search for Gold Jewellery, Diamond more..."
+              placeholder={t('home.searchPlaceholder')}
               placeholderTextColor="#999"
               value={searchText}
               onChangeText={handleSearchChange}
               returnKeyType="search"
               onSubmitEditing={() => searchText.trim().length >= 2 && handleSearchChange(searchText)}
             />
-            <TouchableOpacity onPress={() => Alert.alert('Coming Soon', 'Voice search will be available soon.')} style={styles.searchActionBtn}>
-              <Image source={AppImages.jmic} style={styles.voiceIcon} />
+            <TouchableOpacity onPress={handleVoiceSearch} style={styles.searchActionBtn}>
+              <Image source={AppImages.jmic} style={[styles.voiceIcon, voiceListening && { tintColor: '#930e6e' }]} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => Alert.alert('Coming Soon', 'Image search will be available soon.')} style={styles.searchActionBtn}>
               <Image source={AppImages.jcamera} style={styles.cameraIcon} />
@@ -807,9 +856,12 @@ const Dashboard = ({ navigation }) => {
 
         {/* 1. Gold/Silver Ticker */}
         {renderGoldTicker()}
+        </View>
 
-        {/* 2. Categories (6 round, no header) */}
-        {renderCategories()}
+        {/* 2. Categories (6 round) — straddle the magenta bottom edge */}
+        <View style={styles.categoriesOverlap}>
+          {renderCategories()}
+        </View>
 
         {/* 3. Special Offers (Banners scroller) */}
         {renderSpecialOffers()}

@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "home": "होम",
+    "categories": "श्रेणियाँ",
+    "explore": "एक्सप्लोर",
+    "store": "स्टोर",
+    "profile": "प्रोफ़ाइल"
+  },
+  "home": {
+    "searchPlaceholder": "गोल्ड ज्वेलरी, डायमंड आदि खोजें...",
+    "todaysGoldRate": "आज का सोने का भाव",
+    "updatedAgo": "{{time}} अपडेट हुआ",
+    "specialOffers": "विशेष ऑफ़र",
+    "shopByCategory": "श्रेणी से खरीदें",
+    "bestForGifting": "गिफ्ट के लिए बेस्ट",
+    "swarnazCollection": "स्वर्णाज़ कलेक्शन",
+    "lightWeight": "हल्की ज्वेलरी",
+    "trendingNow": "ट्रेंडिंग",
+    "assurance": "आश्वासन",
+    "assuranceSubtitle": "विशेषज्ञों द्वारा निर्मित, आपके द्वारा संजोया गया"
+  },
+  "common": {
+    "seeAll": "सभी देखें",
+    "viewAll": "सभी देखें"
+  },
+  "language": {
+    "choose": "भाषा चुनें",
+    "english": "English",
+    "hindi": "हिंदी"
+  }
+}

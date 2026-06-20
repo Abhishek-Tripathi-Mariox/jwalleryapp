@@ -9,16 +9,22 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../../themes/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import i18n, { setAppLanguage } from '../../i18n';
 
 const { width, height } = Dimensions.get('window');
 
 const LanguageAlert = ({ modalAlert, setModalAlert }) => {
 
-    const [selectedLanguage, setSelectedLanguage] = useState(null);
+    const [selectedLanguage, setSelectedLanguage] = useState(i18n.language === 'hi' ? 'Hindi' : 'English');
 
     // Function to change selected language
     const Change = (language) => {
         setSelectedLanguage(language);
+    };
+
+    const handleSelect = async () => {
+        await setAppLanguage(selectedLanguage === 'Hindi' ? 'hi' : 'en');
+        setModalAlert(false);
     };
 
     return (
@@ -72,7 +78,7 @@ const LanguageAlert = ({ modalAlert, setModalAlert }) => {
                         </View>
 
                         <TouchableOpacity
-                            onPress={() => setModalAlert(false)}
+                            onPress={handleSelect}
                             style={{ elevation: 10, flexDirection: 'row', justifyContent: 'center', backgroundColor: Colors.THEMECOLOR, width: '46%', borderRadius: 25, paddingVertical: 15, marginTop: height * 0.05 }}>
                             <Text style={{ color: '#ffffff', fontSize: 17, fontWeight: '500', alignSelf: 'center', paddingLeft: width * 0.02 }}>Select</Text>
                         </TouchableOpacity>

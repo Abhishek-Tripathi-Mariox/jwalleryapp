@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions, Modal } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions, Modal, PanResponder } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../themes/Colors';
 import { fetchProductDetails, addToCart, toggleWishlist, fetchWishlist, browseProducts } from '../../utils/api';
@@ -24,7 +24,31 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [addingToCart, setAddingToCart] = useState(false);
   const [showCartModal, setShowCartModal] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [is360, setIs360] = useState(false);
   const { refreshCart, cartCount } = useCart();
+
+  // 360° rotate: drag horizontally to cycle through the product's images (frames).
+  const idxRef = useRef(0);
+  const imagesLenRef = useRef(1);
+  const startIdxRef = useRef(0);
+  const pan = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 4,
+      onPanResponderGrant: () => { startIdxRef.current = idxRef.current; },
+      onPanResponderMove: (_, g) => {
+        const len = imagesLenRef.current;
+        if (len <= 1) return;
+        const steps = Math.round(g.dx / 18);
+        let ni = (startIdxRef.current + steps) % len;
+        if (ni < 0) ni += len;
+        if (ni !== idxRef.current) {
+          idxRef.current = ni;
+          setSelectedImageIdx(ni);
+        }
+      },
+    })
+  ).current;
 
   useEffect(() => {
     if (productId && !routeProduct) {
@@ -165,6 +189,10 @@ export default function ProductDetailScreen({ route, navigation }) {
   const discountPrice = product?.discountPrice || originalPrice;
   const discount = originalPrice > discountPrice ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100) : 0;
 
+  // keep 360 rotation refs in sync with current render
+  idxRef.current = selectedImageIdx;
+  imagesLenRef.current = images.length || 1;
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
@@ -187,7 +215,7 @@ export default function ProductDetailScreen({ route, navigation }) {
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Product Image */}
-        <View style={styles.imageContainer}>
+        <View style={styles.imageContainer} {...(is360 ? pan.panHandlers : {})}>
           {imageUrl ? (
             <Image source={{ uri: imageUrl }} style={styles.productImage} />
           ) : (
@@ -198,6 +226,21 @@ export default function ProductDetailScreen({ route, navigation }) {
           {discount > 0 && (
             <View style={styles.discountBadge}>
               <Text style={styles.discountText}>{discount}% OFF</Text>
+            </View>
+          )}
+          {images.length > 1 && (
+            <TouchableOpacity
+              style={[styles.view360Btn, is360 && styles.view360BtnActive]}
+              onPress={() => setIs360(v => !v)}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="3d-rotation" size={18} color={is360 ? '#fff' : '#930e6e'} />
+              <Text style={[styles.view360Text, is360 && { color: '#fff' }]}>360°</Text>
+            </TouchableOpacity>
+          )}
+          {is360 && (
+            <View style={styles.view360Hint}>
+              <Text style={styles.view360HintText}>Drag to rotate</Text>
             </View>
           )}
           <TouchableOpacity style={styles.wishlistBtn} onPress={handleToggleWishlist}>
@@ -498,6 +541,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  view360Btn: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#930e6e',
+    elevation: 3,
+  },
+  view360BtnActive: {
+    backgroundColor: '#930e6e',
+  },
+  view360Text: {
+    color: '#930e6e',
+    fontWeight: '700',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  view360Hint: {
+    position: 'absolute',
+    bottom: 12,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+  },
+  view360HintText: {
+    color: '#fff',
+    fontSize: 12,
   },
   relatedSection: {
     paddingHorizontal: 16,

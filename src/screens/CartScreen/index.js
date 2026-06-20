@@ -4,7 +4,8 @@ import { AppImages } from '../../constants/app.image';
 import { Colors } from '../../themes/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackHeader from '../../components/Header/BackHeader';
-import { fetchCart, updateCartItem, removeFromCart } from '../../utils/api';
+import { fetchCart, updateCartItem, removeFromCart, browseProducts, fetchFeaturedProducts } from '../../utils/api';
+import { resizedImage } from '../../utils/imageProxy';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCart } from '../../utils/CartContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -53,14 +54,40 @@ function CartItem({ item, onQtyChange, onRemove }) {
 function CartScreen({ navigation }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [suggestions, setSuggestions] = useState([]);
   const { refreshCart } = useCart();
+
+  // AI-style auto suggestions: products from the same categories as the cart,
+  // excluding what's already in the cart. Falls back to featured products.
+  const loadSuggestions = async (cartItems) => {
+    try {
+      const inCartIds = new Set(cartItems.map(it => it.productId?._id || it.productId).filter(Boolean));
+      const catId = cartItems.map(it => it.productId?.categoryId?._id || it.productId?.categoryId).find(Boolean);
+      let list = [];
+      if (catId) {
+        const res = await browseProducts({ categoryIds: catId, limit: 12 });
+        list = res?.data?.products || res?.data || [];
+      }
+      if (!list || list.length === 0) {
+        const fr = await fetchFeaturedProducts();
+        list = fr?.data?.products || fr?.data || [];
+      }
+      const filtered = (Array.isArray(list) ? list : []).filter(p => !inCartIds.has(p._id)).slice(0, 10);
+      setSuggestions(filtered);
+    } catch (e) {
+      console.log('Cart suggestions error:', e);
+    }
+  };
 
   const loadCart = async () => {
     try {
       const res = await fetchCart();
       if (res?.code === 1 && res.data) {
         const cartItems = res.data.items || res.data.cart?.items || res.data || [];
-        setItems(Array.isArray(cartItems) ? cartItems : []);
+        const arr = Array.isArray(cartItems) ? cartItems : [];
+        setItems(arr);
+        if (arr.length > 0) loadSuggestions(arr);
+        else setSuggestions([]);
       }
     } catch (e) {
       console.log('Cart load error:', e);
@@ -131,6 +158,38 @@ function CartScreen({ navigation }) {
         )}
         contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 8, paddingBottom: 8 }}
         showsVerticalScrollIndicator={false}
+        ListFooterComponent={
+          items.length > 0 && suggestions.length > 0 ? (
+            <View style={styles.suggestSection}>
+              <Text style={styles.suggestTitle}>You may also like</Text>
+              <FlatList
+                data={suggestions}
+                keyExtractor={(p) => p._id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 12 }}
+                renderItem={({ item: p }) => {
+                  const pImg = p.productImages?.[0]?.url || p.productImage;
+                  return (
+                    <TouchableOpacity
+                      style={styles.suggestCard}
+                      activeOpacity={0.85}
+                      onPress={() => navigation.navigate('ProductDetail', { productId: p._id })}
+                    >
+                      {pImg ? (
+                        <Image source={{ uri: resizedImage(pImg, 300) }} style={styles.suggestImage} />
+                      ) : (
+                        <View style={[styles.suggestImage, { backgroundColor: '#f0f0f0' }]} />
+                      )}
+                      <Text style={styles.suggestName} numberOfLines={1}>{p.productName}</Text>
+                      <Text style={styles.suggestPrice}>₹{Number(p.discountPrice || p.price || 0).toLocaleString('en-IN')}</Text>
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
           <View style={{ alignItems: 'center', marginTop: 60 }}>
             <Image source={require('../../assets/images/jcart.png')} style={{ width: 80, height: 80, tintColor: '#ccc', marginBottom: 16 }} />
@@ -165,6 +224,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  suggestSection: {
+    marginTop: 14,
+    marginBottom: 4,
+  },
+  suggestTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#222',
+    marginLeft: 16,
+    marginBottom: 10,
+  },
+  suggestCard: {
+    width: 120,
+    marginRight: 12,
+  },
+  suggestImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    resizeMode: 'cover',
+    backgroundColor: '#f6f6f6',
+  },
+  suggestName: {
+    fontSize: 12,
+    color: '#333',
+    fontWeight: '500',
+    marginTop: 6,
+  },
+  suggestPrice: {
+    fontSize: 13,
+    color: '#930e6e',
+    fontWeight: '700',
+    marginTop: 2,
   },
   header: {
     flexDirection: 'row',

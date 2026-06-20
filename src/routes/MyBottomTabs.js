@@ -9,6 +9,7 @@ import StoreLocatorScreen from '../screens/StoreLocatorScreen';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { useTranslation } from 'react-i18next';
 
 const Tab = createBottomTabNavigator();
 const THEME = '#930e6e';
@@ -32,6 +33,7 @@ const getTabIcon = (routeName, color, size) => {
 };
 
 const MyBottomTabs = () => {
+  const { t } = useTranslation();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -47,11 +49,11 @@ const MyBottomTabs = () => {
         ),
       })}
     >
-      <Tab.Screen name="Home" component={Dashboard} options={{ tabBarLabel: 'Home' }} />
-      <Tab.Screen name="Categories" component={CategoryScreen} options={{ tabBarLabel: 'Categories' }} />
-      <Tab.Screen name="Gifts" component={GiftUnder1999Screen} options={{ tabBarLabel: 'Gift <1999' }} />
-      <Tab.Screen name="Stores" component={StoreLocatorScreen} options={{ tabBarLabel: 'Store' }} />
-      <Tab.Screen name="Profile" component={MyProfileScreen} options={{ tabBarLabel: 'Profile' }} />
+      <Tab.Screen name="Home" component={Dashboard} options={{ tabBarLabel: t('nav.home') }} />
+      <Tab.Screen name="Categories" component={CategoryScreen} options={{ tabBarLabel: t('nav.categories') }} />
+      <Tab.Screen name="Gifts" component={GiftUnder1999Screen} options={{ tabBarLabel: t('nav.explore') }} />
+      <Tab.Screen name="Stores" component={StoreLocatorScreen} options={{ tabBarLabel: t('nav.store') }} />
+      <Tab.Screen name="Profile" component={MyProfileScreen} options={{ tabBarLabel: t('nav.profile') }} />
     </Tab.Navigator>
   );
 };

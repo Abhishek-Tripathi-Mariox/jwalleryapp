@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "home": "Home",
+    "categories": "Categories",
+    "explore": "Explore",
+    "store": "Store",
+    "profile": "Profile"
+  },
+  "home": {
+    "searchPlaceholder": "Search for Gold Jewellery, Diamond more...",
+    "todaysGoldRate": "Today's Gold Rate",
+    "updatedAgo": "Updated {{time}}",
+    "specialOffers": "Special Offers",
+    "shopByCategory": "Shop By Category",
+    "bestForGifting": "Best for Gifting",
+    "swarnazCollection": "Swarnaz Collection",
+    "lightWeight": "Light weight Jewellery",
+    "trendingNow": "Trending Now",
+    "assurance": "Assurance",
+    "assuranceSubtitle": "Crafted By Experts, Cherished By You"
+  },
+  "common": {
+    "seeAll": "See All",
+    "viewAll": "View all"
+  },
+  "language": {
+    "choose": "CHOOSE LANGUAGE",
+    "english": "English",
+    "hindi": "हिंदी"
+  }
+}
