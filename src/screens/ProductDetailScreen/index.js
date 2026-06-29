@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions, Modal, PanResponder, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions, Modal, PanResponder, TextInput, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../themes/Colors';
 import { fetchProductDetails, addToCart, toggleWishlist, fetchWishlist, browseProducts, fetchCoupons } from '../../utils/api';
@@ -9,7 +9,6 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import BottomNavBar from '../../components/Bottom/BottomNavBar';
 
 const { width } = Dimensions.get('window');
 
@@ -156,6 +155,14 @@ export default function ProductDetailScreen({ route, navigation }) {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Check out ${product?.productName || 'this product'} on Swarnaz — ₹${Number(product?.discountPrice || product?.price || 0).toLocaleString('en-IN')}`,
+      });
+    } catch (e) {}
+  };
+
   const handleToggleWishlist = async () => {
     try {
       const id = product?._id || productId;
@@ -220,8 +227,11 @@ export default function ProductDetailScreen({ route, navigation }) {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <AntDesign name="arrowleft" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>PRODUCT DETAILS</Text>
-        <View style={styles.headerRight}>
+        <Text style={styles.headerTitle}>Product Page</Text>
+        <View style={[styles.headerRight, { flexDirection: 'row', alignItems: 'center' }]}>
+          <TouchableOpacity onPress={handleToggleWishlist} style={{ marginRight: 16 }}>
+            <AntDesign name={wishlisted ? 'heart' : 'hearto'} size={22} color="#fff" />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Cart')} style={styles.cartBtn}>
             <Feather name="shopping-cart" size={22} color="#fff" />
             {cartCount > 0 && (
@@ -234,62 +244,67 @@ export default function ProductDetailScreen({ route, navigation }) {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Product Image */}
-        <View style={styles.imageContainer} {...(is360 ? pan.panHandlers : {})}>
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.productImage} />
-          ) : (
-            <View style={[styles.productImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
-              <Text style={{ color: '#999', fontSize: 16 }}>No Image Available</Text>
-            </View>
-          )}
-          {discount > 0 && (
-            <View style={styles.discountBadge}>
-              <Text style={styles.discountText}>{discount}% OFF</Text>
-            </View>
-          )}
+        {/* Product Image area — thumbnails (left) + main image */}
+        <View style={styles.imageRow}>
           {images.length > 1 && (
-            <TouchableOpacity
-              style={[styles.view360Btn, is360 && styles.view360BtnActive]}
-              onPress={() => setIs360(v => !v)}
-              activeOpacity={0.85}
-            >
-              <MaterialIcons name="3d-rotation" size={18} color={is360 ? '#fff' : '#930e6e'} />
-              <Text style={[styles.view360Text, is360 && { color: '#fff' }]}>360°</Text>
-            </TouchableOpacity>
-          )}
-          {is360 && (
-            <View style={styles.view360Hint}>
-              <Text style={styles.view360HintText}>Drag to rotate</Text>
+            <View style={styles.thumbColumn}>
+              {images.slice(0, 4).map((img, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => setSelectedImageIdx(i)}
+                  style={[styles.thumbLeft, i === selectedImageIdx && styles.thumbLeftActive]}
+                >
+                  <Image source={{ uri: img.url }} style={styles.thumbLeftImg} />
+                </TouchableOpacity>
+              ))}
             </View>
           )}
-          <TouchableOpacity style={styles.wishlistBtn} onPress={handleToggleWishlist}>
-            <AntDesign 
-              name={wishlisted ? "heart" : "hearto"} 
-              size={24} 
-              color={wishlisted ? "#FF4444" : "#666"} 
-            />
-          </TouchableOpacity>
-        </View>
 
-        {/* Image Thumbnails */}
-        {images.length > 1 && (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
-            contentContainerStyle={styles.thumbnailScroll}
-          >
-            {images.map((img, i) => (
-              <TouchableOpacity 
-                key={i} 
-                onPress={() => setSelectedImageIdx(i)}
-                style={[styles.thumbnail, i === selectedImageIdx && styles.thumbnailActive]}
-              >
-                <Image source={{ uri: img.url }} style={styles.thumbnailImage} />
+          <View style={styles.mainImageWrap} {...(is360 ? pan.panHandlers : {})}>
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.mainImage} />
+            ) : (
+              <View style={[styles.mainImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: '#999', fontSize: 16 }}>No Image</Text>
+              </View>
+            )}
+            {discount > 0 && (
+              <View style={styles.discountBadge}><Text style={styles.discountText}>{discount}% OFF</Text></View>
+            )}
+
+            {/* Top-right: share + 360 */}
+            <View style={styles.topRightIcons}>
+              <TouchableOpacity style={styles.circleBtn} onPress={handleShare}>
+                <Feather name="share-2" size={17} color="#333" />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
+              {images.length > 1 && (
+                <TouchableOpacity style={[styles.circleBtn, { marginTop: 8 }, is360 && { backgroundColor: '#930e6e' }]} onPress={() => setIs360(v => !v)}>
+                  <Text style={[styles.icon360, is360 && { color: '#fff' }]}>360</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* AR / 3D centre-bottom */}
+            {images.length > 1 && (
+              <TouchableOpacity style={styles.arBtn} onPress={() => setIs360(v => !v)}>
+                <MaterialIcons name="view-in-ar" size={26} color="#333" />
+              </TouchableOpacity>
+            )}
+
+            {/* Dots */}
+            {images.length > 1 && (
+              <View style={styles.dotsRow}>
+                {images.slice(0, 5).map((_, i) => (
+                  <View key={i} style={[styles.dot, i === selectedImageIdx && styles.dotActive]} />
+                ))}
+              </View>
+            )}
+
+            {is360 && (
+              <View style={styles.view360Hint}><Text style={styles.view360HintText}>Drag to rotate</Text></View>
+            )}
+          </View>
+        </View>
 
         {/* Product Info */}
         <View style={styles.infoSection}>
@@ -298,14 +313,19 @@ export default function ProductDetailScreen({ route, navigation }) {
           )}
           <Text style={styles.productName}>{product?.productName || 'Product Name'}</Text>
           
-          {/* Rating (if available) */}
-          {product?.averageRating > 0 && (
-            <View style={styles.ratingRow}>
-              <AntDesign name="star" size={16} color="#FFD700" />
-              <Text style={styles.ratingText}>{product.averageRating.toFixed(1)}</Text>
-              {product?.totalReviews > 0 && (
-                <Text style={styles.reviewCount}>({product.totalReviews} reviews)</Text>
-              )}
+          {/* Rating + Sold (if available) */}
+          {(product?.averageRating > 0 || product?.soldCount || product?.totalSold) && (
+            <View style={[styles.ratingRow, { justifyContent: 'space-between' }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <AntDesign name="star" size={16} color="#FFD700" />
+                <Text style={styles.ratingText}>{(product?.averageRating || 0).toFixed(1)}</Text>
+                {product?.totalReviews > 0 && (
+                  <Text style={styles.reviewCount}>({product.totalReviews}+ review)</Text>
+                )}
+              </View>
+              {(product?.soldCount || product?.totalSold) ? (
+                <Text style={styles.reviewCount}>Sold {product.soldCount || product.totalSold}</Text>
+              ) : null}
             </View>
           )}
 
@@ -540,9 +560,6 @@ export default function ProductDetailScreen({ route, navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Navigation */}
-      <BottomNavBar />
-
       {/* Add to Cart Success Modal */}
       <Modal
         visible={showCartModal}
@@ -665,6 +682,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
   },
+  imageRow: { flexDirection: 'row', backgroundColor: '#EDEDED', borderRadius: 14, margin: 12, padding: 10 },
+  thumbColumn: { width: 64, marginRight: 10 },
+  thumbLeft: { width: 60, height: 60, borderRadius: 8, backgroundColor: '#fff', marginBottom: 8, overflow: 'hidden', borderWidth: 1, borderColor: '#eee' },
+  thumbLeftActive: { borderColor: '#930e6e', borderWidth: 1.5 },
+  thumbLeftImg: { width: '100%', height: '100%', resizeMode: 'cover' },
+  mainImageWrap: { flex: 1, height: 300, borderRadius: 10, overflow: 'hidden', justifyContent: 'center' },
+  mainImage: { width: '100%', height: '100%', resizeMode: 'contain' },
+  topRightIcons: { position: 'absolute', top: 8, right: 8, alignItems: 'center' },
+  circleBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', elevation: 2, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 3 },
+  icon360: { fontSize: 11, fontWeight: '800', color: '#333' },
+  arBtn: { position: 'absolute', bottom: 34, alignSelf: 'center', width: 44, height: 44, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center' },
+  dotsRow: { position: 'absolute', bottom: 12, alignSelf: 'center', flexDirection: 'row' },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#bbb', marginHorizontal: 3 },
+  dotActive: { backgroundColor: '#930e6e', width: 8, height: 8, borderRadius: 4 },
   taxText: { fontSize: 12, color: '#888', marginTop: 4 },
   shipBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', borderWidth: 1, borderColor: '#F0D7E5', backgroundColor: '#FCEFF6', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginTop: 12 },
   shipBadgeText: { fontSize: 12, color: '#930e6e', fontWeight: '600' },
@@ -1047,7 +1078,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#DD8560',
+    backgroundColor: '#930e6e',
     paddingVertical: 14,
     borderRadius: 8,
   },

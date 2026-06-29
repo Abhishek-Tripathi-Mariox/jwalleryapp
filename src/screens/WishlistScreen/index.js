@@ -42,9 +42,12 @@ export default function WishlistScreen({ navigation }) {
     };
 
     const renderItem = ({ item }) => {
-        const product = item.productId || item;
-        const imageUrl = product.productImages?.[0]?.url;
-        const price = product.discountPrice || product.price || 0;
+        const prodObj = (item.productId && typeof item.productId === 'object') ? item.productId : null;
+        const pid = (typeof item.productId === 'string' ? item.productId : prodObj?._id) || item._id;
+        const imageUrl = item.productImage || item.productImages?.[0]?.url || prodObj?.productImages?.[0]?.url;
+        const name = item.productName || prodObj?.productName || 'Product';
+        const price = item.discountPrice || item.price || prodObj?.discountPrice || prodObj?.price || 0;
+        const rating = item.rating || prodObj?.rating || 0;
 
         return (
             <View style={styles.productCard}>
@@ -56,19 +59,18 @@ export default function WishlistScreen({ navigation }) {
                     </View>
                 )}
                 <View style={styles.productInfo}>
-                    <Text style={styles.productTitle}>{product.brand || product.productName}</Text>
-                    <Text style={styles.productSubtitle}>{product.productName}</Text>
-                    <Text style={styles.productPrice}>₹{price}</Text>
+                    <Text style={styles.productTitle}>{name}</Text>
+                    <Text style={styles.productPrice}>₹{Number(price).toLocaleString('en-IN')}</Text>
                     <View style={styles.ratingRow}>
                         <Text style={styles.ratingStar}>★</Text>
-                        <Text style={styles.ratingText}>{product.rating || 0} Ratings</Text>
+                        <Text style={styles.ratingText}>{rating} Ratings</Text>
                     </View>
                     <TouchableOpacity style={styles.buyNowBtn}
-                        onPress={() => navigation.navigate('ProductDetailScreen', { productId: product._id, product })}>
+                        onPress={() => navigation.navigate('ProductDetail', { productId: pid })}>
                         <Text style={styles.buyNowText}>View Details</Text>
                     </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.wishlistBtn} onPress={() => handleRemove(product._id)}>
+                <TouchableOpacity style={styles.wishlistBtn} onPress={() => handleRemove(pid)}>
                     <Image
                         source={require('../../assets/images/redheart.png')}
                         style={styles.wishlistIcon}

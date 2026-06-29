@@ -15,8 +15,8 @@ const THEME = '#930e6e';
 const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
 
 const ASSURANCE = [
-  { icon: <FontAwesome name="diamond" size={20} color="#fff" />, label: '10% purity\nof 24k Gold' },
-  { icon: <Ionicons name="shield-checkmark-outline" size={22} color="#fff" />, label: '5 years\nwarranty' },
+  { icon: <FontAwesome name="diamond" size={20} color="#fff" />, label: '100% purity\nof 24k Gold' },
+  { icon: <Ionicons name="shield-checkmark-outline" size={22} color="#fff" />, label: '2 years\nwarranty' },
   { icon: <Ionicons name="infinite" size={22} color="#fff" />, label: 'Premiere\nDesign' },
   { icon: <Ionicons name="arrow-undo-outline" size={22} color="#fff" />, label: 'easy 3-5\nDays return' },
 ];
@@ -95,7 +95,7 @@ function CartScreen({ navigation }) {
       }
       if (wishRes?.code === 1 && wishRes.data) {
         const w = wishRes.data.wishlist || wishRes.data.items || wishRes.data || [];
-        setWishlist((Array.isArray(w) ? w : []).map(it => it.productId || it).filter(Boolean).slice(0, 6));
+        setWishlist((Array.isArray(w) ? w : []).slice(0, 6));
       }
       if (addrRes?.code === 1 && addrRes.data) {
         const list = addrRes.data.addresses || addrRes.data || [];
@@ -229,10 +229,15 @@ function CartScreen({ navigation }) {
                 <Ionicons name="chevron-forward" size={16} color={THEME} />
               </TouchableOpacity>
             </View>
+            <View style={styles.deliverDivider} />
             {address ? (
               <View style={{ flexDirection: 'row' }}>
-                <Ionicons name="home-outline" size={20} color={THEME} style={{ marginRight: 10, marginTop: 2 }} />
-                <View style={{ flex: 1 }}>
+                <View style={styles.timeline}>
+                  <Ionicons name="home-outline" size={20} color={THEME} />
+                  <View style={styles.timelineLine} />
+                  <View style={styles.timelineDot} />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={styles.deliverName}>{address.name || address.fullName || 'User'}</Text>
                   <Text style={styles.deliverLine}>{address.phone ? `+91${address.phone}` : ''}</Text>
                   <Text style={styles.deliverLine}>
@@ -259,15 +264,19 @@ function CartScreen({ navigation }) {
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12 }}>
                 {wishlist.map((p) => {
-                  const img = p.productImages?.[0]?.url || p.productImage;
+                  const prodObj = (p.productId && typeof p.productId === 'object') ? p.productId : null;
+                  const pid = (typeof p.productId === 'string' ? p.productId : prodObj?._id) || p._id;
+                  const img = p.productImage || p.productImages?.[0]?.url || prodObj?.productImages?.[0]?.url;
+                  const name = p.productName || prodObj?.productName || 'Product';
+                  const price = p.discountPrice || p.price || prodObj?.discountPrice || prodObj?.price;
                   return (
-                    <View key={p._id} style={styles.wishCard}>
-                      <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { productId: p._id })} activeOpacity={0.85}>
+                    <View key={p._id || pid} style={styles.wishCard}>
+                      <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { productId: pid })} activeOpacity={0.85}>
                         {img ? <Image source={{ uri: resizedImage(img, 300) }} style={styles.wishImage} /> : <View style={[styles.wishImage, { backgroundColor: '#eee' }]} />}
                       </TouchableOpacity>
-                      <Text style={styles.wishName} numberOfLines={1}>{p.productName}</Text>
-                      <Text style={styles.wishPrice}>₹{fmt(p.discountPrice || p.price)}</Text>
-                      <TouchableOpacity style={styles.wishAddBtn} onPress={() => handleWishlistAdd(p._id)}>
+                      <Text style={styles.wishName} numberOfLines={1}>{name}</Text>
+                      <Text style={styles.wishPrice}>₹{fmt(price)}</Text>
+                      <TouchableOpacity style={styles.wishAddBtn} onPress={() => handleWishlistAdd(pid)}>
                         <Icon name="cart-outline" size={14} color={THEME} />
                         <Text style={styles.wishAddText}> Add to Cart</Text>
                       </TouchableOpacity>
@@ -340,6 +349,10 @@ const styles = StyleSheet.create({
   deliverHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   deliverTitle: { fontSize: 15, fontWeight: '700', color: '#222' },
   changesText: { color: THEME, fontWeight: '700', fontSize: 13 },
+  deliverDivider: { height: 1, backgroundColor: '#eee', marginBottom: 12 },
+  timeline: { alignItems: 'center', width: 22 },
+  timelineLine: { width: 2, flex: 1, minHeight: 26, backgroundColor: THEME, marginTop: 2 },
+  timelineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: THEME, marginTop: 2 },
   deliverName: { fontSize: 15, fontWeight: '700', color: '#222' },
   deliverLine: { fontSize: 13, color: '#555', marginTop: 2 },
 

@@ -788,7 +788,7 @@ const Dashboard = ({ navigation }) => {
   // MAIN RENDER
   // ════════════════════════════════════════════════════════
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#930e6e' }} edges={['bottom']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['bottom']}>
       <StatusBar backgroundColor="#930e6e" barStyle="light-content" />
 
       {/* Top Bar — logo top-left, clear icons + call on right */}
