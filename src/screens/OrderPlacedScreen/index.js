@@ -43,14 +43,14 @@ const OrderPlacedScreen = ({ navigation, route }) => {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} edges={['bottom']}>
         <ActivityIndicator size="large" color={Colors.theme1} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
       <LinearGradient
         colors={['#fffbe6', '#ffffff']}
         start={{ x: 0.1, y: 0.1 }}
@@ -61,7 +61,7 @@ const OrderPlacedScreen = ({ navigation, route }) => {
         <BackHeader
           navigation={navigation}
           title="CHECKOUT"
-          rightIcon={AppImages.jnotification}
+          rightIconName="notifications-outline"
         onRightPress={() => navigation.navigate('Notification')}
         />
 

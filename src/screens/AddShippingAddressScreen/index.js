@@ -53,7 +53,7 @@ const AddShippingAddressScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
       <LinearGradient
         colors={['#fffbe6', '#ffffff']}
         start={{ x: 0.1, y: 0.1 }}
@@ -65,7 +65,7 @@ const AddShippingAddressScreen = ({ navigation }) => {
         <BackHeader
           navigation={navigation}
           title="ADD SHIPPING ADDRESS"
-          rightIcon={AppImages.jnotification}
+          rightIconName="notifications-outline"
           onRightPress={() => navigation.navigate('Notification')}
         />
 

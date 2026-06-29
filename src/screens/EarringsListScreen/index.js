@@ -213,7 +213,7 @@ export default function EarringsListScreen({ navigation, route }) {
         <Text style={styles.headerTitle}>{categoryLabel || 'Products'}</Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
-            <Image source={AppImages.jnotification} style={styles.headerIcon} />
+            <Feather name="bell" size={22} color="#fff" style={{ marginLeft: 12 }} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
             <Image source={AppImages.jbag} style={styles.headerIcon1} />
@@ -225,7 +225,7 @@ export default function EarringsListScreen({ navigation, route }) {
       <View style={styles.headerExtras}>
         {/* Search Bar */}
         <View style={styles.searchBar}>
-          <Image source={require('../../assets/images/jsearch.png')} style={styles.searchIcon} />
+          <Feather name="search" size={20} color="#930e6e" style={{ marginRight: 8 }} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search for Gold Jewellery, Diamond more..."

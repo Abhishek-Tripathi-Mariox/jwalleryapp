@@ -1,51 +1,69 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, ActivityIndicator } from 'react-native';
-import { AppImages } from '../../constants/app.image';
-import { Colors } from '../../themes/Colors';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackHeader from '../../components/Header/BackHeader';
-import { fetchCart, updateCartItem, removeFromCart, browseProducts, fetchFeaturedProducts } from '../../utils/api';
+import { fetchCart, updateCartItem, removeFromCart, fetchAddresses, fetchWishlist, addToCart, fetchProfile } from '../../utils/api';
 import { resizedImage } from '../../utils/imageProxy';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCart } from '../../utils/CartContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { AppImages } from '../../constants/app.image';
+
+const THEME = '#930e6e';
+const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
+
+const ASSURANCE = [
+  { icon: <FontAwesome name="diamond" size={20} color="#fff" />, label: '10% purity\nof 24k Gold' },
+  { icon: <Ionicons name="shield-checkmark-outline" size={22} color="#fff" />, label: '5 years\nwarranty' },
+  { icon: <Ionicons name="infinite" size={22} color="#fff" />, label: 'Premiere\nDesign' },
+  { icon: <Ionicons name="arrow-undo-outline" size={22} color="#fff" />, label: 'easy 3-5\nDays return' },
+];
 
 function CartItem({ item, onQtyChange, onRemove }) {
   const prod = item.productId || {};
   const imageUrl = item.productImage || prod.productImages?.[0]?.url;
+  const price = item.unitPrice || prod.discountPrice || prod.price || 0;
+  const oldPrice = prod.price && prod.discountPrice && prod.price > prod.discountPrice ? prod.price : 0;
   return (
     <View style={styles.cartItem}>
       {imageUrl ? (
-        <Image source={{ uri: imageUrl }} style={styles.cartItemImage} />
+        <Image source={{ uri: resizedImage(imageUrl, 300) }} style={styles.cartItemImage} />
       ) : (
-        <View style={[styles.cartItemImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+        <View style={[styles.cartItemImage, { justifyContent: 'center', alignItems: 'center' }]}>
           <Text style={{ color: '#999', fontSize: 10 }}>No Image</Text>
         </View>
       )}
       <View style={{ flex: 1 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Text style={[styles.cartItemName, { flex: 1 }]}>{item.productName || prod.productName || 'Product'}</Text>
-          <TouchableOpacity onPress={() => onRemove(item._id)} style={styles.deleteBtn}>
-            <Icon name="delete-outline" size={20} color="#999" />
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={styles.cartItemName} numberOfLines={1}>{item.productName || prod.productName || 'Product'}</Text>
+          <TouchableOpacity onPress={() => onRemove(item._id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="close" size={20} color="#999" />
           </TouchableOpacity>
         </View>
-        <Text style={styles.cartItemSubtitle}>
-          {[item.size, item.color].filter(Boolean).join(' | ')}
-        </Text>
+        {(prod.brand || prod.material) ? <Text style={styles.cartItemSub}>{prod.brand || prod.material}</Text> : null}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+          <Text style={styles.cartItemPrice}>₹{fmt(price)}</Text>
+          {oldPrice ? <Text style={styles.cartItemOld}>₹{fmt(oldPrice)}</Text> : null}
+        </View>
+        <View style={styles.freeShipRow}>
+          <Icon name="truck-fast-outline" size={15} color={THEME} />
+          <Text style={styles.freeShipText}> Free Shipping</Text>
+        </View>
         <View style={styles.qtyRow}>
-          <TouchableOpacity 
-            onPress={() => item.quantity > 1 && onQtyChange(item._id, item.quantity - 1)} 
+          <TouchableOpacity
+            onPress={() => item.quantity > 1 && onQtyChange(item._id, item.quantity - 1)}
             style={[styles.qtyBtn, item.quantity <= 1 && { opacity: 0.4 }]}
             disabled={item.quantity <= 1}
           >
             <Text style={styles.qtyBtnText}>−</Text>
           </TouchableOpacity>
           <Text style={styles.qtyText}>{item.quantity}</Text>
-          <TouchableOpacity onPress={() => onQtyChange(item._id, item.quantity + 1)} style={styles.qtyBtn}>
-            <Text style={styles.qtyBtnText}>+</Text>
+          <TouchableOpacity onPress={() => onQtyChange(item._id, item.quantity + 1)} style={[styles.qtyBtn, styles.qtyBtnPlus]}>
+            <Text style={[styles.qtyBtnText, { color: '#fff' }]}>+</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.cartItemPrice}>₹{item.unitPrice || prod.discountPrice || prod.price || 0}</Text>
       </View>
     </View>
   );
@@ -54,40 +72,35 @@ function CartItem({ item, onQtyChange, onRemove }) {
 function CartScreen({ navigation }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [suggestions, setSuggestions] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [address, setAddress] = useState(null);
+  const [points, setPoints] = useState(0);
   const { refreshCart } = useCart();
-
-  // AI-style auto suggestions: products from the same categories as the cart,
-  // excluding what's already in the cart. Falls back to featured products.
-  const loadSuggestions = async (cartItems) => {
-    try {
-      const inCartIds = new Set(cartItems.map(it => it.productId?._id || it.productId).filter(Boolean));
-      const catId = cartItems.map(it => it.productId?.categoryId?._id || it.productId?.categoryId).find(Boolean);
-      let list = [];
-      if (catId) {
-        const res = await browseProducts({ categoryIds: catId, limit: 12 });
-        list = res?.data?.products || res?.data || [];
-      }
-      if (!list || list.length === 0) {
-        const fr = await fetchFeaturedProducts();
-        list = fr?.data?.products || fr?.data || [];
-      }
-      const filtered = (Array.isArray(list) ? list : []).filter(p => !inCartIds.has(p._id)).slice(0, 10);
-      setSuggestions(filtered);
-    } catch (e) {
-      console.log('Cart suggestions error:', e);
-    }
-  };
 
   const loadCart = async () => {
     try {
-      const res = await fetchCart();
-      if (res?.code === 1 && res.data) {
-        const cartItems = res.data.items || res.data.cart?.items || res.data || [];
-        const arr = Array.isArray(cartItems) ? cartItems : [];
-        setItems(arr);
-        if (arr.length > 0) loadSuggestions(arr);
-        else setSuggestions([]);
+      const [cartRes, wishRes, addrRes, profRes] = await Promise.all([
+        fetchCart().catch(() => null),
+        fetchWishlist().catch(() => null),
+        fetchAddresses().catch(() => null),
+        fetchProfile().catch(() => null),
+      ]);
+      if (profRes?.code === 1 && profRes.data) {
+        const u = profRes.data.user || profRes.data;
+        setPoints(u.loyaltyPoints || 0);
+      }
+      if (cartRes?.code === 1 && cartRes.data) {
+        const cartItems = cartRes.data.items || cartRes.data.cart?.items || cartRes.data || [];
+        setItems(Array.isArray(cartItems) ? cartItems : []);
+      }
+      if (wishRes?.code === 1 && wishRes.data) {
+        const w = wishRes.data.wishlist || wishRes.data.items || wishRes.data || [];
+        setWishlist((Array.isArray(w) ? w : []).map(it => it.productId || it).filter(Boolean).slice(0, 6));
+      }
+      if (addrRes?.code === 1 && addrRes.data) {
+        const list = addrRes.data.addresses || addrRes.data || [];
+        const arr = Array.isArray(list) ? list : [];
+        setAddress(arr.find(a => a.isSelected || a.isDefault) || arr[0] || null);
       }
     } catch (e) {
       console.log('Cart load error:', e);
@@ -96,331 +109,255 @@ function CartScreen({ navigation }) {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      loadCart();
-    }, [])
-  );
+  useFocusEffect(useCallback(() => { setLoading(true); loadCart(); }, []));
 
   const handleQtyChange = async (itemId, newQty) => {
     try {
       await updateCartItem(itemId, newQty);
-      setItems(prev =>
-        prev.map(item =>
-          item._id === itemId ? { ...item, quantity: newQty } : item
-        )
-      );
-      await refreshCart(); // Update cart badge count
-    } catch (e) {
-      console.log('Qty update error:', e);
-    }
+      setItems(prev => prev.map(it => (it._id === itemId ? { ...it, quantity: newQty } : it)));
+      await refreshCart();
+    } catch (e) { console.log('Qty update error:', e); }
   };
 
   const handleRemove = async (itemId) => {
     try {
       await removeFromCart(itemId);
-      setItems(prev => prev.filter(item => item._id !== itemId));
-      await refreshCart(); // Update cart badge count
-    } catch (e) {
-      console.log('Remove error:', e);
-    }
+      setItems(prev => prev.filter(it => it._id !== itemId));
+      await refreshCart();
+    } catch (e) { console.log('Remove error:', e); }
   };
 
-  const subTotal = items.reduce((sum, item) => {
-    const prod = item.productId || {};
-    const price = item.unitPrice || prod.discountPrice || prod.price || 0;
-    return sum + price * (item.quantity || 1);
+  const handleWishlistAdd = async (productId) => {
+    try { await addToCart(productId, 1); await refreshCart(); loadCart(); } catch (e) {}
+  };
+
+  const subTotal = items.reduce((s, it) => {
+    const prod = it.productId || {};
+    return s + (it.unitPrice || prod.discountPrice || prod.price || 0) * (it.quantity || 1);
   }, 0);
+  const originalTotal = items.reduce((s, it) => {
+    const prod = it.productId || {};
+    return s + (prod.price || prod.discountPrice || 0) * (it.quantity || 1);
+  }, 0);
+  const discount = Math.max(0, originalTotal - subTotal);
+  const itemCount = items.reduce((s, it) => s + (it.quantity || 1), 0);
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-       <BackHeader
-        navigation={navigation}
-        title="CART"
-        showBack={false}
-        showLogo={true}
-        rightIcon={AppImages.jnotification}
-        onRightPress={() => navigation.navigate('Notification')}
-      />
-      {/* Cart List */}
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <BackHeader navigation={navigation} title="Cart" showBack={true} showLogo={false}
+        rightIconName="heart-outline"
+        onRightPress={() => navigation.navigate('Wishlist')} />
+
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={Colors.theme1} />
+          <ActivityIndicator size="large" color={THEME} />
+        </View>
+      ) : items.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="cart-outline" size={70} color="#ddd" />
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', marginTop: 12 }}>Your cart is empty</Text>
+          <Text style={{ fontSize: 14, color: '#888', marginTop: 4 }}>Browse products and add items</Text>
         </View>
       ) : (
-      <FlatList
-        data={items}
-        keyExtractor={item => item._id || item.id}
-        renderItem={({ item }) => (
-          <CartItem item={item} onQtyChange={handleQtyChange} onRemove={handleRemove} />
-        )}
-        contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 8, paddingBottom: 8 }}
-        showsVerticalScrollIndicator={false}
-        ListFooterComponent={
-          items.length > 0 && suggestions.length > 0 ? (
-            <View style={styles.suggestSection}>
-              <Text style={styles.suggestTitle}>You may also like</Text>
-              <FlatList
-                data={suggestions}
-                keyExtractor={(p) => p._id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 12 }}
-                renderItem={({ item: p }) => {
-                  const pImg = p.productImages?.[0]?.url || p.productImage;
-                  return (
-                    <TouchableOpacity
-                      style={styles.suggestCard}
-                      activeOpacity={0.85}
-                      onPress={() => navigation.navigate('ProductDetail', { productId: p._id })}
-                    >
-                      {pImg ? (
-                        <Image source={{ uri: resizedImage(pImg, 300) }} style={styles.suggestImage} />
-                      ) : (
-                        <View style={[styles.suggestImage, { backgroundColor: '#f0f0f0' }]} />
-                      )}
-                      <Text style={styles.suggestName} numberOfLines={1}>{p.productName}</Text>
-                      <Text style={styles.suggestPrice}>₹{Number(p.discountPrice || p.price || 0).toLocaleString('en-IN')}</Text>
-                    </TouchableOpacity>
-                  );
-                }}
-              />
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+          {/* Reward points bar */}
+          <View style={styles.rewardBar}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rewardLabel}>Reward points · {points}</Text>
+              <View style={styles.rewardTrack}>
+                <View style={[styles.rewardFill, { width: `${Math.min(100, (points % 1000) / 10)}%` }]} />
+              </View>
             </View>
-          ) : null
-        }
-        ListEmptyComponent={
-          <View style={{ alignItems: 'center', marginTop: 60 }}>
-            <Image source={require('../../assets/images/jcart.png')} style={{ width: 80, height: 80, tintColor: '#ccc', marginBottom: 16 }} />
-            <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 6 }}>Your cart is empty</Text>
-            <Text style={{ fontSize: 14, color: '#888' }}>Browse products and add items to your cart</Text>
+            <View style={styles.rewardInfo}>
+              <Text style={{ color: THEME, fontWeight: '700' }}>!</Text>
+            </View>
           </View>
-        }
-      />
+
+          {/* Cart items */}
+          {items.map((it) => (
+            <CartItem key={it._id} item={it} onQtyChange={handleQtyChange} onRemove={handleRemove} />
+          ))}
+
+          {/* Add Coupon & Rewards */}
+          <TouchableOpacity style={styles.couponRow} activeOpacity={0.8} onPress={() => navigation.navigate('Checkout')}>
+            <Text style={styles.couponText}>Add Coupon & Rewards</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="pricetag-outline" size={18} color={THEME} />
+              <Ionicons name="chevron-forward" size={18} color="#888" style={{ marginLeft: 8 }} />
+            </View>
+          </TouchableOpacity>
+
+          {/* Assurance row */}
+          <View style={styles.assuranceRow}>
+            {ASSURANCE.map((a, i) => (
+              <View key={i} style={styles.assuranceItem}>
+                <View style={styles.assuranceIcon}>{a.icon}</View>
+                <Text style={styles.assuranceLabel}>{a.label}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Product detail summary */}
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryHead}>Product detail</Text>
+            <View style={styles.summaryLine}>
+              <Text style={styles.summaryKey}>Subtotal ( {itemCount} item )</Text>
+              <Text style={styles.summaryVal}>₹{fmt(originalTotal || subTotal)}</Text>
+            </View>
+            <View style={styles.summaryLine}>
+              <Text style={styles.summaryKey}>Shipping</Text>
+              <Text style={[styles.summaryVal, { color: '#1DA851' }]}>FREE</Text>
+            </View>
+            <View style={styles.summaryLine}>
+              <Text style={styles.summaryKey}>Discount</Text>
+              <Text style={[styles.summaryVal, { color: '#1DA851' }]}>-₹{fmt(discount)}</Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryLine}>
+              <Text style={styles.summaryTotal}>Total Amount</Text>
+              <Text style={[styles.summaryTotal, { color: THEME }]}>₹{fmt(subTotal)}</Text>
+            </View>
+          </View>
+          <Text style={styles.secureText}>100%  Secure payments</Text>
+
+          {/* Deliver to */}
+          <View style={styles.deliverCard}>
+            <View style={styles.deliverHead}>
+              <Text style={styles.deliverTitle}>Deliver to</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('SavedAddress')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.changesText}>Changes</Text>
+                <Ionicons name="chevron-forward" size={16} color={THEME} />
+              </TouchableOpacity>
+            </View>
+            {address ? (
+              <View style={{ flexDirection: 'row' }}>
+                <Ionicons name="home-outline" size={20} color={THEME} style={{ marginRight: 10, marginTop: 2 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.deliverName}>{address.name || address.fullName || 'User'}</Text>
+                  <Text style={styles.deliverLine}>{address.phone ? `+91${address.phone}` : ''}</Text>
+                  <Text style={styles.deliverLine}>
+                    {[address.address || address.houseNo, address.apartment, address.city, address.state, address.pinCode || address.pincode].filter(Boolean).join(', ')}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => navigation.navigate('AddShippingAddress')}>
+                <Text style={{ color: THEME, fontWeight: '600' }}>+ Add Delivery Address</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Your Wishlist */}
+          {wishlist.length > 0 && (
+            <View style={{ marginTop: 18 }}>
+              <View style={styles.wishHead}>
+                <Text style={styles.wishTitle}>Your Wishlist ({wishlist.length})</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Wishlist')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={styles.viewAll}>View All </Text>
+                  <Ionicons name="arrow-forward" size={14} color={THEME} />
+                </TouchableOpacity>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12 }}>
+                {wishlist.map((p) => {
+                  const img = p.productImages?.[0]?.url || p.productImage;
+                  return (
+                    <View key={p._id} style={styles.wishCard}>
+                      <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { productId: p._id })} activeOpacity={0.85}>
+                        {img ? <Image source={{ uri: resizedImage(img, 300) }} style={styles.wishImage} /> : <View style={[styles.wishImage, { backgroundColor: '#eee' }]} />}
+                      </TouchableOpacity>
+                      <Text style={styles.wishName} numberOfLines={1}>{p.productName}</Text>
+                      <Text style={styles.wishPrice}>₹{fmt(p.discountPrice || p.price)}</Text>
+                      <TouchableOpacity style={styles.wishAddBtn} onPress={() => handleWishlistAdd(p._id)}>
+                        <Icon name="cart-outline" size={14} color={THEME} />
+                        <Text style={styles.wishAddText}> Add to Cart</Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+        </ScrollView>
       )}
-      {/* Subtotal */}
-      <View style={styles.subtotalRow}>
-        <Text style={styles.subtotalLabel}>SUB TOTAL</Text>
-        <Text style={styles.subtotalValue}>₹{subTotal.toLocaleString('en-IN')}</Text>
-      </View>
-      {/* Buy Now Button */}
-      <View style={styles.buyNowContainer}>
-        <TouchableOpacity
-          style={styles.buyNowBtn}
-          onPress={() => navigation.navigate('Checkout')}
-          activeOpacity={0.85}
-        >
-          <Icon name="shopping-outline" size={22} color="#fff" />
-          <Text style={styles.buyNowText}>PROCEED TO CHECKOUT</Text>
-          <Icon name="chevron-right" size={22} color="#fff" />
-        </TouchableOpacity>
-      </View>
+
+      {/* Bottom bar */}
+      {!loading && items.length > 0 && (
+        <View style={styles.bottomBar}>
+          <View>
+            <Text style={styles.bottomTotal}>₹{fmt(subTotal)}</Text>
+            {discount > 0 && <Text style={styles.bottomOld}>₹{fmt(originalTotal)}</Text>}
+          </View>
+          <TouchableOpacity style={styles.continueBtn} onPress={() => navigation.navigate('Checkout')} activeOpacity={0.85}>
+            <Text style={styles.continueText}>Continue to Payment</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  suggestSection: {
-    marginTop: 14,
-    marginBottom: 4,
-  },
-  suggestTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#222',
-    marginLeft: 16,
-    marginBottom: 10,
-  },
-  suggestCard: {
-    width: 120,
-    marginRight: 12,
-  },
-  suggestImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 10,
-    resizeMode: 'cover',
-    backgroundColor: '#f6f6f6',
-  },
-  suggestName: {
-    fontSize: 12,
-    color: '#333',
-    fontWeight: '500',
-    marginTop: 6,
-  },
-  suggestPrice: {
-    fontSize: 13,
-    color: '#930e6e',
-    fontWeight: '700',
-    marginTop: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.theme1,
-    paddingTop: 40,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
-    justifyContent: 'space-between',
-  },
-  headerBackBtn: {
-    backgroundColor: '#fff',
-    height: 30,
-    width: 30,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerBackIcon: {
-    width: 18,
-    height: 18,
-    tintColor: Colors.theme1,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 22,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-    flex: 1,
-    textAlign: 'center',
-    marginLeft: -30, // to visually center between icons
-  },
-  headerBellBtn: {
-    backgroundColor: 'transparent',
-    height: 30,
-    width: 30,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerBellIcon: {
-    width: 22,
-    height: 22,
-    tintColor: '#fff',
-  },
-  cartItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 0,
-  },
-  cartItemImage: {
-    width: 100,
-    height: 140,
-    marginRight: 14,
-    resizeMode: 'cover',
-  },
-  cartItemName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000000',
-    marginBottom: 2,
-    letterSpacing: 2,
-    marginTop: 8,
-  },
-  cartItemSubtitle: {
-    fontSize: 12,
-    color: '#555555',
-    marginBottom: 5,
-    letterSpacing: 0.5,
-  },
-  qtyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  qtyBtn: {
-    // backgroundColor: '#fff',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#C4C4C4',
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 6,
-  },
-  qtyBtnText: {
-    fontSize: 22,
-    color: '#222',
-    fontWeight: 'bold',
-  },
-  qtyText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#222',
-    marginHorizontal: 4,
-  },
-  cartItemPrice: {
-    fontSize: 16,
-    color: '#DD8560',
-    fontWeight: '500',
-    marginBottom: 2,
-    marginTop: 0,
-  },
-  subtotalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    marginHorizontal: 16,
-    marginTop: 8,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  subtotalLabel: {
-    fontSize: 16,
-    color: '#333333',
-    letterSpacing: 1,
-    fontWeight: 'bold',
-  },
-  subtotalValue: {
-    fontSize: 20,
-    color: '#DD8560',
-    fontWeight: '500',
-    letterSpacing: 1,
-  },
-  buyNowContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
-  },
-  buyNowBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.theme1,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    justifyContent: 'center',
-    borderRadius: 30,
-    shadowColor: Colors.theme1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  buyNowText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 15,
-    letterSpacing: 1.5,
-    marginHorizontal: 10,
-    fontFamily: 'Poppins-SemiBold',
-  },
-  deleteBtn: {
-    padding: 6,
-    marginTop: 4,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+
+  rewardBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FCEFF6', borderRadius: 12, marginHorizontal: 14, marginTop: 12, marginBottom: 6, padding: 14 },
+  rewardLabel: { fontSize: 13, color: '#444', marginBottom: 8 },
+  rewardTrack: { height: 6, borderRadius: 3, backgroundColor: '#F2D6E6' },
+  rewardFill: { height: 6, borderRadius: 3, backgroundColor: THEME },
+  rewardInfo: { width: 30, height: 30, borderRadius: 8, borderWidth: 1, borderColor: THEME, alignItems: 'center', justifyContent: 'center', marginLeft: 12 },
+
+  cartItem: { flexDirection: 'row', marginHorizontal: 14, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  cartItemImage: { width: 92, height: 92, borderRadius: 10, marginRight: 14, backgroundColor: '#f2f2f2', resizeMode: 'cover' },
+  cartItemName: { flex: 1, fontSize: 16, fontWeight: '700', color: '#222' },
+  cartItemSub: { fontSize: 12, color: '#888', marginTop: 2 },
+  cartItemPrice: { fontSize: 15, fontWeight: '700', color: THEME },
+  cartItemOld: { fontSize: 12, color: '#aaa', textDecorationLine: 'line-through', marginLeft: 8 },
+  freeShipRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  freeShipText: { fontSize: 12, color: THEME },
+  qtyRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  qtyBtn: { borderRadius: 6, borderWidth: 1, borderColor: '#ddd', width: 28, height: 28, justifyContent: 'center', alignItems: 'center' },
+  qtyBtnPlus: { backgroundColor: THEME, borderColor: THEME },
+  qtyBtnText: { fontSize: 18, color: '#222', fontWeight: 'bold' },
+  qtyText: { fontSize: 15, fontWeight: '700', color: '#222', marginHorizontal: 14 },
+
+  couponRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 14, marginTop: 14, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: THEME, borderStyle: 'dashed' },
+  couponText: { fontSize: 15, fontWeight: '700', color: '#222' },
+
+  assuranceRow: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#F6F6F6', marginHorizontal: 14, marginTop: 14, borderRadius: 12, paddingVertical: 14 },
+  assuranceItem: { alignItems: 'center', flex: 1 },
+  assuranceIcon: { width: 46, height: 46, borderRadius: 23, backgroundColor: THEME, alignItems: 'center', justifyContent: 'center' },
+  assuranceLabel: { fontSize: 10, color: '#444', textAlign: 'center', marginTop: 6, fontWeight: '500' },
+
+  summaryCard: { backgroundColor: '#FCEFF6', marginHorizontal: 14, marginTop: 16, borderRadius: 12, padding: 16 },
+  summaryHead: { fontSize: 15, fontWeight: '700', color: '#222', marginBottom: 12 },
+  summaryLine: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  summaryKey: { fontSize: 14, color: '#555' },
+  summaryVal: { fontSize: 14, color: '#222', fontWeight: '600' },
+  summaryDivider: { height: 1, borderBottomWidth: 1, borderColor: '#E9C9DC', borderStyle: 'dashed', marginVertical: 4 },
+  summaryTotal: { fontSize: 17, fontWeight: '800', color: '#222', marginTop: 4 },
+  secureText: { textAlign: 'center', color: '#999', fontSize: 12, marginTop: 8 },
+
+  deliverCard: { marginHorizontal: 14, marginTop: 14, borderRadius: 14, borderWidth: 1, borderColor: '#eee', padding: 16 },
+  deliverHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  deliverTitle: { fontSize: 15, fontWeight: '700', color: '#222' },
+  changesText: { color: THEME, fontWeight: '700', fontSize: 13 },
+  deliverName: { fontSize: 15, fontWeight: '700', color: '#222' },
+  deliverLine: { fontSize: 13, color: '#555', marginTop: 2 },
+
+  wishHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginHorizontal: 14, marginBottom: 10 },
+  wishTitle: { fontSize: 14, fontWeight: '700', color: THEME },
+  viewAll: { fontSize: 12, color: THEME, fontWeight: '600' },
+  wishCard: { width: 120, marginRight: 12 },
+  wishImage: { width: 120, height: 110, borderRadius: 10, backgroundColor: '#f2f2f2', resizeMode: 'cover' },
+  wishName: { fontSize: 12, color: '#333', fontWeight: '600', marginTop: 6 },
+  wishPrice: { fontSize: 13, color: THEME, fontWeight: '700', marginTop: 2 },
+  wishAddBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: THEME, borderRadius: 8, paddingVertical: 6, marginTop: 6 },
+  wishAddText: { fontSize: 11, color: THEME, fontWeight: '700' },
+
+  bottomBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#eee', backgroundColor: '#fff' },
+  bottomTotal: { fontSize: 20, fontWeight: '800', color: THEME },
+  bottomOld: { fontSize: 13, color: '#aaa', textDecorationLine: 'line-through' },
+  continueBtn: { backgroundColor: THEME, borderRadius: 12, paddingHorizontal: 28, paddingVertical: 15 },
+  continueText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
 
 export default CartScreen;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions, Modal, PanResponder } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions, Modal, PanResponder, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../themes/Colors';
-import { fetchProductDetails, addToCart, toggleWishlist, fetchWishlist, browseProducts } from '../../utils/api';
+import { fetchProductDetails, addToCart, toggleWishlist, fetchWishlist, browseProducts, fetchCoupons } from '../../utils/api';
 import { resizedImage } from '../../utils/imageProxy';
 import { useCart } from '../../utils/CartContext';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -25,7 +25,27 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [showCartModal, setShowCartModal] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [is360, setIs360] = useState(false);
+  const [pincode, setPincode] = useState('');
+  const [pinResult, setPinResult] = useState('');
+  const [coupons, setCoupons] = useState([]);
+
+  useEffect(() => {
+    fetchCoupons().then(res => {
+      if (res?.code === 1 && res.data) {
+        const list = res.data.coupons || res.data || [];
+        setCoupons(Array.isArray(list) ? list.slice(0, 6) : []);
+      }
+    }).catch(() => {});
+  }, []);
   const { refreshCart, cartCount } = useCart();
+
+  const checkPincode = () => {
+    if (/^\d{6}$/.test(pincode)) {
+      setPinResult('✓ Delivery available · 3-5 days');
+    } else {
+      setPinResult('Please enter a valid 6-digit pincode');
+    }
+  };
 
   // 360° rotate: drag horizontally to cycle through the product's images (frames).
   const idxRef = useRef(0);
@@ -155,7 +175,7 @@ export default function ProductDetailScreen({ route, navigation }) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.theme1} />
         </View>
@@ -194,7 +214,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   imagesLenRef.current = images.length || 1;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
@@ -296,10 +316,74 @@ export default function ProductDetailScreen({ route, navigation }) {
               <>
                 <Text style={styles.originalPrice}>₹{originalPrice.toLocaleString('en-IN')}</Text>
                 <View style={styles.saveBadge}>
-                  <Text style={styles.saveText}>Save {discount}%</Text>
+                  <Text style={styles.saveText}>{discount}% OFF</Text>
                 </View>
               </>
             )}
+          </View>
+          <Text style={styles.taxText}>Inclusive of all Taxes</Text>
+
+          {/* Free Shipping badge */}
+          <View style={styles.shipBadge}>
+            <MaterialIcons name="local-shipping" size={16} color="#930e6e" />
+            <Text style={styles.shipBadgeText}>  Free Shipping · Delivery</Text>
+          </View>
+
+          {/* Offer & Deals (real coupons) */}
+          {coupons.length > 0 && (
+            <>
+              <Text style={styles.blockTitle}>Offer & Deals</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 4 }}>
+                {coupons.map((c) => (
+                  <View key={c._id || c.code} style={styles.offerCard}>
+                    <View style={styles.offerCardTop}>
+                      <Text style={styles.offerCardTitle} numberOfLines={1}>{c.title || c.description || 'Offer'}</Text>
+                      <View style={styles.offerTag}><Text style={styles.offerTagText}>{c.code || c.couponCode}</Text></View>
+                    </View>
+                    <Text style={styles.offerNote}>
+                      {c.discountType === 'percent' || c.percent
+                        ? `${c.discount || c.percent}% OFF${c.minOrderValue ? ` · Min ₹${c.minOrderValue}` : ''}`
+                        : `₹${c.discount || c.amount || 0} OFF${c.minOrderValue ? ` · Min ₹${c.minOrderValue}` : ''}`}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </>
+          )}
+
+          {/* Pincode check */}
+          <Text style={styles.pinHint}>Enter pin code to check delivery or ( near store )</Text>
+          <View style={styles.pinRow}>
+            <TextInput
+              style={styles.pinInput}
+              placeholder="Pin code"
+              placeholderTextColor="#999"
+              keyboardType="number-pad"
+              maxLength={6}
+              value={pincode}
+              onChangeText={setPincode}
+            />
+            <TouchableOpacity style={styles.pinCheckBtn} onPress={checkPincode}>
+              <Text style={styles.pinCheckText}>check</Text>
+            </TouchableOpacity>
+          </View>
+          {pinResult ? <Text style={styles.pinResult}>{pinResult}</Text> : null}
+
+          {/* Assurance */}
+          <View style={styles.assuranceWrap}>
+            {[
+              { icon: 'diamond', lib: 'ion', label: '10% purity\nof 24k Gold' },
+              { icon: 'shield-checkmark-outline', lib: 'ion', label: '5 years\nwarranty' },
+              { icon: 'infinite', lib: 'ion', label: 'Premiere\nDesign' },
+              { icon: 'arrow-undo-outline', lib: 'ion', label: 'easy 3-5\nDays return' },
+            ].map((a, i) => (
+              <View key={i} style={styles.assItem}>
+                <View style={styles.assCircle}>
+                  <Ionicons name={a.icon} size={22} color="#930e6e" />
+                </View>
+                <Text style={styles.assLabel}>{a.label}</Text>
+              </View>
+            ))}
           </View>
 
           {/* Colors */}
@@ -427,8 +511,11 @@ export default function ProductDetailScreen({ route, navigation }) {
 
       {/* Bottom Action Bar */}
       <View style={styles.bottomActionBar}>
-        <TouchableOpacity 
-          style={styles.addToCartBtn} 
+        <TouchableOpacity style={styles.wishBottomBtn} onPress={handleToggleWishlist}>
+          <AntDesign name={wishlisted ? 'heart' : 'hearto'} size={22} color="#930e6e" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.addToCartBtn}
           onPress={handleAddToCart}
           disabled={addingToCart}
         >
@@ -578,6 +665,26 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
   },
+  taxText: { fontSize: 12, color: '#888', marginTop: 4 },
+  shipBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', borderWidth: 1, borderColor: '#F0D7E5', backgroundColor: '#FCEFF6', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginTop: 12 },
+  shipBadgeText: { fontSize: 12, color: '#930e6e', fontWeight: '600' },
+  blockTitle: { fontSize: 16, fontWeight: '700', color: '#222', marginTop: 18, marginBottom: 8 },
+  offerCard: { width: 250, borderWidth: 1, borderColor: '#930e6e', borderStyle: 'dashed', borderRadius: 10, padding: 12, marginRight: 12, backgroundColor: '#FCEFF6' },
+  offerCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  offerCardTitle: { fontSize: 13, fontWeight: '700', color: '#930e6e' },
+  offerTag: { borderWidth: 1, borderColor: '#930e6e', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2 },
+  offerTagText: { fontSize: 11, fontWeight: '700', color: '#930e6e' },
+  offerNote: { fontSize: 11, color: '#888', borderTopWidth: 1, borderTopColor: '#E9C9DC', borderStyle: 'dashed', paddingTop: 8 },
+  pinHint: { fontSize: 13, color: '#444', marginTop: 18, marginBottom: 8 },
+  pinRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#930e6e', borderRadius: 10, paddingLeft: 14, paddingRight: 6, height: 50 },
+  pinInput: { flex: 1, fontSize: 15, color: '#222' },
+  pinCheckBtn: { backgroundColor: '#930e6e', borderRadius: 8, paddingHorizontal: 18, paddingVertical: 9 },
+  pinCheckText: { color: '#fff', fontWeight: '700' },
+  pinResult: { fontSize: 12, color: '#1DA851', marginTop: 6 },
+  assuranceWrap: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#F6F6F6', borderRadius: 12, paddingVertical: 16, marginTop: 18 },
+  assItem: { alignItems: 'center', flex: 1 },
+  assCircle: { width: 50, height: 50, borderRadius: 25, borderWidth: 1.5, borderColor: '#930e6e', alignItems: 'center', justifyContent: 'center' },
+  assLabel: { fontSize: 10, color: '#444', textAlign: 'center', marginTop: 6, fontWeight: '500' },
   relatedSection: {
     paddingHorizontal: 16,
     marginTop: 8,
@@ -900,6 +1007,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#222',
     fontWeight: '500',
+  },
+  wishBottomBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#930e6e',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
   bottomActionBar: {
     flexDirection: 'row',

@@ -79,11 +79,11 @@ export default function WishlistScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['bottom']}>
             <BackHeader
                 navigation={navigation}
                 title="WISHLIST"
-                rightIcon={AppImages.jnotification}
+                rightIconName="notifications-outline"
                 onRightPress={() => navigation.navigate('Notification')}
             />
             {/* Wishlist List */}

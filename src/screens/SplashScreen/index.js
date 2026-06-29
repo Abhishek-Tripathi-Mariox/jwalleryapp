@@ -16,8 +16,8 @@ const SplashScreen = (props) => {
   }, [])
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#940A57', justifyContent: 'center', alignItems: 'center' }}>
-      <StatusBar backgroundColor="#940A57" barStyle="light-content" />
+    <View style={{ flex: 1, backgroundColor: '#930e6e', justifyContent: 'center', alignItems: 'center' }}>
+      <StatusBar backgroundColor="#930e6e" barStyle="light-content" />
       <Image
         source={splashUrl ? { uri: splashUrl } : AppImages.jlogo1}
         style={{ height: 300, width: width * 0.75, resizeMode: 'contain' }}

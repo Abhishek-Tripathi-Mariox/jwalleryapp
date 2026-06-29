@@ -80,7 +80,7 @@ export default function MyProfileScreen({ navigation }) {
         title="PROFILE"
         showBack={false}
         showLogo={true}
-        rightIcon={AppImages.jnotification}
+        rightIconName="notifications-outline"
         onRightPress={() => navigation.navigate('Notification')}
       />
       {loading ? (

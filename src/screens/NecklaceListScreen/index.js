@@ -158,7 +158,7 @@ export default function NecklaceListScreen({ navigation, route }) {
         <Text style={styles.headerTitle}>{categoryLabel || 'Necklace'}</Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
-            <Image source={AppImages.jnotification} style={styles.headerIcon} />
+            <Feather name="bell" size={22} color="#fff" style={{ marginLeft: 12 }} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
             <Image source={AppImages.jbag} style={styles.headerIcon1} />

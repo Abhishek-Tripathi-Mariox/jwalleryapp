@@ -372,7 +372,7 @@ const Dashboard = ({ navigation }) => {
     <View>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionHeaderTitle}>{t('home.shopByCategory')}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Category')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Categories')}>
           <Text style={styles.seeAllText}>See all</Text>
         </TouchableOpacity>
       </View>
@@ -402,7 +402,7 @@ const Dashboard = ({ navigation }) => {
     <View>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionHeaderTitle}>{t('home.bestForGifting')}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Category')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Categories')}>
           <Text style={styles.seeAllText}>See All</Text>
         </TouchableOpacity>
       </View>
@@ -531,7 +531,7 @@ const Dashboard = ({ navigation }) => {
               if (cat) {
                 navigation.navigate('EarringsList', { categoryId: cat._id, categoryLabel: cat.name });
               } else {
-                navigation.navigate('Category');
+                navigation.navigate('Categories');
               }
             }} activeOpacity={0.8}>
               <Text style={styles.viewAllButtonText}>View all</Text>
@@ -558,7 +558,7 @@ const Dashboard = ({ navigation }) => {
         </View>
         <Text style={styles.sectionSubtitle}>Explore Our Newly Launched Collection</Text>
         <View style={styles.collectionsGrid}>
-          <TouchableOpacity style={styles.collectionLarge} onPress={() => navigation.navigate('Category')} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.collectionLarge} onPress={() => navigation.navigate('Categories')} activeOpacity={0.85}>
             <Image source={{ uri: resizedImage(collectionBanners[0].mobileView || collectionBanners[0].desktopView, 800) }} style={styles.collectionLargeImage} />
             <View style={styles.collectionOverlay}>
               <Text style={styles.collectionTitle}>{collectionBanners[0].title || 'Collection'}</Text>
@@ -566,7 +566,7 @@ const Dashboard = ({ navigation }) => {
           </TouchableOpacity>
           <View style={styles.collectionSmallColumn}>
             {collectionBanners.slice(1, 3).map((col) => (
-              <TouchableOpacity key={col._id} style={styles.collectionSmall} onPress={() => navigation.navigate('Category')} activeOpacity={0.85}>
+              <TouchableOpacity key={col._id} style={styles.collectionSmall} onPress={() => navigation.navigate('Categories')} activeOpacity={0.85}>
                 <Image source={{ uri: resizedImage(col.mobileView || col.desktopView, 500) }} style={styles.collectionSmallImage} />
                 <View style={styles.collectionOverlay}>
                   <Text style={styles.collectionTitleSmall}>{col.title || 'Collection'}</Text>
@@ -615,7 +615,7 @@ const Dashboard = ({ navigation }) => {
       <View>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionHeaderTitle}>{t('home.trendingNow')}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Category')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Categories')}>
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
@@ -665,7 +665,7 @@ const Dashboard = ({ navigation }) => {
           <View style={styles.assuranceIconCircle}>
             <Ionicons name="shield-checkmark-outline" size={24} color="#fff" />
           </View>
-          <Text style={styles.assuranceLabel}>2 years{'\n'}warranty</Text>
+          <Text style={styles.assuranceLabel}>5 years{'\n'}warranty</Text>
         </View>
         <View style={styles.assuranceItem}>
           <View style={styles.assuranceIconCircle}>
@@ -778,7 +778,7 @@ const Dashboard = ({ navigation }) => {
   // ── Loading ──────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <SafeAreaView style={styles.loadingContainer} edges={['bottom']}>
         <ActivityIndicator size="large" color="#930e6e" />
       </SafeAreaView>
     );
@@ -788,7 +788,7 @@ const Dashboard = ({ navigation }) => {
   // MAIN RENDER
   // ════════════════════════════════════════════════════════
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#930e6e' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#930e6e' }} edges={['bottom']}>
       <StatusBar backgroundColor="#930e6e" barStyle="light-content" />
 
       {/* Top Bar — logo top-left, clear icons + call on right */}
@@ -833,7 +833,7 @@ const Dashboard = ({ navigation }) => {
         {/* Search Bar */}
         <View style={styles.searchBarContainer}>
           <View style={styles.searchBarInner}>
-            <Image source={AppImages.jsearch} style={styles.searchIcon} />
+            <Ionicons name="search-outline" size={20} color="#930e6e" style={{ marginRight: 8 }} />
             <TextInput
               style={styles.searchInput}
               placeholder={t('home.searchPlaceholder')}
@@ -844,10 +844,10 @@ const Dashboard = ({ navigation }) => {
               onSubmitEditing={() => searchText.trim().length >= 2 && handleSearchChange(searchText)}
             />
             <TouchableOpacity onPress={handleVoiceSearch} style={styles.searchActionBtn}>
-              <Image source={AppImages.jmic} style={[styles.voiceIcon, voiceListening && { tintColor: '#930e6e' }]} />
+              <Ionicons name="mic-outline" size={22} color={voiceListening ? '#930e6e' : '#930e6e'} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => Alert.alert('Coming Soon', 'Image search will be available soon.')} style={styles.searchActionBtn}>
-              <Image source={AppImages.jcamera} style={styles.cameraIcon} />
+              <Ionicons name="camera-outline" size={22} color="#930e6e" />
             </TouchableOpacity>
           </View>
         </View>

@@ -278,7 +278,7 @@ export default function CategoryScreen({ navigation }) {
       {/* Search Bar */}
       <View style={styles.searchBarContainer}>
         <View style={styles.searchBar}>
-          <Image source={require('../../assets/images/jsearch.png')} style={styles.searchIcon} />
+          <Feather name="search" size={20} color="#930e6e" style={{ marginRight: 8 }} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search for Gold Jewellery, Diamond more..."
@@ -319,7 +319,7 @@ export default function CategoryScreen({ navigation }) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         <BackHeader navigation={navigation} title="CATEGORIES" showBack={false} showLogo={true} />
         <ActivityIndicator size="large" color={Colors.theme1} style={{ marginTop: 40 }} />
       </SafeAreaView>
@@ -327,13 +327,13 @@ export default function CategoryScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <BackHeader
         navigation={navigation}
         title="CATEGORIES"
         showBack={false}
         showLogo={true}
-        rightIcon={AppImages.jnotification}
+        rightIconName="notifications-outline"
         onRightPress={() => navigation.navigate('Notification')}
       />
 

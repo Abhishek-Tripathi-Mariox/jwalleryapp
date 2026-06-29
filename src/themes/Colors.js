@@ -1,8 +1,8 @@
 export const Colors = {
     // Brand
-    THEMECOLOR: '#940A57',
+    THEMECOLOR: '#930e6e',
     LIGHT_THEME: "#fcedef",
-    theme1: "#940A57",
+    theme1: "#930e6e",
     theme2: "#FFF8E1",
 
     // Backgrounds

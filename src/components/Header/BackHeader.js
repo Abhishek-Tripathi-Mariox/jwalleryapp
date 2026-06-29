@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from './style';
 import { AppImages } from '../../constants/app.image';
 import { useLogo } from '../../utils/LogoContext';
@@ -15,6 +16,7 @@ const BackHeader = (props) => {
         showLogo = false,
         onBack,
         rightIcon,
+        rightIconName,
         rightIconStyle,
         onRightPress,
         rightComponent,
@@ -50,6 +52,10 @@ const BackHeader = (props) => {
             {/* Right Icon/Button/Component */}
             {rightComponent ? (
                 rightComponent
+            ) : rightIconName ? (
+                <TouchableOpacity onPress={onRightPress} style={styles.headerRightBtn}>
+                    <Ionicons name={rightIconName} size={24} color="#fff" />
+                </TouchableOpacity>
             ) : rightIcon ? (
                 <TouchableOpacity onPress={onRightPress} style={styles.headerRightBtn}>
                     <Image source={rightIcon} style={[styles.headerRightIcon, rightIconStyle]} />

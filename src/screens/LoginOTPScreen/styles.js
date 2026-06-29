@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
   headerBanner: {
     width: '100%',
     height: 289,
-    backgroundColor: '#940A57',
+    backgroundColor: '#930e6e',
     borderBottomLeftRadius: 33,
     borderBottomRightRadius: 33,
     justifyContent: 'center',
@@ -70,7 +70,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 30,
-    backgroundColor: '#940A57',
+    backgroundColor: '#930e6e',
   },
   text: {
     fontSize: 16,

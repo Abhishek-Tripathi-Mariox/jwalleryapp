@@ -10,6 +10,8 @@ import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
 import { fetchCart, fetchAddresses, fetchCoupons, applyCoupon, placeOrder, verifyPayment, fetchBanners } from '../../utils/api';
 import RazorpayCheckout from 'react-native-razorpay';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width } = Dimensions.get('window');
 
@@ -26,7 +28,16 @@ const OrderPaymentScreen = ({ navigation }) => {
   const [promoBanner, setPromoBanner] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paymentMode, setPaymentMode] = useState('online'); // 'online' or 'cod'
+  const [placedOrder, setPlacedOrder] = useState(null);
+  const [selectedMethod, setSelectedMethod] = useState('gpay');
   const [placing, setPlacing] = useState(false);
+
+  // All online methods route through Razorpay; only COD is handled directly.
+  const selectMethod = (key) => {
+    setSelectedMethod(key);
+    setPaymentMode(key === 'cod' ? 'cod' : 'online');
+  };
+  const COD_FEE = 49;
 
   useEffect(() => {
     loadCheckoutData();
@@ -98,6 +109,7 @@ const OrderPaymentScreen = ({ navigation }) => {
       const res = await placeOrder(orderData);
 
       if (res?.code === 1 && res.data) {
+        setPlacedOrder({ order: res.data.order, paymentMode, method: selectedMethod });
         if (paymentMode === 'online' && res.data.razorpay) {
           // Open Razorpay checkout
           const razorpayData = res.data.razorpay;
@@ -152,14 +164,14 @@ const OrderPaymentScreen = ({ navigation }) => {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} edges={['bottom']}>
         <ActivityIndicator size="large" color={Colors.theme1} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
       <LinearGradient
         colors={['#fffbe6', '#ffffff']}
         start={{ x: 0.1, y: 0.1 }}
@@ -170,7 +182,7 @@ const OrderPaymentScreen = ({ navigation }) => {
         <BackHeader
           navigation={navigation}
           title="CHECKOUT"
-          rightIcon={AppImages.jnotification}
+          rightIconName="notifications-outline"
          onRightPress={() => navigation.navigate('Notification')}
         />
 
@@ -186,20 +198,22 @@ const OrderPaymentScreen = ({ navigation }) => {
             </View>
           )}
 
-          {/* Order Summary */}
-          <TouchableOpacity style={styles.summaryBox} onPress={() => setSummaryVisible(true)}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image source={require('../../assets/images/newcart.png')} style={styles.summaryIcon} />
-              <Text style={styles.summaryLabel}>Order Summary </Text>
-              <Image source={AppImages.jdown} style={styles.summaryIcon} />
+          {/* Total Payable card */}
+          <View style={styles.totalCard}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.totalLabel}>total payable</Text>
+              <Text style={styles.totalAmount}>₹{cartTotal.toLocaleString('en-IN')}</Text>
             </View>
-            <View style={{ flex: 1 }} />
-            <View style={{ textAlign: 'center' }}>
-
-              <Text style={styles.summaryOldPrice}>₹{cartOriginalTotal.toLocaleString('en-IN')}</Text>
-              <Text style={styles.summaryNewPrice}>₹{cartTotal.toLocaleString('en-IN')}</Text>
+            <View style={{ alignItems: 'flex-end', justifyContent: 'space-between', height: 44 }}>
+              <TouchableOpacity onPress={() => setSummaryVisible(true)}>
+                <Text style={styles.viewDetail}>View Detail</Text>
+              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="shield-checkmark-outline" size={13} color="#888" />
+                <Text style={styles.secureText}> Secure payments</Text>
+              </View>
             </View>
-          </TouchableOpacity>
+          </View>
 
           {/* Address */}
           {address ? (
@@ -228,12 +242,74 @@ const OrderPaymentScreen = ({ navigation }) => {
             </TouchableOpacity>
           )}
 
-          {/* Coupon Input */}
+          {/* UPI */}
+          <Text style={styles.groupTitle}>UPI</Text>
+          <View style={styles.methodGroup}>
+            {[
+              { key: 'gpay', label: 'Google Pay', icon: <Ionicons name="logo-google" size={20} color="#4285F4" /> },
+              { key: 'phonepe', label: 'PhonePe', icon: <MaterialCommunityIcons name="cellphone-check" size={20} color="#5f259f" /> },
+              { key: 'paytm', label: 'Paytm', icon: <MaterialCommunityIcons name="wallet-outline" size={20} color="#00BAF2" /> },
+              { key: 'upi', label: 'Other UPI Apps', icon: <MaterialCommunityIcons name="bank-transfer" size={20} color="#222" /> },
+            ].map((m, i, arr) => (
+              <TouchableOpacity
+                key={m.key}
+                style={[styles.methodRow, i === arr.length - 1 && styles.methodRowLast]}
+                onPress={() => selectMethod(m.key)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.methodIconWrap}>{m.icon}</View>
+                <Text style={styles.methodLabel}>{m.label}</Text>
+                <View style={selectedMethod === m.key ? styles.radioOn : styles.radioOff} />
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Cards */}
+          <Text style={styles.groupTitle}>Cards</Text>
+          <TouchableOpacity style={styles.cardAddRow} onPress={() => selectMethod('card')} activeOpacity={0.7}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="card-outline" size={20} color="#222" />
+              <Text style={[styles.methodLabel, { marginLeft: 10 }]}>Add New Card</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.cardBrands}>VISA  MC  RuPay</Text>
+              {selectedMethod === 'card' && <Ionicons name="checkmark-circle" size={20} color="#930e6e" style={{ marginLeft: 8 }} />}
+            </View>
+          </TouchableOpacity>
+
+          {/* Other Options */}
+          <Text style={styles.groupTitle}>Other Options</Text>
+          <View style={styles.methodGroup}>
+            {[
+              { key: 'netbanking', label: 'Net Banking' },
+              { key: 'emi', label: 'EMI (Easy Installments)' },
+              { key: 'cod', label: 'Cash on Delivery', right: `₹${COD_FEE}` },
+              { key: 'wallet', label: 'Wallets' },
+            ].map((m, i, arr) => (
+              <TouchableOpacity
+                key={m.key}
+                style={[styles.optionRow, i === arr.length - 1 && styles.methodRowLast]}
+                onPress={() => selectMethod(m.key)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.methodLabel}>{m.label}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  {m.right ? <Text style={styles.codFee}>{m.right}</Text> : null}
+                  {selectedMethod === m.key
+                    ? <Ionicons name="checkmark-circle" size={20} color="#930e6e" style={{ marginLeft: 8 }} />
+                    : <Ionicons name="chevron-forward" size={18} color="#bbb" style={{ marginLeft: 8 }} />}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Offer & Deals */}
+          <Text style={styles.groupTitle}>Offer & Deals</Text>
           <View style={styles.couponBox}>
             <TextInput
               placeholder="Enter coupon code"
               style={styles.couponInput}
-              placeholderTextColor="#000000"
+              placeholderTextColor="#999"
               value={couponCode}
               onChangeText={setCouponCode}
               onSubmitEditing={handleApplyCoupon}
@@ -241,40 +317,11 @@ const OrderPaymentScreen = ({ navigation }) => {
             <View style={styles.couponRow}>
               <Image source={require('../../assets/images/discount.png')} style={styles.couponIcon} />
               <Text style={styles.couponText}>{couponCount} coupons available</Text>
-              <TouchableOpacity style={styles.changeBtn}>
-                <Text style={styles.changeBtnText}>View All</Text>
+              <TouchableOpacity style={styles.changeBtn} onPress={handleApplyCoupon}>
+                <Text style={styles.changeBtnText}>Apply</Text>
               </TouchableOpacity>
             </View>
           </View>
-
-
-          {/* Frequent Methods */}
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionLabel}>Payment Methods</Text>
-          </View>
-
-          {/* Payment UPI */}
-          <TouchableOpacity style={styles.couponBox} onPress={() => setPaymentMode('online')}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-              <View style={paymentMode === 'online' ? styles.radioSelected : styles.radioUnselected} />
-              <Image source={require('../../assets/images/cred.png')} style={styles.couponIconBig} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.couponTitle}>Pay via UPI / Online</Text>
-                <Text style={styles.couponApplied}>Instant payment via Razorpay</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          {/* Cash on Delivery */}
-          <TouchableOpacity style={styles.couponBox} onPress={() => setPaymentMode('cod')}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-              <View style={paymentMode === 'cod' ? styles.radioSelected : styles.radioUnselected} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.couponTitle}>Cash on Delivery</Text>
-                <Text style={styles.couponApplied}>Pay when you receive</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
         </ScrollView>
         </KeyboardAvoidingView>
 
@@ -285,7 +332,7 @@ const OrderPaymentScreen = ({ navigation }) => {
           disabled={placing}
         >
           <Text style={styles.payBottomBtnText}>
-            {placing ? 'PLACING ORDER...' : paymentMode === 'online' ? `PAY ₹${cartTotal.toLocaleString('en-IN')}` : 'PLACE ORDER (COD)'}
+            {placing ? 'PLACING ORDER...' : paymentMode === 'cod' ? 'Place Order (COD)' : 'Pay Now'}
           </Text>
         </TouchableOpacity>
         <OrderSummaryModal visible={summaryVisible} onClose={() => setSummaryVisible(false)} items={cartItems} />
@@ -293,6 +340,10 @@ const OrderPaymentScreen = ({ navigation }) => {
           visible={orderPlacedVisible}
           onClose={() => setOrderPlacedVisible(false)}
           onTrackOrder={handleTrackOrder}
+          order={placedOrder?.order}
+          paymentMode={placedOrder?.paymentMode}
+          methodKey={placedOrder?.method}
+          onContinueShopping={() => { setOrderPlacedVisible(false); navigation.navigate('MainTabs', { screen: 'Home' }); }}
         />
         <OrderTrackModal
           visible={orderTrackVisible}
@@ -556,6 +607,127 @@ const styles = StyleSheet.create({
     height: 45,
     left: 110,
     marginBottom: 5
+  },
+  totalCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FCEFF6',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E9C9DC',
+    padding: 16,
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 14,
+  },
+  totalLabel: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#222',
+  },
+  totalAmount: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#930e6e',
+    marginTop: 6,
+  },
+  viewDetail: {
+    fontSize: 13,
+    color: '#930e6e',
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
+  secureText: {
+    fontSize: 11,
+    color: '#888',
+  },
+  groupTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#222',
+    marginHorizontal: 14,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  methodGroup: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eee',
+    marginHorizontal: 12,
+    marginBottom: 14,
+    overflow: 'hidden',
+  },
+  methodRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  methodRowLast: {
+    borderBottomWidth: 0,
+  },
+  methodIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: '#f6f6f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  methodLabel: {
+    flex: 1,
+    fontSize: 15,
+    color: '#222',
+    fontWeight: '500',
+  },
+  radioOn: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 6,
+    borderColor: '#930e6e',
+  },
+  radioOff: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#ccc',
+  },
+  cardAddRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eee',
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    marginHorizontal: 12,
+    marginBottom: 14,
+  },
+  cardBrands: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#555',
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  codFee: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#930e6e',
   },
   couponBox: {
     backgroundColor: '#f8f8f1ff',

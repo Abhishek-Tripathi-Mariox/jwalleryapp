@@ -46,10 +46,10 @@ export default function CustomerServiceChatScreen({ navigation }) {
       } else {
         // Use defaults
         setSupportInfo({
-          phone: '+91 9876543210',
-          email: 'support@jewellery.com',
-          whatsapp: '+91 9876543210',
-          workingHours: '9:00 AM - 6:00 PM',
+          phone: '',
+          email: '',
+          whatsapp: '',
+          workingHours: '',
           chatBotMessages: DEFAULT_BOT_MESSAGES,
         });
       }
@@ -139,17 +139,20 @@ export default function CustomerServiceChatScreen({ navigation }) {
   };
 
   const handleCall = () => {
-    const phone = supportInfo?.phone || '+91 9876543210';
+    const phone = supportInfo?.phone;
+    if (!phone) { Alert.alert('Support', 'Support number is not available right now.'); return; }
     Linking.openURL(`tel:${phone.replace(/\s/g, '')}`);
   };
 
   const handleEmail = () => {
-    const email = supportInfo?.email || 'support@jewellery.com';
+    const email = supportInfo?.email;
+    if (!email) { Alert.alert('Support', 'Support email is not available right now.'); return; }
     Linking.openURL(`mailto:${email}`);
   };
 
   const handleWhatsApp = () => {
-    const whatsapp = supportInfo?.whatsapp || supportInfo?.phone || '+91 9876543210';
+    const whatsapp = supportInfo?.whatsapp || supportInfo?.phone;
+    if (!whatsapp) { Alert.alert('Support', 'WhatsApp support is not available right now.'); return; }
     const cleanNumber = whatsapp.replace(/[^0-9]/g, '');
     Linking.openURL(`whatsapp://send?phone=${cleanNumber}&text=Hi, I need help with my order.`).catch(() => {
       Alert.alert('WhatsApp not installed', 'Please install WhatsApp to use this feature.');

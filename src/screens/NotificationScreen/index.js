@@ -45,7 +45,7 @@ const NotificationScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <StatusBar backgroundColor={Colors.THEMECOLOR} barStyle="light-content" />
       <BackHeader
         navigation={navigation}
