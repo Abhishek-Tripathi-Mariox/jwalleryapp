@@ -15,8 +15,8 @@ const THEME = '#930e6e';
 const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
 
 const ASSURANCE = [
-  { icon: <FontAwesome name="diamond" size={20} color="#fff" />, label: '100% purity\nof 24k Gold' },
-  { icon: <Ionicons name="shield-checkmark-outline" size={22} color="#fff" />, label: '2 years\nwarranty' },
+  { icon: <FontAwesome name="diamond" size={20} color="#fff" />, label: '10% purity\nof 24k Gold' },
+  { icon: <Ionicons name="shield-checkmark-outline" size={22} color="#fff" />, label: '5 years\nwarranty' },
   { icon: <Ionicons name="infinite" size={22} color="#fff" />, label: 'Premiere\nDesign' },
   { icon: <Ionicons name="arrow-undo-outline" size={22} color="#fff" />, label: 'easy 3-5\nDays return' },
 ];

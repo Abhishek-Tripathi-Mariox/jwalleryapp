@@ -17,8 +17,8 @@ const THEME = '#930e6e';
 const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
 
 const ASSURANCE = [
-  { icon: <FontAwesome name="diamond" size={18} color={THEME} />, label: '100% purity\nof 24k Gold' },
-  { icon: <Ionicons name="shield-checkmark-outline" size={20} color={THEME} />, label: '2 years\nwarranty' },
+  { icon: <FontAwesome name="diamond" size={18} color={THEME} />, label: '10% purity\nof 24k Gold' },
+  { icon: <Ionicons name="shield-checkmark-outline" size={20} color={THEME} />, label: '5 years\nwarranty' },
   { icon: <Ionicons name="infinite" size={20} color={THEME} />, label: 'Premiere\nDesign' },
   { icon: <Ionicons name="arrow-undo-outline" size={20} color={THEME} />, label: 'easy 3-5\nDays return' },
 ];
@@ -72,10 +72,10 @@ export default function MyProfileScreen({ navigation }) {
     { icon: <Feather name="user" size={20} color="#444" />, label: 'Personal Information', onPress: () => navigation.navigate('ProfileDetail') },
     { icon: <Ionicons name="location-outline" size={20} color="#444" />, label: 'Delivery Address', onPress: () => navigation.navigate('SavedAddress') },
     { icon: <Feather name="credit-card" size={20} color="#444" />, label: 'Saved Cards', onPress: () => navigation.navigate('PaymentMethod') },
-    { icon: <Feather name="shield" size={20} color="#444" />, label: 'Security & Privacy', onPress: () => comingSoon('Security & Privacy') },
+    { icon: <Feather name="shield" size={20} color="#444" />, label: 'Security & Privacy', onPress: () => navigation.navigate('Policies', { title: 'Security & Privacy', type: 'security' }) },
     { icon: <Feather name="shopping-bag" size={20} color="#444" />, label: 'Order History', onPress: () => navigation.navigate('OrderScreen') },
     { icon: <Feather name="shopping-cart" size={20} color="#444" />, label: 'My Cart', onPress: () => navigation.navigate('Cart') },
-    { icon: <Ionicons name="sync-outline" size={20} color="#444" />, label: 'Return Policy', onPress: () => comingSoon('Return Policy') },
+    { icon: <Ionicons name="sync-outline" size={20} color="#444" />, label: 'Return Policy', onPress: () => navigation.navigate('Policies', { title: 'Return Policy', type: 'return' }) },
     { icon: <Feather name="globe" size={20} color="#444" />, label: 'Language', onPress: () => setLangModal(true) },
   ];
 
@@ -89,7 +89,8 @@ export default function MyProfileScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <BackHeader navigation={navigation} title="About" showBack={false} showLogo={false}
+      <BackHeader navigation={navigation} title="About" showBack={true} showLogo={false}
+        onBack={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}
         rightIconName="notifications-outline" onRightPress={() => navigation.navigate('Notification')} />
 
       {loading ? (
@@ -181,7 +182,7 @@ export default function MyProfileScreen({ navigation }) {
                 ))}
               </View>
             </View>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => comingSoon('Terms and conditions')}>
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('Policies', { title: 'Terms & Conditions', type: 'terms' })}>
               <Text style={styles.termsText}>Terms and conditions  </Text>
               <Feather name="menu" size={18} color="#222" />
             </TouchableOpacity>

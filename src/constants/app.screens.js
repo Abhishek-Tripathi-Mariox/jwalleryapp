@@ -42,5 +42,6 @@ export const AppScreens = {
   WishlistScreen,
   CartScreen,
   ProfileDetailScreen,
-  PaymentMethodScreen
+  PaymentMethodScreen,
+  PoliciesScreen: require('../screens/PoliciesScreen').default,
 };

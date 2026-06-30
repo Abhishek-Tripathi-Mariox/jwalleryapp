@@ -128,6 +128,11 @@ const Navigator = () => {
           component={AppScreens.PaymentMethodScreen}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="Policies"
+          component={AppScreens.PoliciesScreen}
+          options={{ headerShown: false }}
+        />
         </Stack.Navigator>
       </NavigationContainer>
     </CartProvider>
