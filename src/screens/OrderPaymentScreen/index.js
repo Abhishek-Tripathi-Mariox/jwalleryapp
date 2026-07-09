@@ -139,7 +139,14 @@ const OrderPaymentScreen = ({ navigation }) => {
             }
           } catch (razorpayError) {
             console.log('Razorpay error:', razorpayError);
-            Alert.alert('Payment Cancelled', 'Your order has been created. You can pay later from order details.');
+            // Don't promise a "pay later" retry flow that doesn't exist in the app.
+            // If the charge actually went through despite the checkout SDK erroring
+            // out (e.g. app backgrounded mid-payment), Razorpay's webhook reconciles
+            // the order server-side independently of this callback.
+            Alert.alert(
+              'Payment Not Confirmed',
+              'Your order has been saved, but we could not confirm the payment. If money was deducted, it will be reflected on your order shortly — otherwise please contact support.',
+            );
             setOrderPlacedVisible(true);
           }
         } else {
