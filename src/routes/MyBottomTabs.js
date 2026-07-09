@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Dashboard from '../screens/DashboardScreen';
 import CategoryScreen from '../screens/CategoryScreen';
@@ -32,15 +33,29 @@ const getTabIcon = (routeName, color, size) => {
   }
 };
 
+// Content height only (icon box + label + top padding) — the system nav bar
+// inset is added on top of this at render time via useSafeAreaInsets, since
+// Android enforces edge-to-edge from API 35 onward and draws the tab bar
+// under gesture/3-button nav bars otherwise (varies 24-48dp+ by OEM skin).
+const BASE_TAB_BAR_HEIGHT = 60;
+
 const MyBottomTabs = () => {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: THEME,
         tabBarInactiveTintColor: INACTIVE,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            height: BASE_TAB_BAR_HEIGHT + insets.bottom,
+            paddingBottom: insets.bottom + 8,
+          },
+        ],
         tabBarLabelStyle: styles.tabLabel,
         tabBarIcon: ({ focused }) => (
           <View style={focused ? styles.activeIconBox : styles.iconBox}>
@@ -63,8 +78,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 0.5,
     borderTopColor: '#eee',
-    height: Platform.OS === 'ios' ? 88 : 70,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
     paddingTop: 8,
   },
   tabLabel: {

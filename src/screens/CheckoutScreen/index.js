@@ -137,7 +137,7 @@ export default function CheckoutScreen({ navigation }) {
       {/* Header */}
       <BackHeader
         navigation={navigation}
-        title="CHECKOUT"
+        title="Checkout"
         rightIconName="notifications-outline"
         onRightPress={() => navigation.navigate('Notification')}
       />
@@ -199,7 +199,7 @@ export default function CheckoutScreen({ navigation }) {
         onPress={handleCheckout}
       >
         <Image source={require('../../assets/images/jbag1.png')} style={styles.checkoutIcon} />
-        <Text style={styles.checkoutBtnText}>CHECKOUT</Text>
+        <Text style={styles.checkoutBtnText}>Checkout</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

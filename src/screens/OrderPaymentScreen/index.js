@@ -12,6 +12,7 @@ import { fetchCart, fetchAddresses, fetchCoupons, applyCoupon, placeOrder, verif
 import RazorpayCheckout from 'react-native-razorpay';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import PaymentBrandIcon from '../../components/icons/PaymentBrandIcons';
 
 const { width } = Dimensions.get('window');
 
@@ -188,7 +189,7 @@ const OrderPaymentScreen = ({ navigation }) => {
         {/* Header */}
         <BackHeader
           navigation={navigation}
-          title="CHECKOUT"
+          title="Checkout"
           rightIconName="notifications-outline"
          onRightPress={() => navigation.navigate('Notification')}
         />
@@ -253,9 +254,9 @@ const OrderPaymentScreen = ({ navigation }) => {
           <Text style={styles.groupTitle}>UPI</Text>
           <View style={styles.methodGroup}>
             {[
-              { key: 'gpay', label: 'Google Pay', icon: <Ionicons name="logo-google" size={20} color="#4285F4" /> },
-              { key: 'phonepe', label: 'PhonePe', icon: <MaterialCommunityIcons name="cellphone-check" size={20} color="#5f259f" /> },
-              { key: 'paytm', label: 'Paytm', icon: <MaterialCommunityIcons name="wallet-outline" size={20} color="#00BAF2" /> },
+              { key: 'gpay', label: 'Google Pay', icon: <PaymentBrandIcon name="googlepay" size={20} /> },
+              { key: 'phonepe', label: 'PhonePe', icon: <PaymentBrandIcon name="phonepe" size={20} /> },
+              { key: 'paytm', label: 'Paytm', icon: <PaymentBrandIcon name="paytm" size={20} /> },
               { key: 'upi', label: 'Other UPI Apps', icon: <MaterialCommunityIcons name="bank-transfer" size={20} color="#222" /> },
             ].map((m, i, arr) => (
               <TouchableOpacity

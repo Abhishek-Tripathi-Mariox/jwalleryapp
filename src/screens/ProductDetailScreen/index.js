@@ -228,7 +228,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           <AntDesign name="arrowleft" size={22} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Product Page</Text>
-        <View style={[styles.headerRight, { flexDirection: 'row', alignItems: 'center' }]}>
+        <View style={styles.headerRight}>
           <TouchableOpacity onPress={handleToggleWishlist} style={{ marginRight: 16 }}>
             <AntDesign name={wishlisted ? 'heart' : 'hearto'} size={22} color="#fff" />
           </TouchableOpacity>
@@ -540,10 +540,10 @@ export default function ProductDetailScreen({ route, navigation }) {
           disabled={addingToCart}
         >
           {addingToCart ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color="#930e6e" />
           ) : (
             <>
-              <Feather name="shopping-cart" size={20} color="#fff" />
+              <Feather name="shopping-cart" size={20} color="#930e6e" />
               <Text style={styles.addToCartText}>ADD TO CART</Text>
             </>
           )}
@@ -688,7 +688,7 @@ const styles = StyleSheet.create({
   thumbLeftActive: { borderColor: '#930e6e', borderWidth: 1.5 },
   thumbLeftImg: { width: '100%', height: '100%', resizeMode: 'cover' },
   mainImageWrap: { flex: 1, height: 300, borderRadius: 10, overflow: 'hidden', justifyContent: 'center' },
-  mainImage: { width: '100%', height: '100%', resizeMode: 'contain' },
+  mainImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   topRightIcons: { position: 'absolute', top: 8, right: 8, alignItems: 'center' },
   circleBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', elevation: 2, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 3 },
   icon360: { fontSize: 11, fontWeight: '800', color: '#333' },
@@ -775,8 +775,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Medium',
   },
   headerRight: {
-    width: 36,
-    height: 36,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1045,6 +1044,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1.5,
     borderColor: '#930e6e',
+    backgroundColor: Colors.LIGHT_THEME,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -1062,13 +1062,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.theme1,
+    backgroundColor: Colors.LIGHT_THEME,
+    borderWidth: 1.5,
+    borderColor: '#930e6e',
     paddingVertical: 14,
     borderRadius: 8,
     marginRight: 10,
   },
   addToCartText: {
-    color: '#fff',
+    color: '#000',
     fontWeight: 'bold',
     fontSize: 15,
     marginLeft: 8,
