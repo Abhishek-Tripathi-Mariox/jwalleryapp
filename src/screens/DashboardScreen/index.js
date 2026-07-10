@@ -14,9 +14,11 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import Voice from '@react-native-voice/voice';
 import {
   fetchGoldPrices, fetchHomeCategories, fetchNewArrivals,
-  fetchFeaturedProducts, globalSearch, fetchBanners,
+  fetchFeaturedProducts, globalSearch, imageSearch, fetchBanners,
   fetchProductsByCategory, fetchSupportInfo,
 } from '../../utils/api';
 import { useLogo } from '../../utils/LogoContext';
@@ -46,7 +48,7 @@ const EmptySection = ({ message }) => (
 );
 
 const Dashboard = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const primaryLogoUrl = useLogo('primary');
   const [categories, setCategories] = useState([]);
   const [goldPrice24K, setGoldPrice24K] = useState(null);
@@ -88,6 +90,32 @@ const Dashboard = ({ navigation }) => {
   const [voiceListening, setVoiceListening] = useState(false);
 
   useEffect(() => { loadData(); }, []);
+
+  // On-device speech recognition (no network/API key) — wires @react-native-voice/voice
+  // events to the same debounced text search the search bar uses.
+  useEffect(() => {
+    Voice.onSpeechStart = () => setVoiceListening(true);
+    Voice.onSpeechEnd = () => setVoiceListening(false);
+    Voice.onSpeechError = (e) => {
+      setVoiceListening(false);
+      const code = e?.error?.code;
+      if (code !== '7' && code !== '5') {
+        // 7 = no match, 5 = client-side cancel — both routine, not worth a popup.
+        Alert.alert('Voice Search', 'Could not understand. Please try again.');
+      }
+    };
+    Voice.onSpeechResults = (e) => {
+      const text = e.value?.[0];
+      if (text) {
+        setSearchText(text);
+        handleSearchChange(text);
+      }
+    };
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
 
   // Auto-slide the hero banners whenever there are 2 or more.
   useEffect(() => {
@@ -241,8 +269,65 @@ const Dashboard = ({ navigation }) => {
     navigation.navigate('NecklaceList', { categoryId: cat._id, categoryLabel: cat.name });
   };
 
-  const handleVoiceSearch = () => {
-    Alert.alert('Voice Search', 'Voice search will be available soon.');
+  const VOICE_LOCALES = { en: 'en-US', hi: 'hi-IN' };
+
+  const handleVoiceSearch = async () => {
+    try {
+      if (voiceListening) {
+        await Voice.stop();
+        return;
+      }
+      const available = await Voice.isAvailable();
+      if (!available) {
+        Alert.alert('Voice Search', 'Speech recognition is not available on this device.');
+        return;
+      }
+      const locale = VOICE_LOCALES[i18n.language] || VOICE_LOCALES.en;
+      await Voice.start(locale);
+    } catch (e) {
+      console.log('Voice search error:', e);
+      setVoiceListening(false);
+      Alert.alert('Voice Search', `Could not start voice search.\n\n${e?.message || JSON.stringify(e)}`);
+    }
+  };
+
+  // ── Camera search ────────────────────────────────────
+  const runImageSearch = async (asset) => {
+    setSearchText('');
+    setSearching(true);
+    setShowSearchResults(true);
+    try {
+      const res = await imageSearch(asset);
+      const products = (res?.code === 1 && res.data?.products) || [];
+      setSearchResults({ categories: [], products });
+      if (products.length === 0) {
+        Alert.alert('Search by Photo', 'No matching products found.');
+      }
+    } catch (e) {
+      console.log('Image search error:', e);
+      setSearchResults({ categories: [], products: [] });
+      Alert.alert('Search by Photo', 'Could not search by photo. Please try again.');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const pickImageForSearch = async (fromCamera) => {
+    const options = { mediaType: 'photo', quality: 0.8, maxWidth: 1024, maxHeight: 1024, includeBase64: false };
+    const result = fromCamera ? await launchCamera(options) : await launchImageLibrary(options);
+    if (result.didCancel || result.errorCode || !result.assets?.[0]) {
+      if (result.errorCode) Alert.alert('Search by Photo', result.errorMessage || 'Could not open camera/gallery.');
+      return;
+    }
+    runImageSearch(result.assets[0]);
+  };
+
+  const handleCameraSearch = () => {
+    Alert.alert('Search by Photo', 'Find products that look like your photo', [
+      { text: 'Take Photo', onPress: () => pickImageForSearch(true) },
+      { text: 'Choose from Gallery', onPress: () => pickImageForSearch(false) },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   // Banner tap: play video, else open the banner's link / target product.
@@ -844,9 +929,9 @@ const Dashboard = ({ navigation }) => {
               onSubmitEditing={() => searchText.trim().length >= 2 && handleSearchChange(searchText)}
             />
             <TouchableOpacity onPress={handleVoiceSearch} style={styles.searchActionBtn}>
-              <Ionicons name="mic-outline" size={22} color={voiceListening ? '#930e6e' : '#930e6e'} />
+              <Ionicons name={voiceListening ? 'mic' : 'mic-outline'} size={22} color={voiceListening ? '#e53935' : '#930e6e'} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => Alert.alert('Coming Soon', 'Image search will be available soon.')} style={styles.searchActionBtn}>
+            <TouchableOpacity onPress={handleCameraSearch} style={styles.searchActionBtn}>
               <Ionicons name="camera-outline" size={22} color="#930e6e" />
             </TouchableOpacity>
           </View>

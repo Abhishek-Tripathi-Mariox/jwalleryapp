@@ -50,6 +50,27 @@ export const fetchSpecialOffers = () => request('/user/special-offers');
 export const globalSearch = (q) =>
   request(`/user/search?q=${encodeURIComponent(q)}`);
 
+// Camera search — uploads a photo (multipart), so it bypasses the JSON-only
+// `request()` helper and builds its own fetch call.
+export const imageSearch = async (asset) => {
+  const token = await getTokenStorage();
+  const formData = new FormData();
+  formData.append('image', {
+    uri: asset.uri,
+    type: asset.type || 'image/jpeg',
+    name: asset.fileName || 'search.jpg',
+  });
+  const res = await fetch(`${API_BASE_URL}/user/products/image-search`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+  return res.json();
+};
+
 // ── Categories ────────────────────────────────────────
 export const fetchCategories = () => request('/user/categories');
 export const fetchCategoryById = (id) => request(`/user/categories/${id}`);
