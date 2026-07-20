@@ -14,6 +14,7 @@ import { API_BASE_URL } from '../../constants/api';
 import { setTokenStorage } from '../../utils/tokenStorage';
 import { showToast } from '../../utils/toast';
 import { fetchAndStoreAppConfig } from '../../utils/appConfig';
+import { registerDeviceToken } from '../../utils/pushNotifications';
 import { Colors } from '../../themes/Colors';
 import { useLogos } from '../../utils/LogoContext';
 
@@ -100,6 +101,7 @@ const LoginScreen = (props) => {
           await setTokenStorage(data.data.token);
           // Fetch and store app config keys (Razorpay, Google Maps, Firebase)
           await fetchAndStoreAppConfig();
+          registerDeviceToken().catch(() => {});
         }
         showToast(data.message || 'OTP verified successfully.', 'success');
         navigation.navigate('MainTabs')

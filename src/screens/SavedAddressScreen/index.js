@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../themes/Colors';
@@ -9,11 +9,23 @@ import AddressModal from './AddressModal';
 
 const { width } = Dimensions.get('window');
 
-export default function SavedAddressScreen({ navigation }) {
+export default function SavedAddressScreen({ navigation, route }) {
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
+  const [pickedLocation, setPickedLocation] = useState(null);
+
+  // Returning from the map picker with a chosen pin — reopen the modal
+  // pre-filled with the geocoded city/state/pincode.
+  useEffect(() => {
+    if (route?.params?.pickedLocation) {
+      setEditIndex(null);
+      setPickedLocation(route.params.pickedLocation);
+      setModalVisible(true);
+      navigation.setParams({ pickedLocation: undefined });
+    }
+  }, [route?.params?.pickedLocation]);
 
   const loadAddresses = async () => {
     try {
@@ -53,6 +65,10 @@ export default function SavedAddressScreen({ navigation }) {
         email: addressData.email || '',
         addressType: addressData.addressType || 'Home',
       };
+      if (addressData.latitude !== undefined && addressData.latitude !== null) {
+        body.latitude = addressData.latitude;
+        body.longitude = addressData.longitude;
+      }
 
       let res;
       if (editIndex !== null && addresses[editIndex]) {
@@ -74,23 +90,38 @@ export default function SavedAddressScreen({ navigation }) {
     }
     setModalVisible(false);
     setEditIndex(null);
+    setPickedLocation(null);
   };
 
-  // Prepare initial values for modal if editing
+  // Prepare initial values for modal: editing an existing address, a
+  // freshly map-picked location, or neither (blank "Add Address" form).
   const getEditInitialValues = () => {
-    if (editIndex === null) return undefined;
-    const addr = addresses[editIndex];
-    if (!addr) return undefined;
-    return {
-      pincode: addr.pinCode || addr.pincode || '',
-      city: addr.city || '',
-      state: addr.state || '',
-      houseNo: addr.houseNo || '',
-      apartment: addr.apartment || '',
-      fullName: addr.fullName || '',
-      email: addr.email || '',
-      addressType: addr.addressType || addr.type || 'Home',
-    };
+    if (editIndex !== null) {
+      const addr = addresses[editIndex];
+      if (!addr) return undefined;
+      return {
+        pincode: addr.pinCode || addr.pincode || '',
+        city: addr.city || '',
+        state: addr.state || '',
+        houseNo: addr.houseNo || '',
+        apartment: addr.apartment || '',
+        fullName: addr.fullName || '',
+        email: addr.email || '',
+        addressType: addr.addressType || addr.type || 'Home',
+        latitude: addr.latitude,
+        longitude: addr.longitude,
+      };
+    }
+    if (pickedLocation) {
+      return {
+        pincode: pickedLocation.pincode || '',
+        city: pickedLocation.city || '',
+        state: pickedLocation.state || '',
+        latitude: pickedLocation.latitude,
+        longitude: pickedLocation.longitude,
+      };
+    }
+    return undefined;
   };
 
   return (
@@ -128,7 +159,8 @@ export default function SavedAddressScreen({ navigation }) {
       )}
       <AddressModal
         visible={modalVisible}
-        onClose={() => { setModalVisible(false); setEditIndex(null); }}
+        navigation={navigation}
+        onClose={() => { setModalVisible(false); setEditIndex(null); setPickedLocation(null); }}
         onSave={handleAddAddress}
         initialValues={getEditInitialValues()}
       />

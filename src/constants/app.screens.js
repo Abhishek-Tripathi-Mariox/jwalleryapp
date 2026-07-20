@@ -3,6 +3,7 @@ import LoginScreen from '../screens/LoginOTPScreen';
 import MyBottomTabs from '../routes/MyBottomTabs';
 import MyProfileScreen from '../screens/MyProfileScreen';
 import SavedAddressScreen from '../screens/SavedAddressScreen';
+import MapAddressPickerScreen from '../screens/MapAddressPickerScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
 import OrderPlacedScreen from '../screens/OrderPlacedScreen';
 import AddShippingAddressScreen from '../screens/AddShippingAddressScreen';
@@ -25,6 +26,7 @@ export const AppScreens = {
   MyBottomTabs,
   MyProfileScreen,
   SavedAddressScreen,
+  MapAddressPickerScreen,
   FeedbackScreen,
   OrderPlacedScreen,
   AddShippingAddressScreen,

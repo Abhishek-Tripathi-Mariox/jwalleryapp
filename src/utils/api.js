@@ -140,6 +140,8 @@ export const addAddress = (data) =>
 export const deleteAddress = (id) =>
   request(`/user/address/${id}`, { method: 'DELETE' });
 export const fetchAddressDetail = (id) => request(`/user/address/${id}`);
+export const reverseGeocode = (latitude, longitude) =>
+  request('POST', '/user/geocode/reverse', { latitude, longitude });
 
 // ── Profile ───────────────────────────────────────────
 export const fetchProfile = () => request('/user/profile');

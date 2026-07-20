@@ -39,6 +39,11 @@ const Navigator = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="MapAddressPicker"
+          component={AppScreens.MapAddressPickerScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="FeedbackScreen"
           component={AppScreens.FeedbackScreen}
           options={{ headerShown: false }}

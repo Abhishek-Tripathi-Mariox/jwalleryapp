@@ -35,7 +35,7 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Swarnaz needs your location to help you pick an accurate delivery address on the map.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Swarnaz needs camera access so you can search for jewellery by taking a photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -44,6 +44,10 @@
 	<string>Swarnaz needs microphone access so you can search for jewellery by voice.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Swarnaz needs speech recognition access so you can search for jewellery by voice.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

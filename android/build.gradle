@@ -15,6 +15,10 @@ buildscript {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        // Push notifications (Firebase Cloud Messaging). Only actually
+        // applied in app/build.gradle once google-services.json exists —
+        // see the comment there for why.
+        classpath("com.google.gms:google-services:4.4.2")
     }
 }
 

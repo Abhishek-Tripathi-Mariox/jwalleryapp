@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
-const AddressModal = ({ visible, onClose, onSave, initialValues }) => {
+const AddressModal = ({ visible, onClose, onSave, initialValues, navigation }) => {
   const [pincode, setPincode] = useState(initialValues?.pincode || '');
   const [city, setCity] = useState(initialValues?.city || '');
   const [state, setState] = useState(initialValues?.state || '');
@@ -15,6 +15,8 @@ const AddressModal = ({ visible, onClose, onSave, initialValues }) => {
   const [fullName, setFullName] = useState(initialValues?.fullName || '');
   const [email, setEmail] = useState(initialValues?.email || '');
   const [addressType, setAddressType] = useState(initialValues?.addressType || 'Home');
+  const [latitude, setLatitude] = useState(initialValues?.latitude);
+  const [longitude, setLongitude] = useState(initialValues?.longitude);
 
   // Reset fields when modal is opened for a different address
   React.useEffect(() => {
@@ -26,7 +28,14 @@ const AddressModal = ({ visible, onClose, onSave, initialValues }) => {
     setFullName(initialValues?.fullName || '');
     setEmail(initialValues?.email || '');
     setAddressType(initialValues?.addressType || 'Home');
+    setLatitude(initialValues?.latitude);
+    setLongitude(initialValues?.longitude);
   }, [visible, initialValues]);
+
+  const handleUseCurrentLocation = () => {
+    onClose();
+    navigation?.navigate('MapAddressPicker');
+  };
 
   return (
     <Modal
@@ -46,7 +55,7 @@ const AddressModal = ({ visible, onClose, onSave, initialValues }) => {
           <View style={styles.divider} />
 
           {/* Use Current Location */}
-          <TouchableOpacity style={styles.locationBtn}>
+          <TouchableOpacity style={styles.locationBtn} onPress={handleUseCurrentLocation}>
             <Feather name="crosshair" size={20} color="#6B3A3A" style={{ marginRight: 8 }} />
             <Text style={styles.locationText}>Use Current Location</Text>
           </TouchableOpacity>
@@ -141,7 +150,7 @@ const AddressModal = ({ visible, onClose, onSave, initialValues }) => {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.continueBtn} onPress={() => onSave && onSave({ pincode, city, state, houseNo, apartment, fullName, email, addressType })}>
+          <TouchableOpacity style={styles.continueBtn} onPress={() => onSave && onSave({ pincode, city, state, houseNo, apartment, fullName, email, addressType, latitude, longitude })}>
             <Text style={styles.continueBtnText}>Continue</Text>
           </TouchableOpacity>
         </View>
