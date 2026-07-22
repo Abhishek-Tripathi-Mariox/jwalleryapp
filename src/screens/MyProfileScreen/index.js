@@ -8,9 +8,9 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
-import { request, fetchSupportInfo } from '../../utils/api';
+import { request, fetchSupportInfo, deleteAccount } from '../../utils/api';
 import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearStorage } from '../../utils/tokenStorage';
 import LanguageAlert from '../../components/Modal/LanguageAlert';
 
 const THEME = '#930e6e';
@@ -59,10 +59,37 @@ export default function MyProfileScreen({ navigation }) {
 
   const handleSignOut = async () => {
     try {
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('user');
+      await clearStorage();
       navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     } catch (e) { console.log('Sign out error:', e); }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This permanently deletes your account and personal data. Your order history is kept for records, but your account can no longer be used. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await deleteAccount();
+              if (res?.code === 1) {
+                await clearStorage();
+                navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+              } else {
+                Alert.alert('Error', res?.message || 'Could not delete account. Please try again.');
+              }
+            } catch (e) {
+              console.log('Delete account error:', e);
+              Alert.alert('Error', 'Could not delete account. Please try again.');
+            }
+          },
+        },
+      ],
+    );
   };
 
   const openSocial = (url) => Linking.openURL(url).catch(() => {});
@@ -170,6 +197,11 @@ export default function MyProfileScreen({ navigation }) {
             <Feather name="log-out" size={18} color={THEME} />
           </TouchableOpacity>
 
+          {/* Delete account */}
+          <TouchableOpacity style={styles.deleteAccountBtn} onPress={handleDeleteAccount}>
+            <Text style={styles.deleteAccountText}>Delete Account</Text>
+          </TouchableOpacity>
+
           {/* Follow us + Terms */}
           <View style={styles.footerRow}>
             <View>
@@ -225,6 +257,8 @@ const styles = StyleSheet.create({
 
   logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', backgroundColor: '#FCEFF6', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 30, marginTop: 22 },
   logoutText: { color: THEME, fontWeight: '700', fontSize: 16 },
+  deleteAccountBtn: { alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginTop: 14, paddingVertical: 8, paddingHorizontal: 30 },
+  deleteAccountText: { color: '#B00020', fontWeight: '600', fontSize: 13, textDecorationLine: 'underline' },
 
   footerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginHorizontal: 18, marginTop: 24 },
   followLabel: { fontSize: 14, color: '#333', fontWeight: '600' },

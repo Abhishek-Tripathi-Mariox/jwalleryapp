@@ -145,6 +145,7 @@ export const reverseGeocode = (latitude, longitude) =>
 
 // ── Profile ───────────────────────────────────────────
 export const fetchProfile = () => request('/user/profile');
+export const deleteAccount = () => request('DELETE', '/user/account');
 
 // ── Support/Contact Info ──────────────────────────────
 export const fetchSupportInfo = () => request('/user/support-info');
