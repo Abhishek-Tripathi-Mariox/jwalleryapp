@@ -124,6 +124,7 @@ export const fetchOrders = (status) => {
   return request(`/user/orders${qs}`);
 };
 export const fetchOrderDetails = (id) => request(`/user/orders/${id}`);
+export const trackOrder = (id) => request(`/user/orders/${id}/track`);
 export const cancelOrder = (id, reason) =>
   request(`/user/orders/${id}/cancel`, { method: 'POST', body: { reason } });
 export const reorder = (id) =>
@@ -149,6 +150,7 @@ export const deleteAccount = () => request('DELETE', '/user/account');
 
 // ── Support/Contact Info ──────────────────────────────
 export const fetchSupportInfo = () => request('/user/support-info');
+export const fetchStores = () => request('/user/stores');
 
 // ── Contact / Feedback submission ─────────────────────
 export const submitContact = (data) =>

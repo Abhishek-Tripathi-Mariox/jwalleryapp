@@ -1,16 +1,30 @@
-import React from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Colors } from '../../themes/Colors';
+import { trackOrder } from '../../utils/api';
 
 export default function OrderTrackModal({ visible, onClose, onCancelOrder, navigation, order }) {
-  const trackingSteps = order?.trackingSteps || [
-    { label: 'Packing', description: '', completed: false },
-    { label: 'Picked', description: '', completed: false },
-    { label: 'In Transit', description: '', completed: false },
-    { label: 'Delivered', description: '', completed: false },
-  ];
-  const currentStatus = order?.status || '';
+  const [tracking, setTracking] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!visible || !order?._id) return;
+    setLoading(true);
+    setTracking(null);
+    trackOrder(order._id)
+      .then((res) => {
+        if (res?.code === 1 && res.data) setTracking(res.data);
+      })
+      .catch((e) => console.log('Track order error:', e))
+      .finally(() => setLoading(false));
+  }, [visible, order?._id]);
+
+  const trackingSteps = (tracking?.timeline || []).map((step) => ({
+    label: step.label,
+    description: step.reason ? `Reason: ${step.reason}` : '',
+    completed: step.isComplete,
+  }));
   const deliveryPerson = order?.deliveryPerson || null;
 
   return (
@@ -30,6 +44,11 @@ export default function OrderTrackModal({ visible, onClose, onCancelOrder, navig
 
           {/* Status Steps */}
           <View style={styles.statusContainer}>
+            {loading ? (
+              <ActivityIndicator size="small" color={Colors.theme1} style={{ marginVertical: 20 }} />
+            ) : trackingSteps.length === 0 ? (
+              <Text style={styles.statusDesc}>Could not load tracking info. Please try again.</Text>
+            ) : null}
             {trackingSteps.map((step, index) => (
               <React.Fragment key={index}>
                 {index > 0 && <View style={styles.statusLine} />}

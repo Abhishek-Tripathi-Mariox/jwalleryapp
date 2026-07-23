@@ -227,6 +227,7 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
       {/* Track Order Modal */}
       <OrderTrackModal
         visible={trackModalVisible}
+        order={selectedOrder}
         onClose={() => setTrackModalVisible(false)}
         onCancelOrder={() => {
           setTrackModalVisible(false);
