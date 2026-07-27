@@ -459,41 +459,43 @@ export default function ProductDetailScreen({ route, navigation }) {
           )}
 
           {/* Description */}
-          {product?.productDescription && (
+          {product?.description && (
             <View style={styles.descSection}>
               <Text style={styles.descLabel}>Description</Text>
-              <Text style={styles.descText}>{product.productDescription}</Text>
+              <Text style={styles.descText}>{product.description}</Text>
             </View>
           )}
 
           {/* Product Details */}
-          <View style={styles.detailsSection}>
-            <Text style={styles.detailsLabel}>Product Details</Text>
-            {product?.metalType && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailKey}>Metal Type</Text>
-                <Text style={styles.detailValue}>{product.metalType}</Text>
-              </View>
-            )}
-            {product?.purity && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailKey}>Purity</Text>
-                <Text style={styles.detailValue}>{product.purity}</Text>
-              </View>
-            )}
-            {product?.weight && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailKey}>Weight</Text>
-                <Text style={styles.detailValue}>{product.weight}g</Text>
-              </View>
-            )}
-            {product?.sku && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailKey}>SKU</Text>
-                <Text style={styles.detailValue}>{product.sku}</Text>
-              </View>
-            )}
-          </View>
+          {(product?.material || product?.goldPricing?.isEnabled || product?.features) && (
+            <View style={styles.detailsSection}>
+              <Text style={styles.detailsLabel}>Product Details</Text>
+              {product?.material && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailKey}>Material</Text>
+                  <Text style={styles.detailValue}>{product.material}</Text>
+                </View>
+              )}
+              {product?.goldPricing?.isEnabled && product.goldPricing.goldPurityPercent > 0 && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailKey}>Gold Purity</Text>
+                  <Text style={styles.detailValue}>{product.goldPricing.goldPurityPercent}%</Text>
+                </View>
+              )}
+              {product?.goldPricing?.isEnabled && product.goldPricing.weightGrams > 0 && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailKey}>Weight</Text>
+                  <Text style={styles.detailValue}>{product.goldPricing.weightGrams}g</Text>
+                </View>
+              )}
+              {product?.features && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailKey}>Features</Text>
+                  <Text style={styles.detailValue}>{product.features}</Text>
+                </View>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Related Products — same category, shown on the same page */}
