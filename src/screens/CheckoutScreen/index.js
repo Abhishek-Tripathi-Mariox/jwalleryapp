@@ -15,7 +15,12 @@ function CheckoutItem({ item, onQtyChange }) {
   const product = item.productId || item;
   const imageUrl = product.productImages?.[0]?.url || item.productImage;
   const currentQty = item.quantity || item.qty || 1;
-  const price = item.unitPrice || product.discountPrice || product.price || item.price || 0;
+  // item.discountPrice/unitPrice are snapshotted onto the cart item at
+  // add-time; item.productId is just an id string when unpopulated (never a
+  // product object here), so the product.* fallbacks never actually fire.
+  // Checking unitPrice (ORIGINAL price) first meant checkout always showed
+  // the un-discounted price.
+  const price = item.discountPrice || item.unitPrice || 0;
   const oldPrice = product.price && product.discountPrice && product.price > product.discountPrice ? product.price : 0;
 
   return (
@@ -120,8 +125,7 @@ export default function CheckoutScreen({ navigation }) {
   };
 
   const subTotal = items.reduce((s, it) => {
-    const prod = it.productId || it;
-    return s + (it.unitPrice || prod.discountPrice || prod.price || 0) * (it.quantity || it.qty || 1);
+    return s + (it.discountPrice || it.unitPrice || 0) * (it.quantity || it.qty || 1);
   }, 0);
 
   const handleCheckout = () => {

@@ -761,8 +761,8 @@ const Dashboard = ({ navigation }) => {
         <View style={styles.assuranceItem}>
           <View style={styles.assuranceIconCircle}>
             <Ionicons name="arrow-undo-outline" size={24} color="#fff" />
-          </View>
-          <Text style={styles.assuranceLabel}>easy 3-5{'\n'}Days return</Text>
+          </View> 
+          <Text style={styles.assuranceLabel}>Easy Returns \n in 3–5 Days</Text>
         </View>
       </View>
     </View>

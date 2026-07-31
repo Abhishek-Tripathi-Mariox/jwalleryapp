@@ -18,13 +18,18 @@ const ASSURANCE = [
   { icon: <FontAwesome name="diamond" size={20} color="#fff" />, label: '10% purity\nof 24k Gold' },
   { icon: <Ionicons name="shield-checkmark-outline" size={22} color="#fff" />, label: '5 years\nwarranty' },
   { icon: <Ionicons name="infinite" size={22} color="#fff" />, label: 'Premiere\nDesign' },
-  { icon: <Ionicons name="arrow-undo-outline" size={22} color="#fff" />, label: 'easy 3-5\nDays return' },
+  { icon: <Ionicons name="arrow-undo-outline" size={22} color="#fff" />, label: 'Easy Returns in 3–5 Days' },
 ];
 
 function CartItem({ item, onQtyChange, onRemove }) {
   const prod = item.productId || {};
   const imageUrl = item.productImage || prod.productImages?.[0]?.url;
-  const price = item.unitPrice || prod.discountPrice || prod.price || 0;
+  // item.discountPrice/unitPrice are snapshotted onto the cart item itself at
+  // add-time (see backend CartService.addToCart) — prod (item.productId) is
+  // never populated by the cart-fetch API, so those prod.* fallbacks are dead
+  // code. Checking unitPrice (the ORIGINAL price) before discountPrice meant
+  // this always showed the un-discounted price.
+  const price = item.discountPrice || item.unitPrice || 0;
   const oldPrice = prod.price && prod.discountPrice && prod.price > prod.discountPrice ? prod.price : 0;
   return (
     <View style={styles.cartItem}>
@@ -132,12 +137,10 @@ function CartScreen({ navigation }) {
   };
 
   const subTotal = items.reduce((s, it) => {
-    const prod = it.productId || {};
-    return s + (it.unitPrice || prod.discountPrice || prod.price || 0) * (it.quantity || 1);
+    return s + (it.discountPrice || it.unitPrice || 0) * (it.quantity || 1);
   }, 0);
   const originalTotal = items.reduce((s, it) => {
-    const prod = it.productId || {};
-    return s + (prod.price || prod.discountPrice || 0) * (it.quantity || 1);
+    return s + (it.unitPrice || it.discountPrice || 0) * (it.quantity || 1);
   }, 0);
   const discount = Math.max(0, originalTotal - subTotal);
   const itemCount = items.reduce((s, it) => s + (it.quantity || 1), 0);

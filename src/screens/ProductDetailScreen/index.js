@@ -395,7 +395,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               { icon: 'diamond', lib: 'ion', label: '10% purity\nof 24k Gold' },
               { icon: 'shield-checkmark-outline', lib: 'ion', label: '5 years\nwarranty' },
               { icon: 'infinite', lib: 'ion', label: 'Premiere\nDesign' },
-              { icon: 'arrow-undo-outline', lib: 'ion', label: 'easy 3-5\nDays return' },
+              { icon: 'arrow-undo-outline', lib: 'ion', label: 'Easy Returns \n in 3–5 Days' },
             ].map((a, i) => (
               <View key={i} style={styles.assItem}>
                 <View style={styles.assCircle}>

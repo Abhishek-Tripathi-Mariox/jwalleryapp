@@ -20,7 +20,7 @@ const ASSURANCE = [
   { icon: <FontAwesome name="diamond" size={18} color={THEME} />, label: '10% purity\nof 24k Gold' },
   { icon: <Ionicons name="shield-checkmark-outline" size={20} color={THEME} />, label: '5 years\nwarranty' },
   { icon: <Ionicons name="infinite" size={20} color={THEME} />, label: 'Premiere\nDesign' },
-  { icon: <Ionicons name="arrow-undo-outline" size={20} color={THEME} />, label: 'easy 3-5\nDays return' },
+  { icon: <Ionicons name="arrow-undo-outline" size={20} color={THEME} />, label: 'Easy Returns in 3–5 Days' },
 ];
 
 const SOCIAL = [
