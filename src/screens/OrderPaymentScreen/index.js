@@ -56,8 +56,11 @@ const OrderPaymentScreen = ({ navigation }) => {
       if (cartRes?.code === 1 && cartRes.data) {
         const cart = cartRes.data;
         setCartItems(cart.items || cart.cartItems || []);
-        setCartTotal(cart.totalPrice || cart.total || 0);
-        setCartOriginalTotal(cart.originalTotal || cart.subTotal || cart.totalPrice || 0);
+        // Cart API returns { subtotal, grandTotal, ... } (see backend Cart
+        // model) — grandTotal already includes shipping/platform fee minus
+        // any coupon discount; subtotal is the pre-coupon sum.
+        setCartTotal(cart.grandTotal ?? cart.subtotal ?? 0);
+        setCartOriginalTotal(cart.subtotal ?? cart.grandTotal ?? 0);
       }
       if (addrRes?.code === 1 && addrRes.data) {
         const addresses = Array.isArray(addrRes.data) ? addrRes.data : addrRes.data.addresses || [];

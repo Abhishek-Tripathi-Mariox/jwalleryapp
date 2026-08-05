@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import BackHeader from '../../components/Header/BackHeader';
 import { fetchCart, updateCartItem, removeFromCart, fetchAddresses, fetchWishlist, addToCart, fetchProfile } from '../../utils/api';
 import { resizedImage } from '../../utils/imageProxy';
+import { getEffectivePrice } from '../../utils/price';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCart } from '../../utils/CartContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -22,6 +23,7 @@ const ASSURANCE = [
 ];
 
 function CartItem({ item, onQtyChange, onRemove }) {
+  const [imgFailed, setImgFailed] = useState(false);
   const prod = item.productId || {};
   const imageUrl = item.productImage || prod.productImages?.[0]?.url;
   // item.discountPrice/unitPrice are snapshotted onto the cart item itself at
@@ -33,12 +35,14 @@ function CartItem({ item, onQtyChange, onRemove }) {
   const oldPrice = prod.price && prod.discountPrice && prod.price > prod.discountPrice ? prod.price : 0;
   return (
     <View style={styles.cartItem}>
-      {imageUrl ? (
-        <Image source={{ uri: resizedImage(imageUrl, 300) }} style={styles.cartItemImage} />
+      {imageUrl && !imgFailed ? (
+        <Image
+          source={{ uri: resizedImage(imageUrl, 300) }}
+          style={styles.cartItemImage}
+          onError={() => setImgFailed(true)}
+        />
       ) : (
-        <View style={[styles.cartItemImage, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: '#999', fontSize: 10 }}>No Image</Text>
-        </View>
+        <Image source={AppImages.jlogo} style={[styles.cartItemImage, styles.cartItemImagePlaceholder]} resizeMode="contain" />
       )}
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -271,7 +275,7 @@ function CartScreen({ navigation }) {
                   const pid = (typeof p.productId === 'string' ? p.productId : prodObj?._id) || p._id;
                   const img = p.productImage || p.productImages?.[0]?.url || prodObj?.productImages?.[0]?.url;
                   const name = p.productName || prodObj?.productName || 'Product';
-                  const price = p.discountPrice || p.price || prodObj?.discountPrice || prodObj?.price;
+                  const price = getEffectivePrice(prodObj || p);
                   return (
                     <View key={p._id || pid} style={styles.wishCard}>
                       <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { productId: pid })} activeOpacity={0.85}>
@@ -319,6 +323,7 @@ const styles = StyleSheet.create({
 
   cartItem: { flexDirection: 'row', marginHorizontal: 14, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   cartItemImage: { width: 92, height: 92, borderRadius: 10, marginRight: 14, backgroundColor: '#f2f2f2', resizeMode: 'cover' },
+  cartItemImagePlaceholder: { padding: 20 },
   cartItemName: { flex: 1, fontSize: 16, fontWeight: '700', color: '#222' },
   cartItemSub: { fontSize: 12, color: '#888', marginTop: 2 },
   cartItemPrice: { fontSize: 15, fontWeight: '700', color: THEME },

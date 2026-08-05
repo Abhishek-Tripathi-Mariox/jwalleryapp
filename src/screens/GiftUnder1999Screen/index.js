@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndi
 import BackHeader from '../../components/Header/BackHeader';
 import { browseProducts } from '../../utils/api';
 import { resizedImage } from '../../utils/imageProxy';
+import { getEffectivePrice } from '../../utils/price';
 
 const THEME = '#930e6e';
 
@@ -41,7 +42,7 @@ export default function GiftUnder1999Screen({ navigation }) {
         )}
         {item.brand ? <Text style={styles.brand} numberOfLines={1}>{item.brand}</Text> : null}
         <Text style={styles.name} numberOfLines={1}>{item.productName}</Text>
-        <Text style={styles.price}>₹{formatPrice(item.discountPrice || item.price)}</Text>
+        <Text style={styles.price}>₹{formatPrice(getEffectivePrice(item))}</Text>
       </TouchableOpacity>
     );
   };

@@ -507,6 +507,9 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     color: '#DD8560',
   },
+  wishlistHeartActive: {
+    color: '#FF4444',
+  },
   productGridBrand: {
     fontFamily: 'Poppins-Medium',
     fontSize: 12,

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../themes/Colors';
 import { fetchProductDetails, addToCart, toggleWishlist, fetchWishlist, browseProducts, fetchCoupons } from '../../utils/api';
 import { resizedImage } from '../../utils/imageProxy';
+import { getEffectivePrice } from '../../utils/price';
 import { useCart } from '../../utils/CartContext';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -158,7 +159,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out ${product?.productName || 'this product'} on Swarnaz — ₹${Number(product?.discountPrice || product?.price || 0).toLocaleString('en-IN')}`,
+        message: `Check out ${product?.productName || 'this product'} on Swarnaz — ₹${Number(getEffectivePrice(product || {})).toLocaleString('en-IN')}`,
       });
     } catch (e) {}
   };
@@ -213,7 +214,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   const imageUrl = images[selectedImageIdx]?.url || images[0]?.url;
   
   const originalPrice = product?.price || 0;
-  const discountPrice = product?.discountPrice || originalPrice;
+  const discountPrice = product ? getEffectivePrice(product) : 0;
   const discount = originalPrice > discountPrice ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100) : 0;
 
   // keep 360 rotation refs in sync with current render
@@ -466,10 +467,19 @@ export default function ProductDetailScreen({ route, navigation }) {
             </View>
           )}
 
-          {/* Product Details */}
-          {(product?.material || product?.goldPricing?.isEnabled || product?.features) && (
+          {/* Product Details — each row hides itself when the field is empty
+              rather than leaving a blank line (per spec). */}
+          {(product?.material || product?.goldPricing?.isEnabled || product?.features ||
+            product?.sku || product?.dimensions || product?.occasion ||
+            product?.collectionName || product?.careInstructions) && (
             <View style={styles.detailsSection}>
               <Text style={styles.detailsLabel}>Product Details</Text>
+              {product?.sku && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailKey}>Product Code</Text>
+                  <Text style={styles.detailValue}>{product.sku}</Text>
+                </View>
+              )}
               {product?.material && (
                 <View style={styles.detailRow}>
                   <Text style={styles.detailKey}>Material</Text>
@@ -488,10 +498,34 @@ export default function ProductDetailScreen({ route, navigation }) {
                   <Text style={styles.detailValue}>{product.goldPricing.weightGrams}g</Text>
                 </View>
               )}
+              {product?.dimensions && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailKey}>Dimensions</Text>
+                  <Text style={styles.detailValue}>{product.dimensions}</Text>
+                </View>
+              )}
+              {product?.occasion && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailKey}>Occasion</Text>
+                  <Text style={styles.detailValue}>{product.occasion}</Text>
+                </View>
+              )}
+              {product?.collectionName && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailKey}>Collection</Text>
+                  <Text style={styles.detailValue}>{product.collectionName}</Text>
+                </View>
+              )}
               {product?.features && (
                 <View style={styles.detailRow}>
                   <Text style={styles.detailKey}>Features</Text>
                   <Text style={styles.detailValue}>{product.features}</Text>
+                </View>
+              )}
+              {product?.careInstructions && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailKey}>Care Instructions</Text>
+                  <Text style={styles.detailValue}>{product.careInstructions}</Text>
                 </View>
               )}
             </View>
@@ -520,7 +554,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                       </View>
                     )}
                     <Text style={styles.relatedName} numberOfLines={1}>{item.productName}</Text>
-                    <Text style={styles.relatedPrice}>₹{Number(item.discountPrice || item.price || 0).toLocaleString('en-IN')}</Text>
+                    <Text style={styles.relatedPrice}>₹{Number(getEffectivePrice(item)).toLocaleString('en-IN')}</Text>
                   </TouchableOpacity>
                 );
               })}

@@ -1,6 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { AppImages } from '../../constants/app.image';
+import { resizedImage } from '../../utils/imageProxy';
+
+// Falls back to the Swarnaz logo both when no image URL is available and
+// when the remote image fails to load (e.g. broken/expired S3 URL).
+function SummaryItemImage({ uri }) {
+  const [failed, setFailed] = useState(false);
+  if (!uri || failed) {
+    return <Image source={AppImages.jlogo} style={styles.itemImage} resizeMode="contain" />;
+  }
+  return (
+    <Image
+      source={{ uri: resizedImage(uri, 200) }}
+      style={styles.itemImage}
+      resizeMode="cover"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 const OrderSummaryModal = ({ visible, onClose, items = [] }) => (
   <Modal
@@ -23,7 +41,10 @@ const OrderSummaryModal = ({ visible, onClose, items = [] }) => (
             <Text style={{ textAlign: 'center', color: '#999', marginTop: 20 }}>No items</Text>
           ) : (
             items.map((item, index) => {
-              const imageUrl = item.productImages?.[0]?.url || item.image;
+              // Cart items snapshot the image onto `productImage` at add-time;
+              // item.productId is just an id string when unpopulated, so fall
+              // back to its populated productImages only if that ever changes.
+              const imageUrl = item.productImage || item.productId?.productImages?.[0]?.url;
               const name = item.productName || item.name || 'Product';
               const price = item.discountPrice || item.price || 0;
               const originalPrice = item.originalPrice || item.mrp || '';
@@ -32,13 +53,7 @@ const OrderSummaryModal = ({ visible, onClose, items = [] }) => (
 
               return (
                 <View key={item._id || item.id || index} style={styles.itemRow}>
-                  {imageUrl ? (
-                    <Image source={{ uri: imageUrl }} style={styles.itemImage} />
-                  ) : (
-                    <View style={[styles.itemImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
-                      <Text style={{ color: '#999', fontSize: 8 }}>No Image</Text>
-                    </View>
-                  )}
+                  <SummaryItemImage uri={imageUrl} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.itemName} numberOfLines={1}>{name}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
@@ -100,10 +115,11 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   itemImage: {
-    width: 75,
-    height: 75,
-    borderRadius: 12,
+    width: 70,
+    height: 70,
+    borderRadius: 10,
     marginRight: 12,
+    backgroundColor: '#f5f5f5',
   },
   itemName: {
     fontSize: 13,

@@ -5,10 +5,13 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../themes/Colors';
 import { AppImages } from '../../constants/app.image';
-import { fetchProductsByCategory, searchProducts, toggleWishlist as toggleWishlistAPI, addToCart } from '../../utils/api';
+import { fetchProductsByCategory, searchProducts, toggleWishlist as toggleWishlistAPI, addToCart, fetchWishlist } from '../../utils/api';
+import { getEffectivePrice } from '../../utils/price';
 import { useFocusEffect } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useCart } from '../../utils/CartContext';
+import CartBadge from '../../components/CartBadge';
+import { showToast } from '../../utils/toast';
 
 
 export default function EarringsListScreen({ navigation, route }) {
@@ -16,8 +19,12 @@ export default function EarringsListScreen({ navigation, route }) {
   const [wishlist, setWishlist] = useState({});
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const { refreshCart } = useCart();
+  const { refreshCart, cartCount } = useCart();
+  const PAGE_SIZE = 20;
 
   const handleAddToCart = async (product) => {
     try {
@@ -33,22 +40,50 @@ export default function EarringsListScreen({ navigation, route }) {
     }
   };
 
-  const loadProducts = async () => {
+  const loadProducts = async (pageNum = 1) => {
     try {
       let res;
       if (categoryId) {
-        res = await fetchProductsByCategory(categoryId);
+        res = await fetchProductsByCategory(categoryId, pageNum, PAGE_SIZE);
       } else {
-        res = await searchProducts(category || 'earrings');
+        res = await searchProducts(category || 'earrings', pageNum, PAGE_SIZE);
       }
       if (res?.code === 1 && res.data) {
         const list = res.data.products || res.data || [];
-        setProducts(Array.isArray(list) ? list : []);
+        const arr = Array.isArray(list) ? list : [];
+        setProducts(prev => (pageNum === 1 ? arr : [...prev, ...arr]));
+        const total = res.data.total ?? arr.length;
+        setHasMore(pageNum * PAGE_SIZE < total);
+        setPage(pageNum);
       }
     } catch (e) {
       console.log('Products load error:', e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreProducts = () => {
+    if (loading || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    loadProducts(page + 1);
+  };
+
+  const loadWishlist = async () => {
+    try {
+      const res = await fetchWishlist();
+      if (res?.code === 1 && res.data) {
+        const list = res.data.wishlist || res.data.items || res.data || [];
+        const map = {};
+        (Array.isArray(list) ? list : []).forEach((item) => {
+          const pid = item.productId?._id || item.productId || item._id;
+          if (pid) map[pid] = true;
+        });
+        setWishlist(map);
+      }
+    } catch (e) {
+      console.log('Wishlist load error:', e);
     }
   };
 
@@ -56,6 +91,7 @@ export default function EarringsListScreen({ navigation, route }) {
     useCallback(() => {
       setLoading(true);
       loadProducts();
+      loadWishlist();
     }, [categoryId])
   );
 
@@ -63,10 +99,14 @@ export default function EarringsListScreen({ navigation, route }) {
     if (!text || !text.trim()) return;
     setLoading(true);
     try {
-      const res = await searchProducts(text.trim());
+      const res = await searchProducts(text.trim(), 1, PAGE_SIZE);
       if (res?.code === 1 && res.data) {
         const list = res.data.products || res.data || [];
-        setProducts(Array.isArray(list) ? list : []);
+        const arr = Array.isArray(list) ? list : [];
+        setProducts(arr);
+        const total = res.data.total ?? arr.length;
+        setHasMore(PAGE_SIZE < total);
+        setPage(1);
       }
     } catch (e) {
       console.log('Search error:', e);
@@ -77,10 +117,20 @@ export default function EarringsListScreen({ navigation, route }) {
 
   const handleToggleWishlist = async (productId) => {
     try {
-      await toggleWishlistAPI(productId);
-      setWishlist(prev => ({ ...prev, [productId]: !prev[productId] }));
+      const res = await toggleWishlistAPI(productId);
+      if (res?.code === 1) {
+        // Trust the server's resulting state rather than blindly inverting
+        // local state — local state may not reflect what's actually saved
+        // (e.g. this screen just mounted and a previous toggle failed).
+        const nowWishlisted = res.data?.isWishlisted ?? !wishlist[productId];
+        setWishlist(prev => ({ ...prev, [productId]: nowWishlisted }));
+        showToast(nowWishlisted ? 'Added to Wishlist' : 'Removed from Wishlist', 'success');
+      } else {
+        Alert.alert('Error', res?.message || 'Failed to update wishlist');
+      }
     } catch (e) {
       console.log('Toggle wishlist error:', e);
+      Alert.alert('Error', 'Failed to update wishlist');
     }
   };
 
@@ -138,7 +188,7 @@ export default function EarringsListScreen({ navigation, route }) {
     const isWishlisted = wishlist[item._id];
     const imageUrl = item.productImages?.[0]?.url || (typeof item.image === 'string' ? item.image : item.image?.url);
     const originalPrice = item.price || 0;
-    const discountPrice = item.discountPrice || originalPrice;
+    const discountPrice = getEffectivePrice(item);
     const discount = originalPrice > discountPrice ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100) : 0;
 
     return (
@@ -215,8 +265,9 @@ export default function EarringsListScreen({ navigation, route }) {
           <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
             <Feather name="bell" size={22} color="#fff" style={{ marginLeft: 12 }} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Cart')} style={{ position: 'relative' }}>
             <Image source={AppImages.jbag} style={styles.headerIcon1} />
+            <CartBadge count={cartCount} />
           </TouchableOpacity>
         </View>
       </View>
@@ -266,7 +317,16 @@ export default function EarringsListScreen({ navigation, route }) {
           columnWrapperStyle={styles.productRow}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          onEndReached={loadMoreProducts}
+          onEndReachedThreshold={0.4}
           ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 40, color: '#888' }}>No products found.</Text>}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color={Colors.theme1} style={{ marginVertical: 16 }} />
+            ) : !hasMore && products.length > 0 ? (
+              <Text style={styles.endOfListText}>You've reached the end</Text>
+            ) : null
+          }
         />
       )}
     </View>
@@ -407,6 +467,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+  },
+  endOfListText: {
+    textAlign: 'center',
+    color: '#999',
+    fontSize: 12,
+    marginVertical: 16,
   },
   productRow: {
     justifyContent: 'space-between',

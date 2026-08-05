@@ -7,6 +7,7 @@ import {
 import Video from 'react-native-video';
 import { styles } from './styles';
 import { AppImages } from '../../constants/app.image';
+import { getEffectivePrice } from '../../utils/price';
 import { Colors } from '../../themes/Colors';
 import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,11 +20,14 @@ import Voice from '@react-native-voice/voice';
 import {
   fetchGoldPrices, fetchHomeCategories, fetchNewArrivals,
   fetchFeaturedProducts, globalSearch, imageSearch, fetchBanners,
-  fetchProductsByCategory, fetchSupportInfo,
+  fetchProductsByCategory, fetchSupportInfo, fetchWishlist, toggleWishlist,
 } from '../../utils/api';
 import { useLogo } from '../../utils/LogoContext';
 import { resizedImage } from '../../utils/imageProxy';
+import { showToast } from '../../utils/toast';
 import { useTranslation } from 'react-i18next';
+import { useCart } from '../../utils/CartContext';
+import CartBadge from '../../components/CartBadge';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -89,7 +93,50 @@ const Dashboard = ({ navigation }) => {
   // Voice search state
   const [voiceListening, setVoiceListening] = useState(false);
 
-  useEffect(() => { loadData(); }, []);
+  const { cartCount, refreshCart } = useCart();
+  const [wishlist, setWishlist] = useState({});
+
+  const loadWishlist = async () => {
+    try {
+      const res = await fetchWishlist();
+      if (res?.code === 1 && res.data) {
+        const list = res.data.wishlist || res.data.items || res.data || [];
+        const map = {};
+        (Array.isArray(list) ? list : []).forEach((item) => {
+          const pid = item.productId?._id || item.productId || item._id;
+          if (pid) map[pid] = true;
+        });
+        setWishlist(map);
+      }
+    } catch (e) {
+      console.log('Wishlist load error:', e);
+    }
+  };
+
+  const handleToggleWishlist = async (productId) => {
+    try {
+      const res = await toggleWishlist(productId);
+      if (res?.code === 1) {
+        const nowWishlisted = res.data?.isWishlisted ?? !wishlist[productId];
+        setWishlist(prev => ({ ...prev, [productId]: nowWishlisted }));
+        showToast(nowWishlisted ? 'Added to Wishlist' : 'Removed from Wishlist', 'success');
+      } else {
+        showToast(res?.message || 'Failed to update wishlist', 'error');
+      }
+    } catch (e) {
+      console.log('Toggle wishlist error:', e);
+      showToast('Failed to update wishlist', 'error');
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+    // Populate the cart badge on cold start too — otherwise it stays at its
+    // zustand-store default of 0 until the user adds something this session,
+    // even if their account already has items in the cart from before.
+    refreshCart();
+    loadWishlist();
+  }, []);
 
   // On-device speech recognition (no network/API key) — wires @react-native-voice/voice
   // events to the same debounced text search the search bar uses.
@@ -225,10 +272,10 @@ const Dashboard = ({ navigation }) => {
     await Promise.all(
       tabCats.map(async (cat) => {
         try {
-          const res = await fetchProductsByCategory(cat._id);
+          const res = await fetchProductsByCategory(cat._id, 1, 8);
           if (res?.code === 1 && res.data) {
             const list = res.data.products || res.data || [];
-            results[cat._id] = Array.isArray(list) ? list.slice(0, 4) : [];
+            results[cat._id] = Array.isArray(list) ? list.slice(0, 8) : [];
           }
         } catch (e) {
           results[cat._id] = [];
@@ -330,6 +377,23 @@ const Dashboard = ({ navigation }) => {
     ]);
   };
 
+  // banner.link is authored on the admin panel for the *website* (e.g.
+  // "/category/<id>" or "https://swarnaz.com/category/<id>"). Passing that
+  // straight to Linking.openURL kicked users out of the app into the phone
+  // browser even when it just pointed at content we already have native
+  // screens for. Resolve our own domain's paths in-app; only hand off to
+  // the browser for genuinely external links (social, etc.).
+  const OWN_HOSTS = ['swarnaz.com', 'adminswarnaz.com'];
+  const isObjectId = (s) => !!s && /^[a-f0-9]{24}$/i.test(s);
+  const internalPathFromLink = (link) => {
+    const trimmed = (link || '').trim();
+    if (trimmed.startsWith('/')) return trimmed;
+    const m = trimmed.match(/^https?:\/\/([^/]+)(\/.*)?$/i);
+    if (!m) return null;
+    const host = m[1].replace(/^www\./i, '').toLowerCase();
+    return OWN_HOSTS.includes(host) ? (m[2] || '/') : null;
+  };
+
   // Banner tap: play video, else open the banner's link / target product.
   const handleBannerPress = (banner, mediaUrl) => {
     if (isVideoUrl(mediaUrl)) {
@@ -339,11 +403,31 @@ const Dashboard = ({ navigation }) => {
     }
     if (banner?.productId) {
       navigation.navigate('ProductDetail', { productId: banner.productId });
-    } else if (banner?.categoryId) {
-      navigation.navigate('NecklaceList', { categoryId: banner.categoryId, categoryLabel: banner.title || 'Collection' });
-    } else if (banner?.link) {
-      Linking.openURL(banner.link).catch(() => {});
+      return;
     }
+    if (banner?.categoryId) {
+      navigation.navigate('NecklaceList', { categoryId: banner.categoryId, categoryLabel: banner.title || 'Collection' });
+      return;
+    }
+    if (!banner?.link) return;
+
+    const path = internalPathFromLink(banner.link);
+    if (path != null) {
+      const [section, slug] = path.split('/').filter(Boolean);
+      if (section === 'product' && slug) {
+        navigation.navigate('ProductDetail', { productId: slug });
+      } else if (section === 'category' && isObjectId(slug)) {
+        navigation.navigate('NecklaceList', { categoryId: slug, categoryLabel: banner.title || 'Collection' });
+      } else {
+        // Website-only slug/filter page (e.g. "new-arrivals", "offers") we
+        // don't have a matching native screen for yet — stay in the app
+        // instead of opening a browser to it.
+        navigation.navigate('Categories');
+      }
+      return;
+    }
+
+    Linking.openURL(banner.link).catch(() => {});
   };
 
   // Call support — pulls the support number from the backend (support-info).
@@ -506,7 +590,7 @@ const Dashboard = ({ navigation }) => {
                 )}
                 <View style={styles.productHInfo}>
                   <Text style={styles.productHName} numberOfLines={1}>{item.productName}</Text>
-                  <Text style={styles.productHPrice}>₹{formatPrice(item.discountPrice || item.price)}</Text>
+                  <Text style={styles.productHPrice}>₹{formatPrice(getEffectivePrice(item))}</Text>
                   {item.discountPercent > 0 && (
                     <Text style={styles.productHDiscount}>{item.discountPercent}% off</Text>
                   )}
@@ -565,7 +649,7 @@ const Dashboard = ({ navigation }) => {
 
     let gridProducts = [];
     if (activeTab === 'All') {
-      gridProducts = featuredProducts.slice(0, 4);
+      gridProducts = featuredProducts.slice(0, 8);
     } else {
       const cat = tabCats.find(c => c.name === activeTab);
       if (cat && tabProducts[cat._id]) {
@@ -600,13 +684,19 @@ const Dashboard = ({ navigation }) => {
                           <Text style={{ color: '#999', fontSize: 12 }}>No Image</Text>
                         </View>
                       )}
-                      <TouchableOpacity style={styles.wishlistBtn} activeOpacity={0.7}>
-                        <Text style={styles.wishlistHeart}>{'\u2661'}</Text>
+                      <TouchableOpacity
+                        style={styles.wishlistBtn}
+                        activeOpacity={0.7}
+                        onPress={(e) => { e.stopPropagation(); handleToggleWishlist(item._id); }}
+                      >
+                        <Text style={[styles.wishlistHeart, wishlist[item._id] && styles.wishlistHeartActive]}>
+                          {wishlist[item._id] ? '\u2665' : '\u2661'}
+                        </Text>
                       </TouchableOpacity>
                     </View>
                     {item.brand && <Text style={styles.productGridBrand} numberOfLines={1}>{item.brand}</Text>}
                     <Text style={styles.productGridName} numberOfLines={1}>{item.productName}</Text>
-                    <Text style={styles.productGridPrice}>₹{formatPrice(item.discountPrice || item.price)}</Text>
+                    <Text style={styles.productGridPrice}>₹{formatPrice(getEffectivePrice(item))}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -719,7 +809,7 @@ const Dashboard = ({ navigation }) => {
                   )}
                   <View style={styles.productHInfo}>
                     <Text style={styles.productHName} numberOfLines={1}>{item.productName}</Text>
-                    <Text style={styles.productHPrice}>₹{formatPrice(item.discountPrice || item.price)}</Text>
+                    <Text style={styles.productHPrice}>₹{formatPrice(getEffectivePrice(item))}</Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -793,7 +883,7 @@ const Dashboard = ({ navigation }) => {
                   {prod.productImages?.[0]?.url && <Image source={{ uri: resizedImage(prod.productImages[0].url, 200) }} style={styles.searchProductThumb} />}
                   <View style={{ flex: 1 }}>
                     <Text style={styles.searchResultText} numberOfLines={1}>{prod.productName}</Text>
-                    <Text style={styles.searchResultPrice}>₹{formatPrice(prod.discountPrice || prod.price)}</Text>
+                    <Text style={styles.searchResultPrice}>₹{formatPrice(getEffectivePrice(prod))}</Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -898,11 +988,12 @@ const Dashboard = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate('Cart')}
-            style={styles.headerIconWrapper}
+            style={[styles.headerIconWrapper, { position: 'relative' }]}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             activeOpacity={0.7}
           >
             <Ionicons name="cart-outline" size={26} color="#fff" />
+            <CartBadge count={cartCount} />
           </TouchableOpacity>
         </View>
       </View>

@@ -116,7 +116,7 @@ export default function MyProfileScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <BackHeader navigation={navigation} title="About" showBack={true} showLogo={false}
+      <BackHeader navigation={navigation} title="My Profile" showBack={true} showLogo={false}
         onBack={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}
         rightIconName="notifications-outline" onRightPress={() => navigation.navigate('Notification')} />
 

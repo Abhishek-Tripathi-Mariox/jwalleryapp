@@ -5,6 +5,7 @@ import { AppImages } from '../../constants/app.image';
 import { Colors } from '../../themes/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchCart, updateCartItem, placeOrder, applyCoupon } from '../../utils/api';
+import { resizedImage } from '../../utils/imageProxy';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCart } from '../../utils/CartContext';
 import { showToast } from '../../utils/toast';
@@ -12,8 +13,9 @@ import { showToast } from '../../utils/toast';
 const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
 
 function CheckoutItem({ item, onQtyChange }) {
+  const [imgFailed, setImgFailed] = useState(false);
   const product = item.productId || item;
-  const imageUrl = product.productImages?.[0]?.url || item.productImage;
+  const imageUrl = item.productImage || product.productImages?.[0]?.url;
   const currentQty = item.quantity || item.qty || 1;
   // item.discountPrice/unitPrice are snapshotted onto the cart item at
   // add-time; item.productId is just an id string when unpopulated (never a
@@ -25,12 +27,14 @@ function CheckoutItem({ item, onQtyChange }) {
 
   return (
     <View style={styles.cartItem}>
-      {imageUrl ? (
-        <Image source={{ uri: imageUrl }} style={styles.cartItemImage} />
+      {imageUrl && !imgFailed ? (
+        <Image
+          source={{ uri: resizedImage(imageUrl, 300) }}
+          style={styles.cartItemImage}
+          onError={() => setImgFailed(true)}
+        />
       ) : (
-        <View style={[styles.cartItemImage, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: '#999', fontSize: 10 }}>No Image</Text>
-        </View>
+        <Image source={AppImages.jlogo} style={[styles.cartItemImage, styles.cartItemImagePlaceholder]} resizeMode="contain" />
       )}
       <View style={{ flex: 1 }}>
         <Text style={styles.cartItemName} numberOfLines={2}>{product.productName || item.productName || product.brand || item.name || 'Product'}</Text>
@@ -227,6 +231,10 @@ const styles = StyleSheet.create({
     height: 140,
     marginRight: 14,
     resizeMode: 'cover',
+  },
+  cartItemImagePlaceholder: {
+    backgroundColor: '#f0f0f0',
+    padding: 24,
   },
   cartItemName: {
     fontSize: 16,

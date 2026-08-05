@@ -9,6 +9,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import { useCart } from '../../utils/CartContext';
 import { AppImages } from '../../constants/app.image';
+import { getEffectivePrice } from '../../utils/price';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -30,8 +31,12 @@ export default function CategoryScreen({ navigation }) {
   const [selectedCatId, setSelectedCatId] = useState(null);
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [loadingMoreProducts, setLoadingMoreProducts] = useState(false);
+  const [productsPage, setProductsPage] = useState(1);
+  const [productsHasMore, setProductsHasMore] = useState(true);
   const [wishlistedIds, setWishlistedIds] = useState(new Set());
   const { refreshCart, cartCount } = useCart();
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
     loadCategories();
@@ -76,24 +81,37 @@ export default function CategoryScreen({ navigation }) {
     }
   };
 
-  const loadProducts = async (catId) => {
-    setProductsLoading(true);
+  const loadProducts = async (catId, pageNum = 1) => {
+    if (pageNum === 1) setProductsLoading(true);
     try {
-      const res = await fetchProductsByCategory(catId);
+      const res = await fetchProductsByCategory(catId, pageNum, PAGE_SIZE);
       if (res?.code === 1 && res.data) {
         const list = res.data.products || res.data || [];
-        setProducts(Array.isArray(list) ? list : []);
+        const arr = Array.isArray(list) ? list : [];
+        setProducts(prev => (pageNum === 1 ? arr : [...prev, ...arr]));
+        const total = res.data.total ?? arr.length;
+        setProductsHasMore(pageNum * PAGE_SIZE < total);
+        setProductsPage(pageNum);
       }
     } catch (e) {
       console.log('Products load error:', e);
-      setProducts([]);
+      if (pageNum === 1) setProducts([]);
     } finally {
       setProductsLoading(false);
+      setLoadingMoreProducts(false);
     }
+  };
+
+  const loadMoreProducts = () => {
+    if (productsLoading || loadingMoreProducts || !productsHasMore || !selectedCatId) return;
+    setLoadingMoreProducts(true);
+    loadProducts(selectedCatId, productsPage + 1);
   };
 
   const handleCategoryPress = (cat) => {
     setSelectedCatId(cat._id);
+    setProductsPage(1);
+    setProductsHasMore(true);
     loadProducts(cat._id);
   };
 
@@ -202,7 +220,7 @@ export default function CategoryScreen({ navigation }) {
     });
 
     const originalPrice = item.price || 0;
-    const discountPrice = item.discountPrice || originalPrice;
+    const discountPrice = getEffectivePrice(item);
     const discount = originalPrice > discountPrice ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100) : 0;
     const isWishlisted = wishlistedIds.has(item._id);
 
@@ -346,11 +364,20 @@ export default function CategoryScreen({ navigation }) {
         ListHeaderComponent={ListHeader}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        onEndReached={loadMoreProducts}
+        onEndReachedThreshold={0.4}
         ListEmptyComponent={
           !productsLoading ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No products found in this category</Text>
             </View>
+          ) : null
+        }
+        ListFooterComponent={
+          loadingMoreProducts ? (
+            <ActivityIndicator size="small" color={Colors.theme1} style={{ marginVertical: 16 }} />
+          ) : !productsHasMore && products.length > 0 && !productsLoading ? (
+            <Text style={styles.endOfListText}>You've reached the end</Text>
           ) : null
         }
       />
@@ -365,6 +392,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+  },
+  endOfListText: {
+    textAlign: 'center',
+    color: '#999',
+    fontSize: 12,
+    marginVertical: 16,
   },
   // Search
   searchBarContainer: {

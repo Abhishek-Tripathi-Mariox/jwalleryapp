@@ -4,9 +4,12 @@ import { Colors } from '../../themes/Colors';
 import { AppImages } from '../../constants/app.image';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
-import { fetchProductsByCategory, searchProducts, toggleWishlist as toggleWishlistAPI, fetchCategories, addToCart } from '../../utils/api';
+import { fetchProductsByCategory, searchProducts, toggleWishlist as toggleWishlistAPI, fetchCategories, addToCart, fetchWishlist } from '../../utils/api';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCart } from '../../utils/CartContext';
+import { getEffectivePrice } from '../../utils/price';
+import CartBadge from '../../components/CartBadge';
+import { showToast } from '../../utils/toast';
 
 export default function NecklaceListScreen({ navigation, route }) {
   const { categoryId, categoryLabel, category, filters } = route.params || {};
@@ -15,7 +18,11 @@ export default function NecklaceListScreen({ navigation, route }) {
   const [wishlist, setWishlist] = useState({});
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { refreshCart } = useCart();
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const { refreshCart, cartCount } = useCart();
+  const PAGE_SIZE = 20;
 
   const handleAddToCart = async (product) => {
     try {
@@ -31,23 +38,34 @@ export default function NecklaceListScreen({ navigation, route }) {
     }
   };
 
-  const loadProducts = async () => {
+  const loadProducts = async (pageNum = 1) => {
     try {
       let res;
       if (categoryId) {
-        res = await fetchProductsByCategory(categoryId);
+        res = await fetchProductsByCategory(categoryId, pageNum, PAGE_SIZE);
       } else {
-        res = await searchProducts(category || 'necklace');
+        res = await searchProducts(category || 'necklace', pageNum, PAGE_SIZE);
       }
       if (res?.code === 1 && res.data) {
         const list = res.data.products || res.data || [];
-        setProducts(Array.isArray(list) ? list : []);
+        const arr = Array.isArray(list) ? list : [];
+        setProducts(prev => (pageNum === 1 ? arr : [...prev, ...arr]));
+        const total = res.data.total ?? arr.length;
+        setHasMore(pageNum * PAGE_SIZE < total);
+        setPage(pageNum);
       }
     } catch (e) {
       console.log('Products load error:', e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const loadMoreProducts = () => {
+    if (loading || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    loadProducts(page + 1);
   };
 
   const loadFilterChips = async () => {
@@ -62,20 +80,45 @@ export default function NecklaceListScreen({ navigation, route }) {
     }
   };
 
+  const loadWishlist = async () => {
+    try {
+      const res = await fetchWishlist();
+      if (res?.code === 1 && res.data) {
+        const list = res.data.wishlist || res.data.items || res.data || [];
+        const map = {};
+        (Array.isArray(list) ? list : []).forEach((item) => {
+          const pid = item.productId?._id || item.productId || item._id;
+          if (pid) map[pid] = true;
+        });
+        setWishlist(map);
+      }
+    } catch (e) {
+      console.log('Wishlist load error:', e);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
       loadProducts();
       loadFilterChips();
+      loadWishlist();
     }, [categoryId])
   );
 
   const handleToggleWishlist = async (productId) => {
     try {
-      await toggleWishlistAPI(productId);
-      setWishlist(prev => ({ ...prev, [productId]: !prev[productId] }));
+      const res = await toggleWishlistAPI(productId);
+      if (res?.code === 1) {
+        const nowWishlisted = res.data?.isWishlisted ?? !wishlist[productId];
+        setWishlist(prev => ({ ...prev, [productId]: nowWishlisted }));
+        showToast(nowWishlisted ? 'Added to Wishlist' : 'Removed from Wishlist', 'success');
+      } else {
+        Alert.alert('Error', res?.message || 'Failed to update wishlist');
+      }
     } catch (e) {
       console.log('Toggle wishlist error:', e);
+      Alert.alert('Error', 'Failed to update wishlist');
     }
   };
 
@@ -83,7 +126,7 @@ export default function NecklaceListScreen({ navigation, route }) {
     const isWishlisted = wishlist[item._id];
     const imageUrl = item.productImages?.[0]?.url || (typeof item.image === 'string' ? item.image : item.image?.url);
     const originalPrice = item.price || 0;
-    const discountPrice = item.discountPrice || originalPrice;
+    const discountPrice = getEffectivePrice(item);
     const discount = originalPrice > discountPrice ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100) : 0;
 
     return (
@@ -160,8 +203,9 @@ export default function NecklaceListScreen({ navigation, route }) {
           <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
             <Feather name="bell" size={22} color="#fff" style={{ marginLeft: 12 }} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Cart')} style={{ position: 'relative' }}>
             <Image source={AppImages.jbag} style={styles.headerIcon1} />
+            <CartBadge count={cartCount} />
           </TouchableOpacity>
         </View>
       </View>
@@ -206,7 +250,16 @@ export default function NecklaceListScreen({ navigation, route }) {
           columnWrapperStyle={styles.productRow}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          onEndReached={loadMoreProducts}
+          onEndReachedThreshold={0.4}
           ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 40, color: '#888' }}>No products found.</Text>}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color={Colors.theme1} style={{ marginVertical: 16 }} />
+            ) : !hasMore && products.length > 0 ? (
+              <Text style={styles.endOfListText}>You've reached the end</Text>
+            ) : null
+          }
         />
       )}
     </View>
@@ -339,6 +392,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+  },
+  endOfListText: {
+    textAlign: 'center',
+    color: '#999',
+    fontSize: 12,
+    marginVertical: 16,
   },
   productRow: {
     justifyContent: 'space-between',

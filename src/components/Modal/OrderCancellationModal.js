@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { Image } from 'react-native-svg';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -12,10 +12,33 @@ const DEFAULT_REASONS = [
   'Accidental order placement',
 ];
 
-export default function OrderCancellationModal({ visible, onClose, onSubmit, reasons: propReasons, orderId }) {
+export default function OrderCancellationModal({ visible, onClose, onSubmit, reasons: propReasons, orderId, submitting }) {
   const reasons = propReasons && propReasons.length > 0 ? propReasons : DEFAULT_REASONS;
-  const [selectedReason, setSelectedReason] = useState(reasons[0]);
+  // No reason pre-selected — Submit stays disabled until the user actually
+  // picks one (see Validation requirement: can't submit without a reason).
+  const [selectedReason, setSelectedReason] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [showValidationError, setShowValidationError] = useState(false);
+
+  // Reset per-order so a stale reason/feedback from a previous cancellation
+  // doesn't carry over when this modal is reopened for a different order.
+  useEffect(() => {
+    if (visible) {
+      setSelectedReason(null);
+      setFeedback('');
+      setShowValidationError(false);
+    }
+  }, [visible, orderId]);
+
+  const handleSubmit = () => {
+    if (!selectedReason) {
+      setShowValidationError(true);
+      return;
+    }
+    if (onSubmit) {
+      onSubmit({ reason: selectedReason, feedback, orderId });
+    }
+  };
 
   return (
     <Modal
@@ -41,17 +64,29 @@ export default function OrderCancellationModal({ visible, onClose, onSubmit, rea
           </Text>
 
           <View style={styles.reasonsContainer}>
-            {reasons.map((reason, idx) => (
-              <TouchableOpacity
-                key={reason}
-                style={styles.reasonRow}
-                onPress={() => setSelectedReason(reason)}
-              >
-                <View style={selectedReason === reason ? styles.radioSelected : styles.radio} />
-                <Text style={styles.reasonText}>{reason}</Text>
-              </TouchableOpacity>
-            ))}
+            {reasons.map((reason) => {
+              const isSelected = selectedReason === reason;
+              return (
+                <TouchableOpacity
+                  key={reason}
+                  style={[styles.reasonRow, isSelected && styles.reasonRowSelected]}
+                  onPress={() => {
+                    setSelectedReason(reason);
+                    setShowValidationError(false);
+                  }}
+                >
+                  <View style={isSelected ? styles.radioSelected : styles.radio}>
+                    {isSelected ? <View style={styles.radioDot} /> : null}
+                  </View>
+                  <Text style={[styles.reasonText, isSelected && styles.reasonTextSelected]}>{reason}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
+
+          {showValidationError ? (
+            <Text style={styles.validationText}>Please select a cancellation reason.</Text>
+          ) : null}
 
           <TextInput
             style={styles.textInput}
@@ -63,13 +98,12 @@ export default function OrderCancellationModal({ visible, onClose, onSubmit, rea
             numberOfLines={3}
           />
 
-          <TouchableOpacity style={styles.submitBtn} onPress={() => {
-            if (onSubmit) {
-              onSubmit({ reason: selectedReason, feedback, orderId });
-            }
-            onClose();
-          }}>
-            <Text style={styles.submitBtnText}>Submit</Text>
+          <TouchableOpacity
+            style={[styles.submitBtn, (!selectedReason || submitting) && styles.submitBtnDisabled]}
+            onPress={handleSubmit}
+            disabled={submitting}
+          >
+            <Text style={styles.submitBtnText}>{submitting ? 'Cancelling...' : 'Submit'}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelLink} onPress={onClose}>
             <Text style={styles.cancelLinkText}>Nah, I changed my mind! go back to my order</Text>
@@ -155,6 +189,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '48%',
     marginBottom: 8,
+    padding: 6,
+    borderRadius: 8,
+  },
+  reasonRowSelected: {
+    backgroundColor: '#FDEBEC',
   },
   radio: {
     width: 18,
@@ -164,19 +203,38 @@ const styles = StyleSheet.create({
     borderColor: '#C4C4C4',
     marginRight: 8,
     backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   radioSelected: {
     width: 18,
     height: 18,
     borderRadius: 9,
     borderWidth: 2,
-    borderColor: '#504e4eff',
+    borderColor: '#E63030',
     marginRight: 8,
     backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#E63030',
   },
   reasonText: {
     color: '#000000',
     fontSize: 12,
+  },
+  reasonTextSelected: {
+    color: '#E63030',
+    fontWeight: 'bold',
+  },
+  validationText: {
+    color: '#E63030',
+    fontSize: 11,
+    marginBottom: 8,
   },
   textInput: {
     borderWidth: 1,
@@ -196,6 +254,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     marginBottom: 8,
+  },
+  submitBtnDisabled: {
+    opacity: 0.5,
   },
   submitBtnText: {
     color: '#E63030',

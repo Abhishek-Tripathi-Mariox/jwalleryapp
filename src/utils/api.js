@@ -74,12 +74,12 @@ export const imageSearch = async (asset) => {
 // ── Categories ────────────────────────────────────────
 export const fetchCategories = () => request('/user/categories');
 export const fetchCategoryById = (id) => request(`/user/categories/${id}`);
-export const fetchProductsByCategory = (catId) =>
-  request(`/user/categories/${catId}/products`);
+export const fetchProductsByCategory = (catId, page = 1, limit = 20) =>
+  request(`/user/categories/${catId}/products?page=${page}&limit=${limit}`);
 
 // ── Products ──────────────────────────────────────────
-export const searchProducts = (q) =>
-  request(`/user/products/search?q=${encodeURIComponent(q)}`);
+export const searchProducts = (q, page = 1, limit = 20) =>
+  request(`/user/products/search?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`);
 export const fetchNewArrivals = () => request('/user/products/new-arrivals');
 export const browseProducts = (params = {}) => {
   const qs = new URLSearchParams(params).toString();

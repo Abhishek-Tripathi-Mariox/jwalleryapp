@@ -6,6 +6,7 @@ import { AppImages } from '../../constants/app.image';
 import { fetchWishlist, removeFromWishlist } from '../../utils/api';
 import { useFocusEffect } from '@react-navigation/native';
 import BackHeader from '../../components/Header/BackHeader';
+import { getEffectivePrice } from '../../utils/price';
 
 export default function WishlistScreen({ navigation }) {
     const [items, setItems] = useState([]);
@@ -46,7 +47,7 @@ export default function WishlistScreen({ navigation }) {
         const pid = (typeof item.productId === 'string' ? item.productId : prodObj?._id) || item._id;
         const imageUrl = item.productImage || item.productImages?.[0]?.url || prodObj?.productImages?.[0]?.url;
         const name = item.productName || prodObj?.productName || 'Product';
-        const price = item.discountPrice || item.price || prodObj?.discountPrice || prodObj?.price || 0;
+        const price = getEffectivePrice(prodObj || item);
         const rating = item.rating || prodObj?.rating || 0;
 
         return (

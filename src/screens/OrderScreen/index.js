@@ -8,6 +8,7 @@ import {
   ScrollView,
   Dimensions,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { AppImages } from '../../constants/app.image';
@@ -18,10 +19,50 @@ import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
 import { fetchOrders, cancelOrder, reorder } from '../../utils/api';
 import { useFocusEffect } from '@react-navigation/native';
+import { showToast } from '../../utils/toast';
 
 const { width } = Dimensions.get('window');
 
 const TABS = ['Ongoing', 'Complete', 'Review'];
+
+// Backend OrderService.getUserOrders only recognizes these three literal
+// keywords ("ongoing" | "complete" | "cancelled"); anything else silently
+// matches no case and returns ALL orders unfiltered for every tab.
+const statusMap = ['ongoing', 'complete', 'complete'];
+
+// Mirrors backend OrderService.cancelOrder, which rejects status >= 3
+// (On the Way / Delivered / Cancelled) — only Order Received (1) and
+// Ready to Ship (2) can still be cancelled.
+const isCancellable = (order) => (order?.status || 1) < 3;
+
+// Keep in sync with backend OrderController's statusLabels map.
+const STATUS_BADGES = {
+  1: { label: 'Order Received', color: '#2947DF' },
+  2: { label: 'Ready to Ship', color: '#B8860B' },
+  3: { label: 'On the Way', color: '#0E8345' },
+  4: { label: 'Delivered', color: '#0E8345' },
+  5: { label: 'Cancelled', color: '#E63030' },
+};
+
+const formatUpdatedAt = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+};
+
+function StatusBadge({ order }) {
+  const badge = STATUS_BADGES[order?.status] || STATUS_BADGES[1];
+  const updated = formatUpdatedAt(order?.updatedAt);
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, flexWrap: 'wrap' }}>
+      <View style={[styles.statusBadge, { backgroundColor: `${badge.color}1A`, borderColor: badge.color }]}>
+        <Text style={[styles.statusBadgeText, { color: badge.color }]}>{badge.label}</Text>
+      </View>
+      {updated ? <Text style={styles.statusUpdatedText}>Updated {updated}</Text> : null}
+    </View>
+  );
+}
 
 export default function OrderScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState(0);
@@ -31,11 +72,11 @@ export default function OrderScreen({ navigation }) {
   const [cancellationModalVisible, setCancellationModalVisible] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
-  const statusMap = ['pending,confirmed,shipped', 'delivered', 'delivered'];
-
-  const loadOrders = async (tabIdx) => {
-    setLoading(true);
+  const loadOrders = async (tabIdx, { silent = false } = {}) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetchOrders(statusMap[tabIdx]);
       if (res?.code === 1 && res.data) {
@@ -48,8 +89,14 @@ export default function OrderScreen({ navigation }) {
       console.log('Orders load error:', e);
       setOrders([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
+  };
+
+  const handlePullRefresh = async () => {
+    setRefreshing(true);
+    await loadOrders(activeTab, { silent: true });
+    setRefreshing(false);
   };
 
   useFocusEffect(
@@ -58,14 +105,30 @@ export default function OrderScreen({ navigation }) {
     }, [activeTab])
   );
 
-  const handleCancelOrder = async (orderId) => {
+  const handleConfirmCancel = () => {
+    // "Don't cancel" vs "Cancel Order" in the confirm modal — proceeding
+    // moves to reason selection; the actual API call happens on submit.
+    setCancelModalVisible(false);
+    setCancellationModalVisible(true);
+  };
+
+  const handleSubmitCancellation = async ({ reason }) => {
+    if (!selectedOrder?._id) return;
+    setCancelling(true);
     try {
-      await cancelOrder(orderId);
-      setCancelModalVisible(false);
-      setCancellationModalVisible(true);
-      loadOrders(activeTab);
+      const res = await cancelOrder(selectedOrder._id, reason);
+      if (res?.code === 1) {
+        showToast('Your order has been cancelled successfully.', 'success');
+        setCancellationModalVisible(false);
+        loadOrders(activeTab);
+      } else {
+        showToast(res?.message || 'Could not cancel the order. Please try again.', 'error');
+      }
     } catch (e) {
       console.log('Cancel order error:', e);
+      showToast('Could not cancel the order. Please try again.', 'error');
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -104,15 +167,29 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
             {name}
           </Text>
           <Text style={styles.orderPrice}>₹ {price}</Text>
-          <TouchableOpacity
-            style={styles.trackBtn}
-            onPress={() => {
-              setSelectedOrder(order);
-              setTrackModalVisible(true);
-            }}
-          >
-            <Text style={styles.trackBtnText}>Track Order</Text>
-          </TouchableOpacity>
+          <StatusBadge order={order} />
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              style={styles.trackBtn}
+              onPress={() => {
+                setSelectedOrder(order);
+                setTrackModalVisible(true);
+              }}
+            >
+              <Text style={styles.trackBtnText}>Track Order</Text>
+            </TouchableOpacity>
+            {isCancellable(order) && (
+              <TouchableOpacity
+                style={[styles.cancelBtn, { marginLeft: 8 }]}
+                onPress={() => {
+                  setSelectedOrder(order);
+                  setCancelModalVisible(true);
+                }}
+              >
+                <Text style={styles.cancelBtnText}>Cancel Order</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     );
@@ -126,18 +203,10 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
             {name}
           </Text>
           <Text style={styles.orderPrice}>₹ {price}</Text>
+          <StatusBadge order={order} />
           <Text style={styles.deliveredText}>
             Delivered on {deliveredDate}
           </Text>
-          <TouchableOpacity
-            style={styles.cancelBtn}
-            onPress={() => {
-              setSelectedOrder(order);
-              setCancelModalVisible(true);
-            }}
-          >
-            <Text style={styles.cancelBtnText}>Cancel Order</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.orderAgainBtn} onPress={() => handleReorder(order._id)}>
             <Text style={styles.orderAgainBtnText}>Order Again</Text>
           </TouchableOpacity>
@@ -204,7 +273,12 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
       </View>
 
       {/* Order List */}
-      <ScrollView contentContainerStyle={styles.orderList}>
+      <ScrollView
+        contentContainerStyle={styles.orderList}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handlePullRefresh} colors={[Colors.theme1]} tintColor={Colors.theme1} />
+        }
+      >
         {loading ? (
           <ActivityIndicator size="large" color={Colors.theme1} style={{ marginTop: 40 }} />
         ) : orders.length === 0 ? (
@@ -240,15 +314,15 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
         visible={cancelModalVisible}
         onClose={() => setCancelModalVisible(false)}
         order={selectedOrder}
-        onCancelOrder={() => {
-          setCancelModalVisible(false);
-          setCancellationModalVisible(true);
-        }}
+        onCancelOrder={handleConfirmCancel}
         navigation={navigation}
       />
       <OrderCancellationModal
         visible={cancellationModalVisible}
         onClose={() => setCancellationModalVisible(false)}
+        onSubmit={handleSubmitCancellation}
+        submitting={cancelling}
+        orderId={selectedOrder?._id}
       />
     </View>
   );
@@ -384,6 +458,24 @@ const styles = StyleSheet.create({
     color: '#1D262D',
     marginBottom: 2,
     fontWeight:'500'
+  },
+  statusBadge: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginRight: 6,
+    marginBottom: 4,
+    alignSelf: 'flex-start',
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  statusUpdatedText: {
+    fontSize: 10,
+    color: '#999',
+    marginBottom: 4,
   },
   deliveredText: {
     fontSize: 11,
