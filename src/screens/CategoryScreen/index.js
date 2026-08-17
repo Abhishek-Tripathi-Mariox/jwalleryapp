@@ -7,8 +7,10 @@ import { fetchCategories, fetchProductsByCategory, addToCart, toggleWishlist, fe
 import BackHeader from '../../components/Header/BackHeader';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useCart } from '../../utils/CartContext';
 import { AppImages } from '../../constants/app.image';
+import CartBadge from '../../components/CartBadge';
 import { getEffectivePrice } from '../../utils/price';
 
 const { width } = Dimensions.get('window');
@@ -107,6 +109,19 @@ export default function CategoryScreen({ navigation }) {
     setLoadingMoreProducts(true);
     loadProducts(selectedCatId, productsPage + 1);
   };
+
+  // FlatList's onEndReached never fires if the first page doesn't fill the
+  // screen (nothing to scroll) — that silently strands the last few items
+  // (e.g. a 24-product category showing only the first 20). Once we know the
+  // rendered content is shorter than the visible area, fetch the next page
+  // ourselves instead of waiting for a scroll that can't happen.
+  const [productListHeight, setProductListHeight] = useState(0);
+  const [productContentHeight, setProductContentHeight] = useState(0);
+  useEffect(() => {
+    if (!productsLoading && !loadingMoreProducts && productsHasMore && productListHeight > 0 && productContentHeight > 0 && productContentHeight <= productListHeight) {
+      loadMoreProducts();
+    }
+  }, [productListHeight, productContentHeight, productsHasMore, productsLoading, loadingMoreProducts]);
 
   const handleCategoryPress = (cat) => {
     setSelectedCatId(cat._id);
@@ -351,8 +366,17 @@ export default function CategoryScreen({ navigation }) {
         title="CATEGORIES"
         showBack={false}
         showLogo={true}
-        rightIconName="notifications-outline"
-        onRightPress={() => navigation.navigate('Notification')}
+        rightComponent={
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => navigation.navigate('Notification')} style={{ marginRight: 16 }}>
+              <Ionicons name="notifications-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Cart')} style={{ position: 'relative' }}>
+              <Ionicons name="cart-outline" size={26} color="#fff" />
+              <CartBadge count={cartCount} />
+            </TouchableOpacity>
+          </View>
+        }
       />
 
       <FlatList
@@ -366,6 +390,8 @@ export default function CategoryScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         onEndReached={loadMoreProducts}
         onEndReachedThreshold={0.4}
+        onLayout={(e) => setProductListHeight(e.nativeEvent.layout.height)}
+        onContentSizeChange={(w, h) => setProductContentHeight(h)}
         ListEmptyComponent={
           !productsLoading ? (
             <View style={styles.emptyContainer}>

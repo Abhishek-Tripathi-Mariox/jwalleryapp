@@ -9,6 +9,7 @@ import {
   Dimensions,
   ActivityIndicator,
   RefreshControl,
+  BackHandler,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { AppImages } from '../../constants/app.image';
@@ -102,7 +103,27 @@ export default function OrderScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       loadOrders(activeTab);
+      // Admin-side status changes aren't pushed to the app — poll while this
+      // screen is focused so badges stay current without a manual pull-to-refresh.
+      const interval = setInterval(() => loadOrders(activeTab, { silent: true }), 20000);
+      return () => clearInterval(interval);
     }, [activeTab])
+  );
+
+  // OrderScreen can end up with nothing beneath it in the stack (e.g. after
+  // certain login-flow paths) — with no BackHandler, Android's hardware back
+  // button then falls through to the OS default and exits the app instead of
+  // just leaving this screen. Send the user to the main tabs in that case.
+  useFocusEffect(
+    useCallback(() => {
+      const onHardwareBack = () => {
+        if (navigation.canGoBack()) return false;
+        navigation.navigate('MainTabs');
+        return true;
+      };
+      const sub = BackHandler.addEventListener('hardwareBackPress', onHardwareBack);
+      return () => sub.remove();
+    }, [navigation])
   );
 
   const handleConfirmCancel = () => {
@@ -243,6 +264,7 @@ function renderCard(order, tab, setTrackModalVisible, setSelectedOrder, setCance
       {/* Header */}
      <BackHeader
           navigation={navigation}
+          onBack={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('MainTabs'))}
           title="ORDER"
         />
 

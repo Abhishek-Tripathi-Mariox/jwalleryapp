@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions, Modal, PanResponder, TextInput, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../themes/Colors';
-import { fetchProductDetails, addToCart, toggleWishlist, fetchWishlist, browseProducts, fetchCoupons } from '../../utils/api';
+import { fetchProductDetails, addToCart, toggleWishlist, fetchWishlist, browseProducts, fetchCoupons, fetchFeaturedProducts, fetchNewArrivals } from '../../utils/api';
 import { resizedImage } from '../../utils/imageProxy';
 import { getEffectivePrice } from '../../utils/price';
 import { useCart } from '../../utils/CartContext';
@@ -10,6 +10,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CartBadge from '../../components/CartBadge';
 
 const { width } = Dimensions.get('window');
 
@@ -90,15 +91,32 @@ export default function ProductDetailScreen({ route, navigation }) {
   }, [product]);
 
   // Fetch related products from the same category (shown on the same page).
+  // Falls back to featured/new-arrivals when the category has nothing else
+  // in it (or the product has no category) — matches the website's logic,
+  // instead of just hiding the whole "You may also like" section.
   useEffect(() => {
     const catId = product?.categoryId?._id || product?.categoryId;
     const currentId = product?._id || productId;
-    if (!catId) return;
+    if (!product) return;
     (async () => {
       try {
-        const res = await browseProducts({ categoryIds: catId, limit: 12 });
-        const list = res?.data?.products || res?.data || [];
-        setRelatedProducts((Array.isArray(list) ? list : []).filter(p => p._id !== currentId).slice(0, 10));
+        let list = [];
+        if (catId) {
+          const res = await browseProducts({ categoryIds: catId, limit: 12 });
+          list = res?.data?.products || res?.data || [];
+          list = (Array.isArray(list) ? list : []).filter(p => p._id !== currentId);
+        }
+        if (!list.length) {
+          const res = await fetchFeaturedProducts();
+          list = Array.isArray(res?.data) ? res.data : res?.data?.products || [];
+          list = list.filter(p => p._id !== currentId);
+        }
+        if (!list.length) {
+          const res = await fetchNewArrivals();
+          list = Array.isArray(res?.data) ? res.data : res?.data?.products || [];
+          list = list.filter(p => p._id !== currentId);
+        }
+        setRelatedProducts(list.slice(0, 10));
       } catch (e) {
         console.log('Related products error:', e);
       }
@@ -234,12 +252,8 @@ export default function ProductDetailScreen({ route, navigation }) {
             <AntDesign name={wishlisted ? 'heart' : 'hearto'} size={22} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Cart')} style={styles.cartBtn}>
-            <Feather name="shopping-cart" size={22} color="#fff" />
-            {cartCount > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>{cartCount > 99 ? '99+' : cartCount}</Text>
-              </View>
-            )}
+            <Ionicons name="cart-outline" size={26} color="#fff" />
+            <CartBadge count={cartCount} />
           </TouchableOpacity>
         </View>
       </View>

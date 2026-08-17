@@ -8,7 +8,7 @@ import OrderPlacedModal from '../../components/Modal/OrderPlacedModal';
 import OrderTrackModal from '../../components/Modal/OrderTrackModal';
 import { Colors } from '../../themes/Colors';
 import BackHeader from '../../components/Header/BackHeader';
-import { fetchCart, fetchAddresses, fetchCoupons, applyCoupon, placeOrder, verifyPayment, fetchBanners } from '../../utils/api';
+import { fetchCart, fetchAddresses, fetchCoupons, applyCoupon, removeCoupon, placeOrder, verifyPayment, fetchBanners } from '../../utils/api';
 import RazorpayCheckout from 'react-native-razorpay';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -23,11 +23,18 @@ const OrderPaymentScreen = ({ navigation }) => {
   const [cartItems, setCartItems] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
   const [cartOriginalTotal, setCartOriginalTotal] = useState(0);
+  const [cartShipping, setCartShipping] = useState(0);
+  const [cartPlatformFee, setCartPlatformFee] = useState(0);
+  const [cartGst, setCartGst] = useState(0);
   const [address, setAddress] = useState(null);
-  const [couponCode, setCouponCode] = useState('');
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [couponCount, setCouponCount] = useState(0);
   const [promoBanner, setPromoBanner] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [paymentMode, setPaymentMode] = useState('online'); // 'online' or 'cod'
   const [placedOrder, setPlacedOrder] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState('gpay');
@@ -46,6 +53,7 @@ const OrderPaymentScreen = ({ navigation }) => {
 
   const loadCheckoutData = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const [cartRes, addrRes, couponRes, bannerRes] = await Promise.all([
         fetchCart(),
@@ -61,6 +69,15 @@ const OrderPaymentScreen = ({ navigation }) => {
         // any coupon discount; subtotal is the pre-coupon sum.
         setCartTotal(cart.grandTotal ?? cart.subtotal ?? 0);
         setCartOriginalTotal(cart.subtotal ?? cart.grandTotal ?? 0);
+        setCartShipping(cart.shippingCost || 0);
+        setCartPlatformFee(cart.platformFee || 0);
+        setCartGst(cart.gstAmount || 0);
+        setAppliedCoupon(cart.couponCode || '');
+        setCouponDiscount(Number(cart.couponDiscount) || 0);
+      } else {
+        // A bad (non-throwing) response left cartTotal at its 0 default —
+        // that's the "payable amount shows zero" bug, not an empty cart.
+        setLoadError(true);
       }
       if (addrRes?.code === 1 && addrRes.data) {
         const addresses = Array.isArray(addrRes.data) ? addrRes.data : addrRes.data.addresses || [];
@@ -81,20 +98,40 @@ const OrderPaymentScreen = ({ navigation }) => {
       }
     } catch (e) {
       console.log('Checkout data error:', e);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
   };
 
   const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
+    if (!couponInput.trim()) return;
+    setApplyingCoupon(true);
     try {
-      const res = await applyCoupon(couponCode);
+      const res = await applyCoupon(couponInput.trim());
       if (res?.code === 1) {
-        loadCheckoutData();
+        setCouponInput('');
+        await loadCheckoutData();
+      } else {
+        Alert.alert('Coupon', res?.message || 'Could not apply this coupon.');
       }
     } catch (e) {
       console.log('Apply coupon error:', e);
+      Alert.alert('Coupon', 'Could not apply coupon. Please try again.');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    setApplyingCoupon(true);
+    try {
+      await removeCoupon();
+      await loadCheckoutData();
+    } catch (e) {
+      console.log('Remove coupon error:', e);
+    } finally {
+      setApplyingCoupon(false);
     }
   };
 
@@ -177,6 +214,22 @@ const OrderPaymentScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} edges={['bottom']}>
         <ActivityIndicator size="large" color={Colors.theme1} />
+      </SafeAreaView>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }} edges={['bottom']}>
+        <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 16 }}>
+          Could not load your checkout details. Please try again.
+        </Text>
+        <TouchableOpacity
+          style={{ backgroundColor: Colors.theme1, paddingVertical: 12, paddingHorizontal: 28, borderRadius: 24 }}
+          onPress={loadCheckoutData}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Retry</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }
@@ -317,36 +370,62 @@ const OrderPaymentScreen = ({ navigation }) => {
           {/* Offer & Deals */}
           <Text style={styles.groupTitle}>Offer & Deals</Text>
           <View style={styles.couponBox}>
-            <TextInput
-              placeholder="Enter coupon code"
-              style={styles.couponInput}
-              placeholderTextColor="#999"
-              value={couponCode}
-              onChangeText={setCouponCode}
-              onSubmitEditing={handleApplyCoupon}
-            />
-            <View style={styles.couponRow}>
-              <Image source={require('../../assets/images/discount.png')} style={styles.couponIcon} />
-              <Text style={styles.couponText}>{couponCount} coupons available</Text>
-              <TouchableOpacity style={styles.changeBtn} onPress={handleApplyCoupon}>
-                <Text style={styles.changeBtnText}>Apply</Text>
-              </TouchableOpacity>
-            </View>
+            {appliedCoupon ? (
+              <View style={styles.couponRow}>
+                <Image source={require('../../assets/images/discount.png')} style={styles.couponIcon} />
+                <Text style={[styles.couponText, { color: '#1DA851' }]}>
+                  “{appliedCoupon}” applied{couponDiscount > 0 ? ` — you saved ₹${couponDiscount.toLocaleString('en-IN')}` : ''}
+                </Text>
+                <TouchableOpacity style={styles.changeBtn} onPress={handleRemoveCoupon} disabled={applyingCoupon}>
+                  <Text style={styles.changeBtnText}>{applyingCoupon ? '...' : 'Remove'}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <TextInput
+                  placeholder="Enter coupon code"
+                  style={styles.couponInput}
+                  placeholderTextColor="#999"
+                  value={couponInput}
+                  onChangeText={setCouponInput}
+                  onSubmitEditing={handleApplyCoupon}
+                  editable={!applyingCoupon}
+                />
+                <View style={styles.couponRow}>
+                  <Image source={require('../../assets/images/discount.png')} style={styles.couponIcon} />
+                  <Text style={styles.couponText}>{couponCount} coupons available</Text>
+                  <TouchableOpacity style={styles.changeBtn} onPress={handleApplyCoupon} disabled={applyingCoupon}>
+                    <Text style={styles.changeBtnText}>{applyingCoupon ? '...' : 'Apply'}</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         </ScrollView>
         </KeyboardAvoidingView>
 
         {/* Pay Button */}
         <TouchableOpacity
-          style={[styles.payBottomBtn, placing && { opacity: 0.6 }]}
+          style={[styles.payBottomBtn, (placing || cartTotal <= 0) && { opacity: 0.6 }]}
           onPress={handlePay}
-          disabled={placing}
+          disabled={placing || cartTotal <= 0}
         >
           <Text style={styles.payBottomBtnText}>
             {placing ? 'PLACING ORDER...' : paymentMode === 'cod' ? 'Place Order (COD)' : 'Pay Now'}
           </Text>
         </TouchableOpacity>
-        <OrderSummaryModal visible={summaryVisible} onClose={() => setSummaryVisible(false)} items={cartItems} />
+        <OrderSummaryModal
+          visible={summaryVisible}
+          onClose={() => setSummaryVisible(false)}
+          items={cartItems}
+          subtotal={cartOriginalTotal}
+          shipping={cartShipping}
+          platformFee={cartPlatformFee}
+          gst={cartGst}
+          couponCode={appliedCoupon}
+          couponDiscount={couponDiscount}
+          total={cartTotal}
+        />
         <OrderPlacedModal
           visible={orderPlacedVisible}
           onClose={() => setOrderPlacedVisible(false)}

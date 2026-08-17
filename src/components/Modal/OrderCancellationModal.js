@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { Image } from 'react-native-svg';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { AppImages } from '../../constants/app.image';
@@ -35,9 +35,18 @@ export default function OrderCancellationModal({ visible, onClose, onSubmit, rea
       setShowValidationError(true);
       return;
     }
-    if (onSubmit) {
-      onSubmit({ reason: selectedReason, feedback, orderId });
-    }
+    Alert.alert(
+      'Cancel this order?',
+      `Reason: ${selectedReason}\n\nThis can't be undone once submitted.`,
+      [
+        { text: 'Go back', style: 'cancel' },
+        {
+          text: 'Yes, cancel order',
+          style: 'destructive',
+          onPress: () => onSubmit && onSubmit({ reason: selectedReason, feedback, orderId }),
+        },
+      ],
+    );
   };
 
   return (
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   reasonRowSelected: {
-    backgroundColor: '#FDEBEC',
+    backgroundColor: '#E9F8EE',
   },
   radio: {
     width: 18,
@@ -206,12 +215,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Green = a valid reason has been picked; red is reserved for the
+  // validation error shown when the user tries to submit with none selected.
   radioSelected: {
     width: 18,
     height: 18,
     borderRadius: 9,
     borderWidth: 2,
-    borderColor: '#E63030',
+    borderColor: '#1E9E52',
     marginRight: 8,
     backgroundColor: '#fff',
     alignItems: 'center',
@@ -221,14 +232,14 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#E63030',
+    backgroundColor: '#1E9E52',
   },
   reasonText: {
     color: '#000000',
     fontSize: 12,
   },
   reasonTextSelected: {
-    color: '#E63030',
+    color: '#1E9E52',
     fontWeight: 'bold',
   },
   validationText: {

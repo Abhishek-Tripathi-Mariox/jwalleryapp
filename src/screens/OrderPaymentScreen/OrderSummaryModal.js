@@ -20,7 +20,9 @@ function SummaryItemImage({ uri }) {
   );
 }
 
-const OrderSummaryModal = ({ visible, onClose, items = [] }) => (
+const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+
+const OrderSummaryModal = ({ visible, onClose, items = [], subtotal = 0, shipping = 0, platformFee = 0, gst = 0, couponCode = '', couponDiscount = 0, total = 0 }) => (
   <Modal
     visible={visible}
     animationType="slide"
@@ -71,6 +73,39 @@ const OrderSummaryModal = ({ visible, onClose, items = [] }) => (
             })
           )}
         </ScrollView>
+
+        <View style={styles.sectionDivider1} />
+        <View style={styles.breakdownRow}>
+          <Text style={styles.breakdownLabel}>Subtotal</Text>
+          <Text style={styles.breakdownValue}>{fmt(subtotal)}</Text>
+        </View>
+        <View style={styles.breakdownRow}>
+          <Text style={styles.breakdownLabel}>Shipping</Text>
+          <Text style={styles.breakdownValue}>{shipping > 0 ? fmt(shipping) : 'FREE'}</Text>
+        </View>
+        {platformFee > 0 && (
+          <View style={styles.breakdownRow}>
+            <Text style={styles.breakdownLabel}>Platform fee</Text>
+            <Text style={styles.breakdownValue}>{fmt(platformFee)}</Text>
+          </View>
+        )}
+        {gst > 0 && (
+          <View style={styles.breakdownRow}>
+            <Text style={styles.breakdownLabel}>GST</Text>
+            <Text style={styles.breakdownValue}>{fmt(gst)}</Text>
+          </View>
+        )}
+        {couponDiscount > 0 && (
+          <View style={styles.breakdownRow}>
+            <Text style={styles.breakdownLabel}>Coupon discount {couponCode ? `(${couponCode})` : ''}</Text>
+            <Text style={[styles.breakdownValue, { color: '#1DA851' }]}>− {fmt(couponDiscount)}</Text>
+          </View>
+        )}
+        <View style={styles.sectionDivider1} />
+        <View style={styles.breakdownRow}>
+          <Text style={styles.totalLabelText}>Total</Text>
+          <Text style={styles.totalValueText}>{fmt(total)}</Text>
+        </View>
       </View>
     </View>
   </Modal>
@@ -156,6 +191,30 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     // marginTop: 7,
     borderRadius: 2,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  breakdownLabel: {
+    fontSize: 13,
+    color: '#666',
+  },
+  breakdownValue: {
+    fontSize: 13,
+    color: '#222',
+    fontWeight: '600',
+  },
+  totalLabelText: {
+    fontSize: 15,
+    color: '#222',
+    fontWeight: 'bold',
+  },
+  totalValueText: {
+    fontSize: 16,
+    color: '#930e6e',
+    fontWeight: 'bold',
   },
 });
 

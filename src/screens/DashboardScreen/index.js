@@ -266,16 +266,17 @@ const Dashboard = ({ navigation }) => {
   };
 
   const loadTabProducts = async () => {
-    // Load products for first 4 categories
-    const tabCats = categories.slice(0, 4);
+    // Load products for the first 6 categories (was 4) so both the
+    // per-category tabs and the diverse "All" mix below cover more ground.
+    const tabCats = categories.slice(0, 6);
     const results = {};
     await Promise.all(
       tabCats.map(async (cat) => {
         try {
-          const res = await fetchProductsByCategory(cat._id, 1, 8);
+          const res = await fetchProductsByCategory(cat._id, 1, 10);
           if (res?.code === 1 && res.data) {
             const list = res.data.products || res.data || [];
-            results[cat._id] = Array.isArray(list) ? list.slice(0, 8) : [];
+            results[cat._id] = Array.isArray(list) ? list.slice(0, 10) : [];
           }
         } catch (e) {
           results[cat._id] = [];
@@ -283,6 +284,22 @@ const Dashboard = ({ navigation }) => {
       })
     );
     setTabProducts(results);
+  };
+
+  // Round-robins one product at a time from each category so the "All" tab
+  // reads as a cross-section of the catalog instead of a single narrow pool.
+  const interleaveByCategory = (catsList, productsByCat, max) => {
+    const buckets = catsList.map((c) => productsByCat[c._id] || []).filter((b) => b.length);
+    const out = [];
+    let i = 0;
+    while (out.length < max && buckets.some((b) => b.length > i)) {
+      for (const b of buckets) {
+        if (b[i]) out.push(b[i]);
+        if (out.length >= max) break;
+      }
+      i += 1;
+    }
+    return out;
   };
 
   // ── Search ───────────────────────────────────────────
@@ -457,27 +474,6 @@ const Dashboard = ({ navigation }) => {
   };
 
   // ════════════════════════════════════════════════════════
-  // SECTION 1: Categories (6 round, no header)
-  // ════════════════════════════════════════════════════════
-  const renderCategories = () => {
-    if (categories.length === 0) return <EmptySection message="No categories available" />;
-    return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
-        {categories.slice(0, 6).map((cat) => (
-          <TouchableOpacity key={cat._id} style={styles.categoryItem} onPress={() => handleCategoryPress(cat)} activeOpacity={0.8}>
-            {cat.icon ? (
-              <View style={styles.categoryCircle}>
-                <Image source={cat.icon} style={styles.categoryCircleImage} />
-              </View>
-            ) : null}
-            <Text style={styles.categoryCircleLabel} numberOfLines={1}>{cat.name}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    );
-  };
-
-  // ════════════════════════════════════════════════════════
   // SECTION 2: Special Offers (Banners scroller - image/gif/video)
   // ════════════════════════════════════════════════════════
   const renderSpecialOffers = () => (
@@ -642,14 +638,15 @@ const Dashboard = ({ navigation }) => {
   // SECTION 6: Category Tabs + Product Grid (4 products per tab)
   // ════════════════════════════════════════════════════════
   const renderCategoryTabsGrid = () => {
-    const tabCats = categories.slice(0, 4);
+    const tabCats = categories.slice(0, 6);
     if (tabCats.length === 0 && featuredProducts.length === 0) return null;
 
     const tabs = ['All', ...tabCats.map(c => c.name)];
 
     let gridProducts = [];
     if (activeTab === 'All') {
-      gridProducts = featuredProducts.slice(0, 8);
+      const diverse = interleaveByCategory(tabCats, tabProducts, 8);
+      gridProducts = diverse.length > 0 ? diverse : featuredProducts.slice(0, 8);
     } else {
       const cat = tabCats.find(c => c.name === activeTab);
       if (cat && tabProducts[cat._id]) {
@@ -852,7 +849,7 @@ const Dashboard = ({ navigation }) => {
           <View style={styles.assuranceIconCircle}>
             <Ionicons name="arrow-undo-outline" size={24} color="#fff" />
           </View> 
-          <Text style={styles.assuranceLabel}>Easy Returns \n in 3–5 Days</Text>
+          <Text style={styles.assuranceLabel}>Easy Returns  in 3–5 Days</Text>
         </View>
       </View>
     </View>
@@ -1032,11 +1029,6 @@ const Dashboard = ({ navigation }) => {
 
         {/* 1. Gold/Silver Ticker */}
         {renderGoldTicker()}
-        </View>
-
-        {/* 2. Categories (6 round) — straddle the magenta bottom edge */}
-        <View style={styles.categoriesOverlap}>
-          {renderCategories()}
         </View>
 
         {/* 3. Special Offers (Banners scroller) */}

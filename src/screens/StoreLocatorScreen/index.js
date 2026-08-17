@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, ScrollView, Platform } from 'react-native';
+import MapView, { PROVIDER_GOOGLE, Marker, Callout } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BackHeader from '../../components/Header/BackHeader';
 import { fetchStores } from '../../utils/api';
 
 const THEME = '#930e6e';
+
+// India-wide default so the map has a sane view before/without any store
+// coordinates — mirrors MapAddressPickerScreen's fallback region.
+const FALLBACK_REGION = {
+  latitude: 20.5937,
+  longitude: 78.9629,
+  latitudeDelta: 10,
+  longitudeDelta: 10,
+};
 
 function StoreCard({ store }) {
   const openMaps = () => {
@@ -75,6 +85,19 @@ export default function StoreLocatorScreen({ navigation }) {
     })();
   }, []);
 
+  const withCoords = stores.filter((s) => s.latitude && s.longitude);
+  const initialRegion = withCoords.length
+    ? { latitude: Number(withCoords[0].latitude), longitude: Number(withCoords[0].longitude), latitudeDelta: 0.05, longitudeDelta: 0.05 }
+    : FALLBACK_REGION;
+
+  const openMapsFor = (store) => {
+    const query = store.latitude && store.longitude
+      ? `${store.latitude},${store.longitude}`
+      : store.address;
+    if (!query) return;
+    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`).catch(() => {});
+  };
+
   return (
     <View style={styles.container}>
       <BackHeader navigation={navigation} title="STORE LOCATOR" />
@@ -87,6 +110,34 @@ export default function StoreLocatorScreen({ navigation }) {
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16 }}>
+          {withCoords.length > 0 && (
+            <View style={styles.mapWrap}>
+              <MapView
+                style={{ flex: 1 }}
+                provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+                initialRegion={initialRegion}
+              >
+                {withCoords.map((store) => (
+                  <Marker
+                    key={store._id}
+                    coordinate={{ latitude: Number(store.latitude), longitude: Number(store.longitude) }}
+                    pinColor={THEME}
+                    onCalloutPress={() => openMapsFor(store)}
+                  >
+                    <Callout>
+                      <View style={{ maxWidth: 220 }}>
+                        <Text style={{ fontWeight: '700', fontSize: 13, marginBottom: 2 }}>{store.name}</Text>
+                        <Text style={{ fontSize: 12, color: '#444' }}>
+                          {[store.address, store.city, store.state].filter(Boolean).join(', ')}
+                        </Text>
+                        <Text style={{ fontSize: 11, color: THEME, marginTop: 4 }}>Tap for directions</Text>
+                      </View>
+                    </Callout>
+                  </Marker>
+                ))}
+              </MapView>
+            </View>
+          )}
           {stores.map((store) => (
             <StoreCard key={store._id} store={store} />
           ))}
@@ -98,6 +149,7 @@ export default function StoreLocatorScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+  mapWrap: { height: 220, borderRadius: 12, overflow: 'hidden', marginBottom: 16 },
   emptyWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 },
   emptyText: { color: '#888', fontSize: 15 },
   card: { borderWidth: 1, borderColor: '#eee', borderRadius: 12, padding: 16, backgroundColor: '#fff', marginBottom: 16 },

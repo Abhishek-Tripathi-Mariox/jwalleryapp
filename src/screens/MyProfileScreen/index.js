@@ -96,11 +96,11 @@ export default function MyProfileScreen({ navigation }) {
   const comingSoon = (label) => Alert.alert(label, 'Coming soon.');
 
   const ACCOUNT = [
+    { icon: <Feather name="shopping-bag" size={20} color="#444" />, label: 'My Orders', onPress: () => navigation.navigate('OrderScreen') },
     { icon: <Feather name="user" size={20} color="#444" />, label: 'Personal Information', onPress: () => navigation.navigate('ProfileDetail') },
     { icon: <Ionicons name="location-outline" size={20} color="#444" />, label: 'Delivery Address', onPress: () => navigation.navigate('SavedAddress') },
     { icon: <Feather name="credit-card" size={20} color="#444" />, label: 'Saved Cards', onPress: () => navigation.navigate('PaymentMethod') },
     { icon: <Feather name="shield" size={20} color="#444" />, label: 'Security & Privacy', onPress: () => navigation.navigate('Policies', { title: 'Security & Privacy', type: 'security' }) },
-    { icon: <Feather name="shopping-bag" size={20} color="#444" />, label: 'Order History', onPress: () => navigation.navigate('OrderScreen') },
     { icon: <Feather name="shopping-cart" size={20} color="#444" />, label: 'My Cart', onPress: () => navigation.navigate('Cart') },
     { icon: <Ionicons name="sync-outline" size={20} color="#444" />, label: 'Return Policy', onPress: () => navigation.navigate('Policies', { title: 'Return Policy', type: 'return' }) },
     { icon: <Feather name="globe" size={20} color="#444" />, label: 'Language', onPress: () => setLangModal(true) },

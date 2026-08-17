@@ -104,14 +104,17 @@ export const styles = StyleSheet.create({
         height: 22,
         tintColor: '#fff',
     },
+    // Sized to match the dashboard header's wordmark logo (150x46, ~3.26:1)
+    // instead of squeezing it into a 32x32 square — same aspect ratio, just
+    // scaled to fit this shorter header row.
     headerLogoContainer: {
-        width: 36,
-        height: 36,
+        width: 130,
+        height: 40,
         alignItems: 'center',
         justifyContent: 'center',
     },
     headerLogo: {
-        width: 32,
-        height: 32,
+        width: 130,
+        height: 40,
     },
 });

@@ -4,7 +4,7 @@ import BackHeader from '../../components/Header/BackHeader';
 import { AppImages } from '../../constants/app.image';
 import { Colors } from '../../themes/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { fetchCart, updateCartItem, placeOrder, applyCoupon } from '../../utils/api';
+import { fetchCart, updateCartItem, placeOrder, applyCoupon, removeCoupon } from '../../utils/api';
 import { resizedImage } from '../../utils/imageProxy';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCart } from '../../utils/CartContext';
@@ -68,6 +68,8 @@ export default function CheckoutScreen({ navigation }) {
   const [promoCode, setPromoCode] = useState('');
   const [applyingPromo, setApplyingPromo] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [removingPromo, setRemovingPromo] = useState(false);
   const { refreshCart } = useCart();
 
   const handleApplyPromo = async () => {
@@ -79,9 +81,8 @@ export default function CheckoutScreen({ navigation }) {
     try {
       const res = await applyCoupon(promoCode.trim());
       if (res?.code === 1) {
-        setAppliedCoupon(promoCode.trim().toUpperCase());
         showToast(res.message || 'Coupon applied!', 'success');
-        loadCart();
+        await loadCart();
       } else {
         showToast(res?.message || 'Invalid coupon code.', 'error');
       }
@@ -92,12 +93,28 @@ export default function CheckoutScreen({ navigation }) {
     }
   };
 
+  const handleRemovePromo = async () => {
+    setRemovingPromo(true);
+    try {
+      await removeCoupon();
+      setPromoCode('');
+      await loadCart();
+    } catch (e) {
+      showToast('Could not remove coupon. Try again.', 'error');
+    } finally {
+      setRemovingPromo(false);
+    }
+  };
+
   const loadCart = async () => {
     try {
       const res = await fetchCart();
       if (res?.code === 1 && res.data) {
-        const list = res.data.cart?.items || res.data.items || res.data || [];
+        const cart = res.data.cart || res.data;
+        const list = cart?.items || res.data || [];
         setItems(Array.isArray(list) ? list : []);
+        setAppliedCoupon(cart?.couponCode || '');
+        setCouponDiscount(Number(cart?.couponDiscount) || 0);
       }
     } catch (e) {
       console.log('Checkout load error:', e);
@@ -171,13 +188,19 @@ export default function CheckoutScreen({ navigation }) {
           <Text style={styles.subtotalValue}>₹{fmt(subTotal)}</Text>
         </View>
       )}
+      {couponDiscount > 0 && (
+        <View style={styles.subtotalRow}>
+          <Text style={styles.subtotalLabel}>Coupon discount</Text>
+          <Text style={[styles.subtotalValue, { color: '#1DA851' }]}>− ₹{fmt(couponDiscount)}</Text>
+        </View>
+      )}
       {/* Promo Code */}
       {appliedCoupon ? (
         <View style={styles.promoRow}>
           <Image source={require('../../assets/images/discount.png')} style={styles.promoIcon} />
           <Text style={[styles.promoText, { color: '#1DA851' }]}>“{appliedCoupon}” applied</Text>
-          <TouchableOpacity onPress={() => { setAppliedCoupon(''); setPromoCode(''); }}>
-            <Text style={{ color: '#930e6e', fontWeight: '700' }}>Remove</Text>
+          <TouchableOpacity onPress={handleRemovePromo} disabled={removingPromo}>
+            <Text style={{ color: '#930e6e', fontWeight: '700' }}>{removingPromo ? '...' : 'Remove'}</Text>
           </TouchableOpacity>
         </View>
       ) : showPromo ? (

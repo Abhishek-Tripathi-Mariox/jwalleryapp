@@ -55,10 +55,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#930e6e',
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    paddingBottom: 44,
-  },
-  categoriesOverlap: {
-    marginTop: -44,
+    paddingBottom: 16,
   },
   searchBarContainer: {
     paddingHorizontal: 16,
@@ -287,47 +284,6 @@ export const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  // ── Category Round Scroller ─────────────────────────
-  categoryScroll: {
-    paddingLeft: 16,
-    paddingVertical: 12,
-  },
-  categoryItem: {
-    alignItems: 'center',
-    marginRight: 16,
-    width: 72,
-  },
-  categoryCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 3,
-    borderWidth: 2,
-    borderColor: '#F0F0F0',
-  },
-  categoryCircleImage: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    resizeMode: 'cover',
-  },
-  categoryCircleLabel: {
-    fontFamily: 'Poppins-Regular',
-    fontSize: 11,
-    color: '#2A2A2A',
-    textTransform: 'capitalize',
-    marginTop: 6,
-    textAlign: 'center',
-  },
-
   // ── Section Header ──────────────────────────────────
   sectionHeader: {
     flexDirection: 'row',
@@ -430,21 +386,21 @@ export const styles = StyleSheet.create({
   // ── Product Grid (2-column) ─────────────────────────
   tabBar: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
-    borderBottomWidth: 1,
+    paddingHorizontal: 12,
+    marginTop: 10,
+    marginBottom: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E0E0E0',
   },
   tabItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    marginRight: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginRight: 6,
   },
   tabItemActive: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    marginRight: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginRight: 6,
     borderBottomWidth: 2,
     borderBottomColor: '#930e6e',
   },

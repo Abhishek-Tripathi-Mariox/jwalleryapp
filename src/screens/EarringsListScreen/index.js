@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ActivityIndi
 import { TextInput } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../../themes/Colors';
-import { AppImages } from '../../constants/app.image';
 import { fetchProductsByCategory, searchProducts, toggleWishlist as toggleWishlistAPI, addToCart, fetchWishlist } from '../../utils/api';
 import { getEffectivePrice } from '../../utils/price';
 import { useFocusEffect } from '@react-navigation/native';
@@ -69,6 +69,19 @@ export default function EarringsListScreen({ navigation, route }) {
     setLoadingMore(true);
     loadProducts(page + 1);
   };
+
+  // FlatList's onEndReached never fires if the first page doesn't fill the
+  // screen (nothing to scroll) — that silently strands the last few items
+  // (e.g. a 24-product category showing only the first 20). Once we know the
+  // rendered content is shorter than the visible area, fetch the next page
+  // ourselves instead of waiting for a scroll that can't happen.
+  const [listHeight, setListHeight] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
+  useEffect(() => {
+    if (!loading && !loadingMore && hasMore && listHeight > 0 && contentHeight > 0 && contentHeight <= listHeight) {
+      loadMoreProducts();
+    }
+  }, [listHeight, contentHeight, hasMore, loading, loadingMore]);
 
   const loadWishlist = async () => {
     try {
@@ -265,8 +278,8 @@ export default function EarringsListScreen({ navigation, route }) {
           <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
             <Feather name="bell" size={22} color="#fff" style={{ marginLeft: 12 }} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Cart')} style={{ position: 'relative' }}>
-            <Image source={AppImages.jbag} style={styles.headerIcon1} />
+          <TouchableOpacity onPress={() => navigation.navigate('Cart')} style={{ position: 'relative', marginLeft: 12 }}>
+            <Ionicons name="cart-outline" size={26} color="#fff" />
             <CartBadge count={cartCount} />
           </TouchableOpacity>
         </View>
@@ -319,6 +332,8 @@ export default function EarringsListScreen({ navigation, route }) {
           showsVerticalScrollIndicator={false}
           onEndReached={loadMoreProducts}
           onEndReachedThreshold={0.4}
+          onLayout={(e) => setListHeight(e.nativeEvent.layout.height)}
+          onContentSizeChange={(w, h) => setContentHeight(h)}
           ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 40, color: '#888' }}>No products found.</Text>}
           ListFooterComponent={
             loadingMore ? (
