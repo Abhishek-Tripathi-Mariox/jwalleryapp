@@ -1,10 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, StatusBar, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Colors } from '../../themes/Colors';
 import { AppImages } from '../../constants/app.image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackHeader from '../../components/Header/BackHeader';
 import { request } from '../../utils/api';
+
+const formatTime = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const diff = Date.now() - d.getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const days = Math.floor(h / 24);
+  if (days < 7) return `${days}d ago`;
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+};
 
 const NotificationScreen = ({ navigation }) => {
   const [notifications, setNotifications] = useState([]);
@@ -17,10 +31,10 @@ const NotificationScreen = ({ navigation }) => {
   const loadNotifications = async () => {
     setLoading(true);
     try {
-      // Fetch from backend when notifications API is available
       const res = await request('/user/notifications');
-      if (res?.code === 1 && Array.isArray(res.data)) {
-        setNotifications(res.data);
+      // Backend returns { page, limit, total, items }, not a bare array.
+      if (res?.code === 1 && Array.isArray(res?.data?.items)) {
+        setNotifications(res.data.items);
       } else {
         setNotifications([]);
       }
@@ -31,18 +45,55 @@ const NotificationScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
-  const renderItem = ({ item }) => (
-    <View style={styles.notificationCard}>
-      <View style={{ backgroundColor: Colors.GRAY9, height: 50, width: 50, borderRadius: 50, justifyContent: 'center' }}>
-        <Text style={{ color: Colors.theme1, fontSize: 22, fontWeight: '500', textAlign: 'center' }}>{item.title[0]}</Text>
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.message}>{item.message}</Text>
-        <Text style={styles.time}>{item.time}</Text>
-      </View>
-    </View>
-  );
+
+  const handlePress = (item) => {
+    if (item.type === 'order') {
+      navigation.navigate('OrderScreen');
+    }
+  };
+
+  const renderItem = ({ item }) => {
+    const products = item.products || [];
+    const first = products[0];
+    const extra = products.length - 1;
+
+    return (
+      <TouchableOpacity
+        style={[styles.notificationCard, !item.isRead && styles.notificationCardUnread]}
+        activeOpacity={item.type === 'order' ? 0.7 : 1}
+        onPress={() => handlePress(item)}
+      >
+        {first?.productImage ? (
+          <Image source={{ uri: first.productImage }} style={styles.thumb} />
+        ) : (
+          <View style={{ backgroundColor: Colors.GRAY9, height: 50, width: 50, borderRadius: 50, justifyContent: 'center' }}>
+            <Text style={{ color: Colors.theme1, fontSize: 22, fontWeight: '500', textAlign: 'center' }}>{item.title?.[0]}</Text>
+          </View>
+        )}
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>{item.title}</Text>
+          {first ? (
+            <>
+              <Text style={styles.message} numberOfLines={1}>
+                {first.productName}
+                {first.quantity ? ` × ${first.quantity}` : ''}
+                {extra > 0 ? `  +${extra} more item${extra > 1 ? 's' : ''}` : ''}
+              </Text>
+              {(item.orderNumber || item.totalAmount != null) && (
+                <Text style={styles.orderMeta}>
+                  {item.orderNumber ? `Order #${item.orderNumber}` : ''}
+                  {item.totalAmount != null ? `  ·  Total ₹${item.totalAmount}` : ''}
+                </Text>
+              )}
+            </>
+          ) : (
+            <Text style={styles.message}>{item.message}</Text>
+          )}
+          <Text style={styles.time}>{formatTime(item.createdAt)}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -106,6 +157,20 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
     gap: 10
+  },
+  notificationCardUnread: {
+    backgroundColor: '#FFF8E1',
+  },
+  thumb: {
+    height: 50,
+    width: 50,
+    borderRadius: 8,
+    backgroundColor: Colors.GRAY9,
+  },
+  orderMeta: {
+    fontSize: 12,
+    color: Colors.GRAY2,
+    marginTop: 2,
   },
   icon: {
     width: 40,
