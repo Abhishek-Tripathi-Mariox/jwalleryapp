@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Ale
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../themes/Colors';
 import { fetchProductDetails, addToCart, toggleWishlist, fetchWishlist, browseProducts, fetchCoupons, fetchFeaturedProducts, fetchNewArrivals } from '../../utils/api';
+import { useWishlist } from '../../utils/WishlistContext';
 import { resizedImage } from '../../utils/imageProxy';
 import { getEffectivePrice } from '../../utils/price';
 import { useCart } from '../../utils/CartContext';
@@ -20,6 +21,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [selectedSize, setSelectedSize] = useState('');
   const [wishlisted, setWishlisted] = useState(false);
   const [product, setProduct] = useState(routeProduct || null);
+  const { refreshWishlistCount } = useWishlist();
   const [loading, setLoading] = useState(!routeProduct);
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -190,6 +192,7 @@ export default function ProductDetailScreen({ route, navigation }) {
       if (res?.code === 1) {
         const newState = res.data?.isWishlisted !== undefined ? res.data.isWishlisted : !wishlisted;
         setWishlisted(newState);
+        refreshWishlistCount();
       } else {
         Alert.alert('Error', res?.message || 'Failed to update wishlist');
       }

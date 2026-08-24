@@ -24,9 +24,9 @@ const ASSURANCE = [
 ];
 
 const SOCIAL = [
-  { name: 'facebook-square', url: 'https://facebook.com/swarnaz' },
-  { name: 'instagram', url: 'https://instagram.com/swarnaz' },
-  { name: 'twitter', url: 'https://twitter.com/swarnaz' },
+  { name: 'facebook-square', url: 'https://www.facebook.com/Swarnaz/' },
+  { name: 'instagram', url: 'https://www.instagram.com/swarnaz1/?hl=en' },
+  { name: 'twitter', url: 'https://x.com/swarnaz1' },
   { name: 'whatsapp', url: 'https://wa.me/919319009460' },
 ];
 

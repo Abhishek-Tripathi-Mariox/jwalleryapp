@@ -7,10 +7,12 @@ import { fetchWishlist, removeFromWishlist } from '../../utils/api';
 import { useFocusEffect } from '@react-navigation/native';
 import BackHeader from '../../components/Header/BackHeader';
 import { getEffectivePrice } from '../../utils/price';
+import { useWishlist } from '../../utils/WishlistContext';
 
 export default function WishlistScreen({ navigation }) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { refreshWishlistCount } = useWishlist();
 
     const loadWishlist = async () => {
         try {
@@ -37,6 +39,7 @@ export default function WishlistScreen({ navigation }) {
         try {
             await removeFromWishlist(productId);
             setItems(prev => prev.filter(i => (i.productId?._id || i.productId || i._id) !== productId));
+            refreshWishlistCount();
         } catch (e) {
             console.log('Remove wishlist error:', e);
         }

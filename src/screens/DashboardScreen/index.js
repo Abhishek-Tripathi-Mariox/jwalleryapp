@@ -27,6 +27,7 @@ import { resizedImage } from '../../utils/imageProxy';
 import { showToast } from '../../utils/toast';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../../utils/CartContext';
+import { useWishlist } from '../../utils/WishlistContext';
 import CartBadge from '../../components/CartBadge';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -94,6 +95,7 @@ const Dashboard = ({ navigation }) => {
   const [voiceListening, setVoiceListening] = useState(false);
 
   const { cartCount, refreshCart } = useCart();
+  const { wishlistCount, refreshWishlistCount } = useWishlist();
   const [wishlist, setWishlist] = useState({});
 
   const loadWishlist = async () => {
@@ -119,6 +121,7 @@ const Dashboard = ({ navigation }) => {
       if (res?.code === 1) {
         const nowWishlisted = res.data?.isWishlisted ?? !wishlist[productId];
         setWishlist(prev => ({ ...prev, [productId]: nowWishlisted }));
+        refreshWishlistCount();
         showToast(nowWishlisted ? 'Added to Wishlist' : 'Removed from Wishlist', 'success');
       } else {
         showToast(res?.message || 'Failed to update wishlist', 'error');
@@ -136,6 +139,7 @@ const Dashboard = ({ navigation }) => {
     // even if their account already has items in the cart from before.
     refreshCart();
     loadWishlist();
+    refreshWishlistCount();
   }, []);
 
   // On-device speech recognition (no network/API key) — wires @react-native-voice/voice
@@ -977,11 +981,12 @@ const Dashboard = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate('Wishlist')}
-            style={styles.headerIconWrapper}
+            style={[styles.headerIconWrapper, { position: 'relative' }]}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             activeOpacity={0.7}
           >
             <Ionicons name="heart-outline" size={24} color="#fff" />
+            <CartBadge count={wishlistCount} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate('Cart')}

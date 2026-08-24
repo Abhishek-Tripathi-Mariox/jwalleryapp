@@ -6,6 +6,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../../themes/Colors';
 import { fetchProductsByCategory, searchProducts, toggleWishlist as toggleWishlistAPI, addToCart, fetchWishlist } from '../../utils/api';
+import { useWishlist } from '../../utils/WishlistContext';
 import { getEffectivePrice } from '../../utils/price';
 import { useFocusEffect } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -16,6 +17,7 @@ import { showToast } from '../../utils/toast';
 
 export default function EarringsListScreen({ navigation, route }) {
   const { categoryId, categoryLabel, category } = route.params || {};
+  const { refreshWishlistCount } = useWishlist();
   const [wishlist, setWishlist] = useState({});
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,6 +139,7 @@ export default function EarringsListScreen({ navigation, route }) {
         // (e.g. this screen just mounted and a previous toggle failed).
         const nowWishlisted = res.data?.isWishlisted ?? !wishlist[productId];
         setWishlist(prev => ({ ...prev, [productId]: nowWishlisted }));
+        refreshWishlistCount();
         showToast(nowWishlisted ? 'Added to Wishlist' : 'Removed from Wishlist', 'success');
       } else {
         Alert.alert('Error', res?.message || 'Failed to update wishlist');

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { Colors } from '../../themes/Colors';
 import { fetchCategories, fetchProductsByCategory, addToCart, toggleWishlist, fetchWishlist } from '../../utils/api';
+import { useWishlist } from '../../utils/WishlistContext';
 import BackHeader from '../../components/Header/BackHeader';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
@@ -28,6 +29,7 @@ const fallbackIcons = {
 };
 
 export default function CategoryScreen({ navigation }) {
+  const { refreshWishlistCount } = useWishlist();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCatId, setSelectedCatId] = useState(null);
@@ -161,6 +163,7 @@ export default function CategoryScreen({ navigation }) {
           newSet.add(product._id);
         }
         setWishlistedIds(newSet);
+        refreshWishlistCount();
       }
     } catch (e) {
       console.log('Wishlist error:', e);

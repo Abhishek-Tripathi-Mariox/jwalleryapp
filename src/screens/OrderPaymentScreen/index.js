@@ -180,15 +180,22 @@ const OrderPaymentScreen = ({ navigation }) => {
             }
           } catch (razorpayError) {
             console.log('Razorpay error:', razorpayError);
-            // Don't promise a "pay later" retry flow that doesn't exist in the app.
-            // If the charge actually went through despite the checkout SDK erroring
-            // out (e.g. app backgrounded mid-payment), Razorpay's webhook reconciles
-            // the order server-side independently of this callback.
+            // The checkout SDK only rejects when the payment did NOT go through
+            // (user cancelled, wrong PIN, bank declined, UPI app/QR error, etc.) —
+            // it never rejects after a successful charge. Showing the "Order
+            // Confirmed" success screen here would tell the customer they paid
+            // when they didn't. If a charge somehow does land after this point
+            // (e.g. app backgrounded mid-payment), Razorpay's webhook reconciles
+            // the order server-side independently of this screen.
+            const cancelled = razorpayError?.code === 0 || razorpayError?.code === '0';
             Alert.alert(
-              'Payment Not Confirmed',
-              'Your order has been saved, but we could not confirm the payment. If money was deducted, it will be reflected on your order shortly — otherwise please contact support.',
+              cancelled ? 'Payment Cancelled' : 'Payment Failed',
+              cancelled
+                ? 'You cancelled the payment before it completed. Your order has been saved as pending — you can check its status under My Orders.'
+                : (razorpayError?.description ||
+                    'Your payment could not be completed. Your order has been saved as pending — you can check its status under My Orders.'),
+              [{ text: 'View My Orders', onPress: () => navigation.navigate('OrderScreen') }, { text: 'OK' }],
             );
-            setOrderPlacedVisible(true);
           }
         } else {
           // COD order placed directly

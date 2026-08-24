@@ -5,6 +5,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { fetchProductsByCategory, searchProducts, toggleWishlist as toggleWishlistAPI, fetchCategories, addToCart, fetchWishlist } from '../../utils/api';
+import { useWishlist } from '../../utils/WishlistContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCart } from '../../utils/CartContext';
 import { getEffectivePrice } from '../../utils/price';
@@ -13,6 +14,7 @@ import { showToast } from '../../utils/toast';
 
 export default function NecklaceListScreen({ navigation, route }) {
   const { categoryId, categoryLabel, category, filters } = route.params || {};
+  const { refreshWishlistCount } = useWishlist();
   const [filterChips, setFilterChips] = useState([]);
   const [activeChips, setActiveChips] = useState(filters || [categoryLabel].filter(Boolean));
   const [wishlist, setWishlist] = useState({});
@@ -125,6 +127,7 @@ export default function NecklaceListScreen({ navigation, route }) {
       if (res?.code === 1) {
         const nowWishlisted = res.data?.isWishlisted ?? !wishlist[productId];
         setWishlist(prev => ({ ...prev, [productId]: nowWishlisted }));
+        refreshWishlistCount();
         showToast(nowWishlisted ? 'Added to Wishlist' : 'Removed from Wishlist', 'success');
       } else {
         Alert.alert('Error', res?.message || 'Failed to update wishlist');
