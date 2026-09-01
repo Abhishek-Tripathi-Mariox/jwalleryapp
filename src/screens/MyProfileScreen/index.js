@@ -27,7 +27,7 @@ const SOCIAL = [
   { name: 'facebook-square', url: 'https://www.facebook.com/Swarnaz/' },
   { name: 'instagram', url: 'https://www.instagram.com/swarnaz1/?hl=en' },
   { name: 'twitter', url: 'https://x.com/swarnaz1' },
-  { name: 'whatsapp', url: 'https://wa.me/919319009460' },
+  { name: 'whatsapp', url: 'https://wa.me/919153150654' },
 ];
 
 export default function MyProfileScreen({ navigation }) {

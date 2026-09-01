@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView, ActivityIndicator, Dimensions, Alert } from 'react-native';
 import { Colors } from '../../themes/Colors';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -11,6 +11,8 @@ import { useCart } from '../../utils/CartContext';
 import { getEffectivePrice } from '../../utils/price';
 import CartBadge from '../../components/CartBadge';
 import { showToast } from '../../utils/toast';
+import SortModal from '../../components/Modal/SortModal';
+import FilterModal from '../../components/Modal/FilterModal';
 
 export default function NecklaceListScreen({ navigation, route }) {
   const { categoryId, categoryLabel, category, filters } = route.params || {};
@@ -25,6 +27,35 @@ export default function NecklaceListScreen({ navigation, route }) {
   const [hasMore, setHasMore] = useState(true);
   const { refreshCart, cartCount } = useCart();
   const PAGE_SIZE = 20;
+
+  const [sortModalVisible, setSortModalVisible] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [sortBy, setSortBy] = useState('newest');
+  const [filterMaterials, setFilterMaterials] = useState([]);
+  const [filterMinPrice, setFilterMinPrice] = useState(null);
+  const [filterMaxPrice, setFilterMaxPrice] = useState(null);
+
+  const SORT_SHORT_LABELS = { newest: 'New', price_low: 'Price ↑', price_high: 'Price ↓', rating: 'Top Rated' };
+  const sortLabel = SORT_SHORT_LABELS[sortBy] || 'Sort';
+  const filtersActive = filterMaterials.length > 0 || filterMinPrice != null || filterMaxPrice != null;
+
+  const displayedProducts = useMemo(() => {
+    let list = [...products];
+    if (filterMaterials.length > 0) {
+      list = list.filter((p) => filterMaterials.includes(p.material));
+    }
+    if (filterMinPrice != null) {
+      list = list.filter((p) => getEffectivePrice(p) >= filterMinPrice);
+    }
+    if (filterMaxPrice != null) {
+      list = list.filter((p) => getEffectivePrice(p) <= filterMaxPrice);
+    }
+    if (sortBy === 'price_low') list.sort((a, b) => getEffectivePrice(a) - getEffectivePrice(b));
+    else if (sortBy === 'price_high') list.sort((a, b) => getEffectivePrice(b) - getEffectivePrice(a));
+    else if (sortBy === 'rating') list.sort((a, b) => (b.averageRating || b.rating || 0) - (a.averageRating || a.rating || 0));
+    else list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return list;
+  }, [products, sortBy, filterMaterials, filterMinPrice, filterMaxPrice]);
 
   const handleAddToCart = async (product) => {
     try {
@@ -228,16 +259,17 @@ export default function NecklaceListScreen({ navigation, route }) {
       {/* Category Title and Filters */}
       <View style={styles.headerExtras}>
         <View style={styles.categoryRow}>
-          <Text style={styles.necklaceCount}>{products.length} {(categoryLabel || 'NECKLACE').toUpperCase()}</Text>
+          <Text style={styles.necklaceCount}>{displayedProducts.length} {(categoryLabel || 'NECKLACE').toUpperCase()}</Text>
           <View style={styles.filterRow}>
-            <TouchableOpacity style={styles.filterBtn}>
-              <Text style={styles.filterBtnText}>New</Text>
+            <TouchableOpacity style={styles.filterBtn} onPress={() => setSortModalVisible(true)}>
+              <Text style={styles.filterBtnText} numberOfLines={1}>{sortLabel}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => setSortModalVisible(true)}>
               <Image source={require('../../assets/images/vector.png')} style={styles.filterIcon} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => setFilterModalVisible(true)}>
               <Image source={require('../../assets/images/filter.png')} style={styles.filterIcon} />
+              {filtersActive && <View style={styles.filterDot} />}
             </TouchableOpacity>
           </View>
         </View>
@@ -259,7 +291,7 @@ export default function NecklaceListScreen({ navigation, route }) {
         <ActivityIndicator size="large" color={Colors.theme1} style={{ marginTop: 40 }} />
       ) : (
         <FlatList
-          data={products}
+          data={displayedProducts}
           renderItem={renderItem}
           keyExtractor={item => item._id}
           numColumns={2}
@@ -280,6 +312,25 @@ export default function NecklaceListScreen({ navigation, route }) {
           }
         />
       )}
+
+      <SortModal
+        visible={sortModalVisible}
+        value={sortBy}
+        onSelect={setSortBy}
+        onClose={() => setSortModalVisible(false)}
+      />
+      <FilterModal
+        visible={filterModalVisible}
+        materials={filterMaterials}
+        minPrice={filterMinPrice}
+        maxPrice={filterMaxPrice}
+        onApply={({ materials, minPrice, maxPrice }) => {
+          setFilterMaterials(materials);
+          setFilterMinPrice(minPrice);
+          setFilterMaxPrice(maxPrice);
+        }}
+        onClose={() => setFilterModalVisible(false)}
+      />
     </View>
   );
 }
@@ -358,27 +409,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterBtn: {
-    backgroundColor: 'Colors.theme1',
+    backgroundColor: '#fff',
     borderRadius: 20,
     paddingHorizontal: 18,
     paddingVertical: 6,
     marginRight: 8,
+    maxWidth: 130,
   },
   filterBtnText: {
-    color: '#fff',
+    color: Colors.theme1,
     fontWeight: 'bold',
     fontSize: 15,
   },
   iconBtn: {
-    backgroundColor: 'Colors.theme1',
+    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 3,
-    margin:2
+    margin: 2,
+    position: 'relative',
   },
   filterIcon: {
     width: 30,
     height: 30,
-    tintColor: '#fff',
+    tintColor: Colors.theme1,
+  },
+  filterDot: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: '#FF4444',
+    borderWidth: 1,
+    borderColor: '#fff',
   },
   chipScroll: {
     marginTop: 16,
