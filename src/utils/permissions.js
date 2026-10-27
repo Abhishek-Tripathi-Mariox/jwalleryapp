@@ -16,18 +16,14 @@ const requestAllPermissions = async () => {
       PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
     ];
 
-    // Android 13+ (API 33) uses granular media permissions
+    // Photo/video picking goes through react-native-image-picker, which uses
+    // the system photo picker (no permission needed) on Android 13+ and a
+    // permission-less document/content picker on older versions — so no
+    // READ_MEDIA_IMAGES / READ_MEDIA_VIDEO / *_EXTERNAL_STORAGE permission is
+    // requested here. Google Play policy requires apps to rely on system
+    // pickers instead of these broad storage permissions where possible.
     if (Platform.Version >= 33) {
-      permissions.push(
-        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-        PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
-        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-      );
-    } else {
-      permissions.push(
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-      );
+      permissions.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
     }
 
     const results = await PermissionsAndroid.requestMultiple(permissions);
